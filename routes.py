@@ -1,10 +1,15 @@
 import logging
+import os
+import subprocess
+import pandas as pd
+from datetime import datetime
 from flask import render_template, url_for, flash, redirect, request, jsonify
 from flask_login import login_user, current_user, logout_user, login_required
 from app import app, db
 from forms import RegistrationForm, LoginForm, YouTubeStatsForm, YouTubeDemoForm
 from models import User, YouTubeChannel, Search
 from youtube_api import get_video_stats, get_channel_stats, extract_video_info
+from youtube_utils import save_user_to_csv, validate_user_login, save_analysis_to_csv
 
 # Set up logging
 logging.basicConfig(level=logging.DEBUG)
@@ -27,8 +32,17 @@ def register():
         user = User(username=form.username.data, email=form.email.data, user_type=form.user_type.data)
         user.set_password(form.password.data)
         
+        # Save to database
         db.session.add(user)
         db.session.commit()
+        
+        # Also save to CSV file for validation
+        save_user_to_csv(
+            username=form.username.data,
+            email=form.email.data,
+            password=form.password.data,
+            user_type=form.user_type.data
+        )
         
         flash(f'Account created for {form.username.data}! You can now log in.', 'success')
         return redirect(url_for('login'))
@@ -42,6 +56,7 @@ def login():
     
     form = LoginForm()
     if form.validate_on_submit():
+        # First check in the SQL database
         user = User.query.filter_by(email=form.email.data).first()
         
         if user and user.check_password(form.password.data):
@@ -50,6 +65,33 @@ def login():
             flash('Login successful!', 'success')
             return redirect(next_page) if next_page else redirect(url_for('stats'))
         else:
+            # Try CSV validation as fallback
+            is_valid, user_type = validate_user_login(form.email.data, form.password.data)
+            if is_valid:
+                # Create a user in the database if not exists
+                if not user:
+                    # Get username from CSV
+                    try:
+                        df = pd.read_csv('data/database.csv')
+                        user_data = df[df['email'] == form.email.data]
+                        username = user_data.iloc[0]['username'] if not user_data.empty else form.email.data.split('@')[0] if '@' in form.email.data else form.email.data
+                        
+                        # Create user in database
+                        user = User(username=username, email=form.email.data, user_type=user_type)
+                        user.set_password(form.password.data)
+                        db.session.add(user)
+                        db.session.commit()
+                    except Exception as e:
+                        logger.error(f"Error creating user from CSV: {str(e)}")
+                    
+                    # Get the user again
+                    user = User.query.filter_by(email=form.email.data).first()
+                
+                if user:
+                    login_user(user)
+                    flash('Login successful via CSV validation!', 'success')
+                    return redirect(url_for('stats'))
+            
             flash('Login unsuccessful. Please check email and password.', 'danger')
     
     return render_template('login.html', title='Login', form=form)
@@ -131,6 +173,15 @@ def stats():
                         existing_channel.view_count = channel_data['view_count']
                     
                     db.session.commit()
+                    
+                    # Run stats.py and save results to ANALYSIS.CSV
+                    try:
+                        # Convert channel data and video stats to string format for saving
+                        stats_data = f"Channel Stats: {channel_data}\nVideo Stats: {video_data}"
+                        save_analysis_to_csv(youtube_url, "", stats_data)
+                        logger.info(f"Saved stats analysis to ANALYSIS.CSV for URL: {youtube_url}")
+                    except Exception as stats_error:
+                        logger.error(f"Error saving stats to ANALYSIS.CSV: {str(stats_error)}")
             else:
                 error = "Could not retrieve video information."
         except Exception as e:
@@ -154,7 +205,7 @@ def demo():
     if form.validate_on_submit():
         youtube_url = form.youtube_url.data
         try:
-            # Extract information from the video
+            # Extract information from the video using youtube_api.py
             info = extract_video_info(youtube_url)
             if info:
                 video_info = info
@@ -168,6 +219,26 @@ def demo():
                 )
                 db.session.add(search)
                 db.session.commit()
+                
+                # Also run demo.py functionality to extract transcript and save to ANALYSIS.CSV
+                try:
+                    from youtube_utils import extract_video_id
+                    from demo import get_transcript, analyze_transcript
+                    
+                    # Get the video ID
+                    video_id = extract_video_id(youtube_url)
+                    if video_id:
+                        # Get transcript
+                        transcript = get_transcript(video_id)
+                        
+                        # Analyze transcript (simplified version since we may not have API key)
+                        analysis = f"Video Info: {info}\nExtracted from YouTube API"
+                        
+                        # Save to ANALYSIS.CSV
+                        save_analysis_to_csv(youtube_url, transcript, analysis)
+                        logger.info(f"Saved demo analysis to ANALYSIS.CSV for URL: {youtube_url}")
+                except Exception as demo_error:
+                    logger.error(f"Error running demo analysis: {str(demo_error)}")
             else:
                 error = "Could not extract information from the video."
         except Exception as e:

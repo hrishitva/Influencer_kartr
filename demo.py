@@ -14,7 +14,7 @@ from googleapiclient.errors import HttpError
 API_KEY = ""
 YOUTUBE_API_KEY = ""
 MODEL_NAME = "models/gemini-2.0-flash"
-CSV_FILENAME = os.path.join(os.getcwd(), 'database.csv')  # Save database.csv in the current working directory
+CSV_FILENAME = os.path.join(os.getcwd(), 'data/ANALYSIS.CSV')  # Save analysis data in ANALYSIS.CSV
 BATCH_SIZE = 10
 
 DELAY = 2
@@ -167,7 +167,7 @@ def save_to_csv(video_link, transcript, gemini_output, filename=CSV_FILENAME):
         df = pd.DataFrame(data)
         file_exists = os.path.isfile(filename)
         df.to_csv(filename, mode='a', header=not file_exists, index=False, encoding='utf-8')
-        print("Saved to database.csv successfully!")
+        print("Saved to ANALYSIS.CSV successfully!")
     except Exception as e:
         print(f"Failed to save to CSV: {e}")
 
