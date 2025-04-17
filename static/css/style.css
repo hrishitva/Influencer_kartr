@@ -46,20 +46,36 @@ a:hover {
 .navbar-brand {
   display: flex;
   align-items: center;
+  flex-direction: column; /* Align items vertically */
+}
+
+.logo-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .navbar-brand img {
   height: 40px;
-  margin-right: 10px;
+  margin-bottom: 10px; /* Add space below logo */
 }
 
 .navbar-brand .tagline {
   font-size: 0.9rem;
   color: var(--gray-color);
-  margin-left: 10px;
+  margin-left: 0; /* Remove extra margin */
   font-weight: 500;
   letter-spacing: 0.5px;
+  margin-bottom: 10px; /* Add space below tagline */
 }
+
+.shine-connect { /* Add styles for "shine and connect" */
+  font-size: 0.8rem;
+  color: var(--gray-color);
+  font-weight: 400;
+  letter-spacing: 0.5px;
+}
+
 
 .navbar-nav .nav-link {
   font-weight: 500;
