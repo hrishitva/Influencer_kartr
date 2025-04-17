@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 80" width="240" height="80">
+  <!-- Main Logo -->
+  <g transform="translate(5, 10)">
+    <!-- K -->
+    <path d="M20 5 L20 55 L10 55 L10 35 L5 35 L20 60 L8 60 L0 45 L0 55 L-10 55 L-10 5 L0 5 L0 25 L5 25 L20 5 L20 5 Z" 
+          fill="#6c63ff" />
+    
+    <!-- A -->
+    <path d="M40 60 L30 60 L28 50 L18 50 L16 60 L6 60 L16 10 L30 10 L40 60 Z M26 40 L23 20 L20 40 L26 40 Z" 
+          fill="#6c63ff" />
+    
+    <!-- R -->
+    <path d="M60 10 L45 10 L45 60 L55 60 L55 40 L60 40 C70 40 75 35 75 25 C75 15 70 10 60 10 Z M60 30 L55 30 L55 20 L60 20 C62 20 65 21 65 25 C65 29 62 30 60 30 Z" 
+          fill="#6c63ff" />
+    
+    <!-- T -->
+    <path d="M85 10 L85 20 L95 20 L95 60 L105 60 L105 20 L115 20 L115 10 L85 10 Z" 
+          fill="#6c63ff" />
+    
+    <!-- R -->
+    <path d="M130 10 L115 10 L115 60 L125 60 L125 40 L130 40 C140 40 145 35 145 25 C145 15 140 10 130 10 Z M130 30 L125 30 L125 20 L130 20 C132 20 135 21 135 25 C135 29 132 30 130 30 Z" 
+          fill="#6c63ff" />
+  </g>
+  
+  <!-- Tagline -->
+  <text x="120" y="75" font-family="Arial, sans-serif" font-size="12" text-anchor="middle" fill="#6c757d">
+    shine and connect
+  </text>
+</svg>
