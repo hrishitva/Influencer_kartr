@@ -327,7 +327,15 @@ footer {
 }
 
 .footer-logo {
-  height: 30px;
+  height: 40px;
+  margin-bottom: 0;
+}
+
+footer .tagline {
+  color: var(--gray-color);
+  font-size: 0.9rem;
+  font-weight: 500;
+  letter-spacing: 0.5px;
 }
 
 .footer-links a {
@@ -373,16 +381,16 @@ footer {
   .navbar-brand .tagline {
     display: none;
   }
-  
+
   .footer-content {
     flex-direction: column;
     text-align: center;
   }
-  
+
   .footer-links {
     margin-top: 1rem;
   }
-  
+
   .footer-links a {
     margin: 0 0.75rem;
   }
