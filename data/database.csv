@@ -1,3 +1,4 @@
 username,email,password,user_type,date_registeredegg,egg@gmail.com,scrypt:32768:8:1$HnsIoOYfWKZ6c62A$89265dc4c5b8a5fe22f058fbf4bcf1c66a8d3ee088469588098eb6a4eca42b357b438e61a5d5e601b6ff543b69b0da2ddd353a0663354714702630355ec7de26,influencer,2025-04-17 17:57:47
 Babu,aa@gmail.com,pbkdf2:sha256:260000$QQBx2dl0x9z9QJDr$e5a96af20f0682b2acfc60b89e2f73b4261f57bf002cca8f62f30a1943dc3bd4,influencer,2025-04-19 01:19:38
 AAA,aaa@gmail.com,pbkdf2:sha256:260000$ZlvEQhpejBrtMhKT$f772ff0767e7fc5e7612b02a17ff9f7e69f75f6d942409b73d94ac1a220ee05f,sponsor,2025-04-19 20:51:19
+egg,egg@gmail.com,scrypt:32768:8:1$TnWNnqBr0TuDkpVJ$7c7319e7b815beaf77445e575f3a8199059e4aab7bae1d831c383a5da0de791b273248754e45a995c96cfa539bfa968509d4d9eb123a73fe51f44885e33c2428,influencer,2025-04-19 17:05:17
