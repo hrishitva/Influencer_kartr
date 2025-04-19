@@ -26,16 +26,16 @@ def home():
 def register():
     if current_user.is_authenticated:
         return redirect(url_for('stats'))
-    
+
     form = RegistrationForm()
     if form.validate_on_submit():
         user = User(username=form.username.data, email=form.email.data, user_type=form.user_type.data)
         user.set_password(form.password.data)
-        
+
         # Save to database
         db.session.add(user)
         db.session.commit()
-        
+
         # Also save to CSV file for validation
         save_user_to_csv(
             username=form.username.data,
@@ -43,27 +43,26 @@ def register():
             password=form.password.data,
             user_type=form.user_type.data
         )
-        
+
         flash(f'Account created for {form.username.data}! You can now log in.', 'success')
         return redirect(url_for('login'))
-    
+
     return render_template('register.html', title='Register', form=form)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
         return redirect(url_for('stats'))
-    
+
     form = LoginForm()
     if form.validate_on_submit():
         # First check in the SQL database
         user = User.query.filter_by(email=form.email.data).first()
-        
+
         if user and user.check_password(form.password.data):
             login_user(user)
-            next_page = request.args.get('next')
             flash('Login successful!', 'success')
-            return redirect(next_page) if next_page else redirect(url_for('stats'))
+            return redirect(url_for('dashboard'))
         else:
             # Try CSV validation as fallback
             is_valid, user_type = validate_user_login(form.email.data, form.password.data)
@@ -75,7 +74,7 @@ def login():
                         df = pd.read_csv('data/database.csv')
                         user_data = df[df['email'] == form.email.data]
                         username = user_data.iloc[0]['username'] if not user_data.empty else form.email.data.split('@')[0] if '@' in form.email.data else form.email.data
-                        
+
                         # Create user in database
                         user = User(username=username, email=form.email.data, user_type=user_type)
                         user.set_password(form.password.data)
@@ -83,17 +82,17 @@ def login():
                         db.session.commit()
                     except Exception as e:
                         logger.error(f"Error creating user from CSV: {str(e)}")
-                    
+
                     # Get the user again
                     user = User.query.filter_by(email=form.email.data).first()
-                
+
                 if user:
                     login_user(user)
                     flash('Login successful via CSV validation!', 'success')
-                    return redirect(url_for('stats'))
-            
+                    return redirect(url_for('dashboard'))
+
             flash('Login unsuccessful. Please check email and password.', 'danger')
-    
+
     return render_template('login.html', title='Login', form=form)
 
 @app.route('/logout')
@@ -112,7 +111,7 @@ def dashboard():
         Search.search_term, 
         Search.date_searched
     ).filter_by(user_id=current_user.id).order_by(Search.date_searched.desc()).limit(10).all()
-    
+
     if current_user.user_type == 'influencer':
         youtube_channels = YouTubeChannel.query.filter_by(user_id=current_user.id).all()
         return render_template('dashboard.html', title='Dashboard', 
@@ -131,7 +130,7 @@ def stats():
     video_stats = None
     channel_stats = None
     error = None
-    
+
     if form.validate_on_submit():
         youtube_url = form.youtube_url.data
         try:
@@ -139,12 +138,12 @@ def stats():
             video_data = get_video_stats(youtube_url)
             if video_data:
                 video_stats = video_data
-                
+
                 # Get channel stats
                 channel_data = get_channel_stats(video_data['channel_id'])
                 if channel_data:
                     channel_stats = channel_data
-                    
+
                     # Save the search
                     try:
                         # Only use fields that exist in the database
@@ -158,13 +157,13 @@ def stats():
                     except Exception as e:
                         db.session.rollback()
                         logger.error(f"Error saving search history: {str(e)}")
-                    
+
                     # Check if channel already exists
                     existing_channel = YouTubeChannel.query.filter_by(
                         channel_id=channel_data['channel_id'],
                         user_id=current_user.id
                     ).first()
-                    
+
                     if not existing_channel:
                         # Save channel data
                         new_channel = YouTubeChannel(
@@ -181,9 +180,9 @@ def stats():
                         existing_channel.subscriber_count = channel_data['subscriber_count']
                         existing_channel.video_count = channel_data['video_count']
                         existing_channel.view_count = channel_data['view_count']
-                    
+
                     db.session.commit()
-                    
+
                     # Run stats.py and save results to ANALYSIS.CSV
                     try:
                         # Convert channel data and video stats to string format for saving
@@ -197,7 +196,7 @@ def stats():
         except Exception as e:
             logger.error(f"Error processing YouTube URL: {str(e)}")
             error = f"Error processing YouTube URL: {str(e)}"
-    
+
     return render_template('stats.html', title='YouTube Stats', 
                           form=form, 
                           video_stats=video_stats, 
@@ -213,7 +212,7 @@ def demo():
     form = YouTubeDemoForm()
     video_info = None
     error = None
-    
+
     if form.validate_on_submit():
         youtube_url = form.youtube_url.data
         try:
@@ -221,7 +220,7 @@ def demo():
             info = extract_video_info(youtube_url)
             if info:
                 video_info = info
-                
+
                 # Save the search
                 try:
                     # Try to create a Search with only the columns that exist in the database
@@ -236,21 +235,21 @@ def demo():
                     # If there's an error, roll back the session
                     db.session.rollback()
                     print(f"Error saving search history: {str(e)}")
-                
+
                 # Also run demo.py functionality to extract transcript and save to ANALYSIS.CSV
                 try:
                     from youtube_utils import extract_video_id
                     from demo import get_transcript, analyze_transcript
-                    
+
                     # Get the video ID
                     video_id = extract_video_id(youtube_url)
                     if video_id:
                         # Get transcript
                         transcript = get_transcript(video_id)
-                        
+
                         # Analyze transcript (simplified version since we may not have API key)
                         analysis = f"Video Info: {info}\nExtracted from YouTube API"
-                        
+
                         # Save to ANALYSIS.CSV
                         save_analysis_to_csv(youtube_url, transcript, analysis)
                         logger.info(f"Saved demo analysis to ANALYSIS.CSV for URL: {youtube_url}")
@@ -261,11 +260,8 @@ def demo():
         except Exception as e:
             logger.error(f"Error extracting video info: {str(e)}")
             error = f"Error extracting video info: {str(e)}"
-    
+
     return render_template('demo.html', title='YouTube Demo',
                           form=form, 
                           video_info=video_info,
-                          # Add the min function to the template context
                           min=min)
-                        #   error=error,
-                        #   user_type=current_user.user_type)
