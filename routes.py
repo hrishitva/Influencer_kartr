@@ -105,8 +105,13 @@ def logout():
 @app.route('/dashboard')
 @login_required
 def dashboard():
-    # Different views for sponsors and influencers
-    searches = Search.query.filter_by(user_id=current_user.id).order_by(Search.date_searched.desc()).limit(10).all()
+    # Use a specific column selection to avoid querying non-existent columns
+    searches = db.session.query(
+        Search.id, 
+        Search.user_id, 
+        Search.search_term, 
+        Search.date_searched
+    ).filter_by(user_id=current_user.id).order_by(Search.date_searched.desc()).limit(10).all()
     
     if current_user.user_type == 'influencer':
         youtube_channels = YouTubeChannel.query.filter_by(user_id=current_user.id).all()
@@ -141,13 +146,18 @@ def stats():
                     channel_stats = channel_data
                     
                     # Save the search
-                    search = Search(
-                        query=youtube_url,
-                        video_id=video_data['video_id'],
-                        search_type='stats',
-                        user_id=current_user.id
-                    )
-                    db.session.add(search)
+                    try:
+                        # Only use fields that exist in the database
+                        search = Search(
+                            user_id=current_user.id,
+                            search_term=youtube_url,
+                            date_searched=datetime.utcnow()
+                        )
+                        db.session.add(search)
+                        db.session.commit()
+                    except Exception as e:
+                        db.session.rollback()
+                        logger.error(f"Error saving search history: {str(e)}")
                     
                     # Check if channel already exists
                     existing_channel = YouTubeChannel.query.filter_by(
@@ -193,8 +203,10 @@ def stats():
                           video_stats=video_stats, 
                           channel_stats=channel_stats,
                           error=error,
-                          user_type=current_user.user_type)
+                          user_type=current_user.user_type,
+                          min=min)  # Add the min function to the template context
 
+# Find the route that renders the demo.html template (around line 248)
 @app.route('/demo', methods=['GET', 'POST'])
 @login_required
 def demo():
@@ -211,14 +223,19 @@ def demo():
                 video_info = info
                 
                 # Save the search
-                search = Search(
-                    query=youtube_url,
-                    video_id=info['video_id'],
-                    search_type='demo',
-                    user_id=current_user.id
-                )
-                db.session.add(search)
-                db.session.commit()
+                try:
+                    # Try to create a Search with only the columns that exist in the database
+                    search = Search(
+                        user_id=current_user.id,
+                        search_term=youtube_url,  # Changed from url to youtube_url
+                        date_searched=datetime.utcnow()
+                    )
+                    db.session.add(search)
+                    db.session.commit()
+                except Exception as e:
+                    # If there's an error, roll back the session
+                    db.session.rollback()
+                    print(f"Error saving search history: {str(e)}")
                 
                 # Also run demo.py functionality to extract transcript and save to ANALYSIS.CSV
                 try:
@@ -245,8 +262,10 @@ def demo():
             logger.error(f"Error extracting video info: {str(e)}")
             error = f"Error extracting video info: {str(e)}"
     
-    return render_template('demo.html', title='YouTube Demo', 
+    return render_template('demo.html', title='YouTube Demo',
                           form=form, 
                           video_info=video_info,
-                          error=error,
-                          user_type=current_user.user_type)
+                          # Add the min function to the template context
+                          min=min)
+                        #   error=error,
+                        #   user_type=current_user.user_type)

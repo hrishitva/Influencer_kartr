@@ -11,8 +11,8 @@ from googleapiclient.errors import HttpError
 # ========== CONFIGURATION ==========
 
 # Enter your API key here
-API_KEY = ""
-YOUTUBE_API_KEY = ""
+API_KEY = "AIzaSyBeLDwohTIA2c0UrXYTHesGLEWqHSnqRNM"
+YOUTUBE_API_KEY = "AIzaSyCats7k8Ss6BaZMOufj1xL767vO-MFh264"
 MODEL_NAME = "models/gemini-2.0-flash"
 CSV_FILENAME = os.path.join(os.getcwd(), 'data/ANALYSIS.CSV')  # Save analysis data in ANALYSIS.CSV
 BATCH_SIZE = 10
