@@ -89,8 +89,11 @@
                     <div class="d-flex align-items-center mb-3">
                         <div class="me-2">Engagement Rate:</div>
                         <div class="progress flex-grow-1" style="height: 10px;">
-                            <div class="progress-bar" role="progressbar" style="width: {{ min(video_info.engagement_rate * 5, 100) }}%;" 
-                                 aria-valuenow="{{ video_info.engagement_rate }}" aria-valuemin="0" aria-valuemax="100"></div>
+                            <div class="progress-bar" role="progressbar" 
+                                 style="width: {% if video_info.engagement_rate * 5 > 100 %}100{% else %}{{ video_info.engagement_rate * 5 }}{% endif %}%;"
+                                 aria-valuenow="{{ video_info.engagement_rate }}" aria-valuemin="0" aria-valuemax="100">
+                                 {{ video_info.engagement_rate }}%
+                            </div>
                         </div>
                         <div class="ms-2 fw-bold">{{ video_info.engagement_rate }}%</div>
                     </div>
