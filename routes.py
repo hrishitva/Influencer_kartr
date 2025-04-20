@@ -102,9 +102,12 @@ def logout():
     flash('You have been logged out.', 'info')
     return redirect(url_for('login'))
 
-@app.route('/dashboard')
+@app.route('/visualizations')
 @login_required
-def dashboard():
+def visualizations():
+    # Import visualization functions from graph.py
+    from graph import load_analysis_data, generate_engagement_chart, generate_growth_chart, generate_content_performance_chart
+    
     # Use a specific column selection to avoid querying non-existent columns
     searches = db.session.query(
         Search.id, 
@@ -113,16 +116,49 @@ def dashboard():
         Search.date_searched
     ).filter_by(user_id=current_user.id).order_by(Search.date_searched.desc()).limit(10).all()
 
+    # Get analysis data from ANALYSIS.CSV
+    analysis_data = load_analysis_data()
+    
+    # Prepare visualization data
+    visualization_data = {
+        'engagement_chart': None,
+        'growth_chart': None,
+        'content_chart': None
+    }
+    
     if current_user.user_type == 'influencer':
         youtube_channels = YouTubeChannel.query.filter_by(user_id=current_user.id).all()
-        return render_template('dashboard.html', title='Dashboard', 
+        
+        # Generate charts if there are channels
+        if youtube_channels:
+            # Convert SQLAlchemy object to dict for the first channel
+            channel_data = {
+                'subscriber_count': youtube_channels[0].subscriber_count,
+                'view_count': youtube_channels[0].view_count,
+                'title': youtube_channels[0].title
+            }
+            
+            # Generate charts
+            visualization_data['growth_chart'] = generate_growth_chart(channel_data)
+            
+        return render_template('dashboard.html', title='Visualizations', 
                               user_type='influencer', 
                               youtube_channels=youtube_channels,
-                              searches=searches)
+                              searches=searches,
+                              visualization_data=visualization_data,
+                              analysis_data=analysis_data)
     else:  # sponsor
-        return render_template('dashboard.html', title='Dashboard', 
+        return render_template('dashboard.html', title='Visualizations', 
                               user_type='sponsor',
-                              searches=searches)
+                              searches=searches,
+                              visualization_data=visualization_data,
+                              analysis_data=analysis_data)
+
+# Keep the old route for backward compatibility, redirecting to the new one
+@app.route('/dashboard')
+@login_required
+def dashboard():
+    return redirect(url_for('visualizations'))
 
 @app.route('/stats', methods=['GET', 'POST'])
 @login_required
@@ -350,6 +386,33 @@ def demo():
                           form=form, 
                           video_info=video_info,
                           min=min)
+
+# Virtual Influencer routes
+@app.route('/virtual-influencer')
+@login_required
+def virtual_influencer():
+    # Import from virtual_influencer.py
+    from virtual_influencer import get_available_virtual_influencers
+    
+    # Get available virtual influencers
+    influencers = get_available_virtual_influencers()
+    
+    return render_template('virtual_influencer.html', 
+                          title='Rent a Virtual Influencer',
+                          influencers=influencers)
+
+@app.route('/social-media-agents')
+@login_required
+def social_media_agents():
+    # Import from social_media_agents.py
+    from social_media_agents import get_available_agents
+    
+    # Get available social media agents
+    agents = get_available_agents()
+    
+    return render_template('social_media_agents.html',
+                          title='Social Media Agents',
+                          agents=agents)
 
 @app.route('/search')
 @login_required
