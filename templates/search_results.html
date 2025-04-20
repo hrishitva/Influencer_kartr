@@ -6,7 +6,9 @@
 <div class="container py-4">
     <h2 class="mb-4">Search Results for "{{ query }}"</h2>
     
+    <!-- Channel Results -->
     {% if channels %}
+        <h3 class="mt-4 mb-3">YouTube Channels</h3>
         <div class="row">
             {% for channel in channels %}
                 <div class="col-md-6 col-lg-4 mb-4">
@@ -29,7 +31,36 @@
                 </div>
             {% endfor %}
         </div>
-    {% else %}
+    {% endif %}
+    
+    <!-- User Results (with public emails) -->
+    {% if users %}
+        <h3 class="mt-4 mb-3">Kartr Users</h3>
+        <div class="row">
+            {% for user in users %}
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ user.username }}</h5>
+                            <p class="card-text">
+                                <strong>Type:</strong> {{ user.user_type|capitalize }}<br>
+                                <strong>Email:</strong> {{ user.email }}<br>
+                                <strong>Joined:</strong> {{ user.date_registered }}
+                            </p>
+                            {% if user.user_type == 'influencer' %}
+                                <span class="badge bg-primary">Influencer</span>
+                            {% else %}
+                                <span class="badge bg-success">Sponsor</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+    
+    <!-- No Results -->
+    {% if not channels and not users %}
         <div class="alert alert-info">
             <i class="fas fa-info-circle"></i> No results found for "{{ query }}"
         </div>

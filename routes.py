@@ -207,14 +207,8 @@ def stats():
 
                     db.session.commit()
 
-                    # Run stats.py and save results to ANALYSIS.CSV
-                    try:
-                        # Convert channel data and video stats to string format for saving
-                        stats_data = f"Channel Stats: {channel_data}\nVideo Stats: {video_data}"
-                        save_analysis_to_csv(youtube_url, "", stats_data)
-                        logger.info(f"Saved stats analysis to ANALYSIS.CSV for URL: {youtube_url}")
-                    except Exception as stats_error:
-                        logger.error(f"Error saving stats to ANALYSIS.CSV: {str(stats_error)}")
+                    # We're not saving stats data to ANALYSIS.CSV anymore
+                    # ANALYSIS.CSV is only updated from the demo page
                 else:
                     error = "Could not retrieve channel information."
             else:
@@ -378,7 +372,28 @@ def search():
     db.session.add(search)
     db.session.commit()
     
+    # Get searchable users from database.csv (those with public_email enabled)
+    users = []
+    if os.path.exists(DATABASE_CSV):
+        try:
+            import pandas as pd
+            df = pd.read_csv(DATABASE_CSV)
+            # Filter users with public email that match query
+            if 'public_email' in df.columns:
+                user_matches = df[
+                    (df['username'].str.contains(query, case=False, na=False) | 
+                     df['email'].str.contains(query, case=False, na=False)) &
+                    (df['public_email'].astype(str) == 'True')
+                ]
+                if not user_matches.empty:
+                    users = user_matches.to_dict('records')
+            else:
+                logger.warning("public_email column not found in database.csv")
+        except Exception as e:
+            logger.error(f"Error searching users in CSV: {str(e)}")
+    
     return render_template('search_results.html', 
                          title='Search Results',
                          query=query,
-                         channels=channels)
+                         channels=channels,
+                         users=users)
