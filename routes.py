@@ -9,8 +9,10 @@ from app import app, db
 from forms import RegistrationForm, LoginForm, YouTubeStatsForm, YouTubeDemoForm
 from models import User, YouTubeChannel, Search
 from youtube_api import get_video_stats, get_channel_stats, extract_video_info
-from youtube_utils import save_user_to_csv, validate_user_login, save_analysis_to_csv
+from youtube_utils import save_user_to_csv, validate_user_login, extract_video_id, analyze_video_content
 from googleapiclient.discovery import build
+from gemini_api import get_transcript, analyze_transcript_with_gemini
+from analysis_utils import save_analysis_to_csv
 
 # Set up logging
 logging.basicConfig(level=logging.DEBUG)
@@ -326,14 +328,16 @@ def stats():
                           auto_update=auto_update,
                           min=min)  # Add the min function to the template context
 
-# Find the route that renders the demo.html template (around line 248)
-@app.route('/demo', methods=['GET', 'POST'])
+@app.route('/ai_demo', methods=['GET', 'POST'])
 @login_required
-def demo():
+def ai_demo():
     form = YouTubeDemoForm()
     video_info = None
+    analysis_results = None
+    transcript = None
     error = None
-
+    content_analysis = None
+    
     if form.validate_on_submit():
         youtube_url = form.youtube_url.data
         try:
@@ -341,50 +345,79 @@ def demo():
             info = extract_video_info(youtube_url)
             if info:
                 video_info = info
-
-                # Save the search
-                try:
-                    # Try to create a Search with only the columns that exist in the database
-                    search = Search(
-                        user_id=current_user.id,
-                        search_term=youtube_url,  # Changed from url to youtube_url
-                        date_searched=datetime.utcnow()
-                    )
-                    db.session.add(search)
-                    db.session.commit()
-                except Exception as e:
-                    # If there's an error, roll back the session
-                    db.session.rollback()
-                    print(f"Error saving search history: {str(e)}")
-                # Also run demo.py functionality to extract transcript and save to ANALYSIS.CSV
-                try:
-                    from youtube_utils import extract_video_id
-                    from demo import get_transcript, analyze_transcript
-
-                    # Get the video ID
-                    video_id = extract_video_id(youtube_url)
-                    if video_id:
-                        # Get transcript
-                        transcript = get_transcript(video_id)
-
-                        # Analyze transcript (simplified version since we may not have API key)
-                        analysis = f"Video Info: {info}\nExtracted from YouTube API"
-
+                
+                # Get the video ID
+                video_id = extract_video_id(youtube_url)
+                if video_id:
+                    # Get enhanced video content analysis
+                    content_analysis = analyze_video_content(video_id)
+                    
+                    # Enhance video_info with content analysis data
+                    if content_analysis:
+                        if content_analysis["creator"]["name"]:
+                            video_info["channel_title"] = content_analysis["creator"]["name"]
+                        if content_analysis["creator"]["industry"]:
+                            video_info["creator_industry"] = content_analysis["creator"]["industry"]
+                        if content_analysis["sponsor"]["name"] and content_analysis["sponsor"]["confidence"] > 20:
+                            video_info["sponsor_name"] = content_analysis["sponsor"]["name"]
+                            video_info["sponsor_industry"] = content_analysis["sponsor"]["industry"]
+                    
+                    # Get transcript
+                    from gemini_api import get_transcript, analyze_transcript_with_gemini
+                    transcript = get_transcript(video_id)
+                    
+                    if transcript:
+                        # Analyze transcript with Gemini AI
+                        analysis_results = analyze_transcript_with_gemini(transcript, video_info)
+                        
+                        # Enhance analysis results with content analysis if needed
+                        if content_analysis and not analysis_results.get("sponsor_name") and content_analysis["sponsor"]["name"]:
+                            if not analysis_results:
+                                analysis_results = {}
+                            analysis_results["sponsor_name"] = content_analysis["sponsor"]["name"]
+                            analysis_results["sponsor_industry"] = content_analysis["sponsor"]["industry"]
+                            analysis_results["creator_industry"] = content_analysis["creator"]["industry"]
+                        
+                        # Save the search with basic info only
+                        try:
+                            search = Search(
+                                user_id=current_user.id,
+                                search_term=youtube_url,
+                                date_searched=datetime.utcnow()
+                            )
+                            db.session.add(search)
+                            db.session.commit()
+                        except Exception as e:
+                            db.session.rollback()
+                            logger.error(f"Error saving search: {str(e)}")
+                        
                         # Save to ANALYSIS.CSV
-                        save_analysis_to_csv(youtube_url, transcript, analysis)
+                        from analysis_utils import save_analysis_to_csv
+                        transcript_summary = transcript[:500] + "..." if len(transcript) > 500 else transcript
+                        save_analysis_to_csv(youtube_url, transcript_summary, analysis_results)
                         logger.info(f"Saved demo analysis to ANALYSIS.CSV for URL: {youtube_url}")
-                except Exception as demo_error:
-                    logger.error(f"Error running demo analysis: {str(demo_error)}")
+                        
+                        flash('Analysis completed successfully!', 'success')
+                    else:
+                        error = "Could not retrieve transcript for this video."
+                else:
+                    error = "Could not extract video ID from URL."
             else:
                 error = "Could not extract information from the video."
         except Exception as e:
-            logger.error(f"Error extracting video info: {str(e)}")
-            error = f"Error extracting video info: {str(e)}"
-
-    return render_template('demo.html', title='YouTube Demo',
+            logger.error(f"Error in demo processing: {str(e)}")
+            error = f"Error processing video: {str(e)}"
+    
+    return render_template('ai_demo.html', 
+                          title='AI Video Analysis',
                           form=form, 
                           video_info=video_info,
-                          min=min)
+                          transcript=transcript,
+                          analysis_results=analysis_results,
+                          content_analysis=content_analysis,
+                          error=error,
+                          min=min,
+                          user_type=current_user.user_type)
 
 # Virtual Influencer routes
 @app.route('/virtual-influencer')

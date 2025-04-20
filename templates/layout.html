@@ -88,8 +88,14 @@
                         </li>
                         <li class="nav-item">
                             <a class="nav-link {% if request.endpoint == 'demo' %}active{% endif %}" 
-                               href="{{ url_for('demo') }}">
+                               href="{{ url_for('home') }}">
                                 <i class="fas fa-search me-1"></i> Demo
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.endpoint == 'ai_demo' %}active{% endif %}" 
+                               href="{{ url_for('ai_demo') }}">
+                                <i class="fas fa-robot me-1"></i> AI Demo
                             </a>
                         </li>
                         <li class="nav-item">
