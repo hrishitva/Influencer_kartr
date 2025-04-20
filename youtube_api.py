@@ -4,13 +4,14 @@ import re
 from urllib.parse import urlparse, parse_qs
 import googleapiclient.discovery
 import googleapiclient.errors
+from stats import API_KEY as YOUTUBE_API_KEY
 
 # Set up logging
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
-# Get YouTube API key from environment variable
-API_KEY = os.environ.get('YOUTUBE_API_KEY', '')
+# Get YouTube API key from stats.py
+API_KEY = YOUTUBE_API_KEY
 
 def get_youtube_service():
     """Create and return the YouTube API service."""
