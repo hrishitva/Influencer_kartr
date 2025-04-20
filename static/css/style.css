@@ -1,5 +1,6 @@
 /* Main Styling for Kartr App */
 :root {
+  /* Light theme variables */
   --primary-color: #6c63ff;
   --secondary-color: #4a42f3;
   --accent-color: #ff6b6b;
@@ -11,14 +12,54 @@
   --info-color: #17a2b8;
   --gray-color: #6c757d;
   --light-gray: #e9ecef;
+  --bg-color: #ffffff;
+  --text-color: #343a40;
+  --card-bg: #ffffff;
+  --border-color: #dee2e6;
+  --navbar-bg: #ffffff;
+  --footer-bg: #f8f9fa;
+  --footer-text: #6c757d;
+  --menu-text: #343a40;
+  --menu-hover-bg: rgba(108, 99, 255, 0.1);
+  --secondary-text: #6c757d;
+  --profile-text: #343a40;
+  --card-header-text: #343a40;
+  --card-header-bg: #f8f9fa;
+}
+
+[data-theme="dark"] {
+  --primary-color: #7c73ff;
+  --secondary-color: #5a52f3;
+  --accent-color: #ff7b7b;
+  --dark-color: #f8f9fa;
+  --light-color: #343a40;
+  --success-color: #38b755;
+  --warning-color: #ffd117;
+  --danger-color: #ec4555;
+  --info-color: #27b2c8;
+  --gray-color: #adb5bd;
+  --light-gray: #495057;
+  --bg-color: #212529;
+  --text-color: #f8f9fa;
+  --card-bg: #2c3034;
+  --border-color: #495057;
+  --navbar-bg: #2c3034;
+  --footer-bg: #2c3034;
+  --footer-text: #adb5bd;
+  --menu-text: #f8f9fa;
+  --menu-hover-bg: rgba(124, 115, 255, 0.2);
+  --secondary-text: #adb5bd;
+  --profile-text: #f8f9fa;
+  --card-header-text: #f8f9fa;
+  --card-header-bg: #343a40;
 }
 
 /* Base Styles */
 body {
   font-family: 'Inter', 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
   line-height: 1.6;
-  color: var(--dark-color);
-  background-color: var(--light-color);
+  color: var(--text-color);
+  background-color: var(--bg-color);
   margin: 0;
   padding: 0;
   min-height: 100vh;
@@ -39,7 +80,7 @@ a:hover {
 
 /* Header and Navigation */
 .navbar {
-  background-color: white;
+  background-color: var(--navbar-bg);
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
@@ -76,19 +117,18 @@ a:hover {
   letter-spacing: 0.5px;
 }
 
-
+/* Navbar Styles */
 .navbar-nav .nav-link {
-  font-weight: 500;
-  color: var(--dark-color);
+  color: var(--menu-text);
   padding: 0.5rem 1rem;
-  margin: 0 0.25rem;
   border-radius: 4px;
+  transition: all 0.3s ease;
 }
 
 .navbar-nav .nav-link:hover,
 .navbar-nav .nav-link.active {
   color: var(--primary-color);
-  background-color: rgba(108, 99, 255, 0.1);
+  background-color: var(--menu-hover-bg);
 }
 
 .navbar-nav .nav-link.active {
@@ -103,9 +143,10 @@ a:hover {
 
 /* Cards */
 .card {
-  border: none;
-  border-radius: 10px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   margin-bottom: 1.5rem;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
@@ -116,12 +157,15 @@ a:hover {
 }
 
 .card-header {
+  background-color: var(--card-header-bg);
+  border-bottom: 1px solid var(--border-color);
+  padding: 1rem 1.25rem;
+}
+
+.card-header h5 {
+  color: var(--card-header-text);
+  margin: 0;
   font-weight: 600;
-  background-color: white;
-  border-bottom: 1px solid var(--light-gray);
-  padding: 1rem 1.5rem;
-  border-top-left-radius: 10px !important;
-  border-top-right-radius: 10px !important;
 }
 
 .card-body {
@@ -130,14 +174,18 @@ a:hover {
 
 /* Forms */
 .form-control {
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  color: var(--text-color);
   border-radius: 5px;
-  border: 1px solid var(--light-gray);
   padding: 0.6rem 1rem;
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .form-control:focus {
+  background-color: var(--card-bg);
   border-color: var(--primary-color);
+  color: var(--text-color);
   box-shadow: 0 0 0 0.2rem rgba(108, 99, 255, 0.25);
 }
 
@@ -328,12 +376,17 @@ a:hover {
   font-weight: 500;
 }
 
-/* Footer */
+/* Footer Styles */
 footer {
-  background-color: white;
-  padding: 1.5rem 0;
+  background-color: var(--footer-bg);
+  color: var(--footer-text);
+  padding: 2rem 0;
   margin-top: auto;
   box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.05);
+}
+
+footer .text-muted {
+  color: var(--footer-text) !important;
 }
 
 .footer-content {
@@ -366,13 +419,18 @@ footer .tagline {
 }
 
 .footer-links a {
-  margin-left: 1.5rem;
-  color: var(--gray-color);
-  font-size: 0.9rem;
+  color: var(--footer-text);
+  text-decoration: none;
+  transition: color 0.3s ease;
 }
 
 .footer-links a:hover {
   color: var(--primary-color);
+}
+
+.copyright-text {
+  color: var(--footer-text);
+  font-size: 0.9rem;
 }
 
 /* Auth pages */
@@ -421,4 +479,33 @@ footer .tagline {
   .footer-links a {
     margin: 0 0.75rem;
   }
+}
+
+/* Dashboard Profile Styles */
+.card-body .text-muted {
+  color: var(--secondary-text) !important;
+}
+
+.card-body h5 {
+  color: var(--profile-text);
+}
+
+.card-body .badge {
+  color: var(--profile-text);
+}
+
+/* Quick Tips Styles */
+.quick-tips h5 {
+  color: var(--card-header-text);
+  font-weight: 600;
+}
+
+.quick-tips .list-group-item {
+  background-color: var(--card-bg);
+  border-color: var(--border-color);
+  color: var(--text-color);
+}
+
+.quick-tips .list-group-item i {
+  color: var(--primary-color);
 }
