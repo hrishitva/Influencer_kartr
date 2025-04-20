@@ -38,6 +38,15 @@
             </button>
             
             <div class="collapse navbar-collapse" id="navbarNav">
+                <!-- Search Bar -->
+                <form class="d-flex mx-auto" action="{{ url_for('search') }}" method="GET">
+                    <div class="input-group" style="max-width: 300px;">
+                        <input type="search" class="form-control" placeholder="Search influencers or sponsors" name="q" aria-label="Search">
+                        <button class="btn btn-outline-primary" type="submit">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </form>
                 <ul class="navbar-nav ms-auto">
                     {% if current_user.is_authenticated %}
                         <li class="nav-item">
