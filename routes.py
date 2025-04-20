@@ -205,7 +205,6 @@ def stats():
                           user_type=current_user.user_type,
                           min=min)  # Add the min function to the template context
 
-# Find the route that renders the demo.html template (around line 248)
 @app.route('/demo', methods=['GET', 'POST'])
 @login_required
 def demo():
@@ -265,3 +264,29 @@ def demo():
                           form=form, 
                           video_info=video_info,
                           min=min)
+
+@app.route('/search')
+@login_required
+def search():
+    query = request.args.get('q', '')
+    if not query:
+        return redirect(url_for('dashboard'))
+    
+    # Search in YouTube channels
+    channels = YouTubeChannel.query.filter(
+        YouTubeChannel.title.ilike(f'%{query}%')
+    ).all()
+    
+    # Save the search
+    search = Search(
+        user_id=current_user.id,
+        search_term=query,
+        date_searched=datetime.utcnow()
+    )
+    db.session.add(search)
+    db.session.commit()
+    
+    return render_template('search_results.html', 
+                         title='Search Results',
+                         query=query,
+                         channels=channels)
