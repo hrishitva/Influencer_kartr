@@ -33,7 +33,8 @@
                 </div>
             </a>
             
-            <!-- Search Bar -->
+            <!-- Search Bar (Only shown when logged in) -->
+            {% if current_user.is_authenticated %}
             <div class="search-container">
                 <div class="input-group">
                     <input type="text" class="form-control search-input" placeholder="Search influencers or sponsors..." aria-label="Search">
@@ -45,13 +46,15 @@
                     <!-- Search results will be populated here -->
                 </div>
             </div>
+            {% endif %}
             
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
             
             <div class="collapse navbar-collapse" id="navbarNav">
-                <!-- Search Bar -->
+                <!-- Search Bar (Only shown when logged in) -->
+                {% if current_user.is_authenticated %}
                 <form class="d-flex mx-auto" action="{{ url_for('search') }}" method="GET">
                     <div class="input-group" style="max-width: 300px;">
                         <input type="search" class="form-control" placeholder="Search influencers or sponsors" name="q" aria-label="Search">
@@ -60,6 +63,7 @@
                         </button>
                     </div>
                 </form>
+                {% endif %}
                 <ul class="navbar-nav ms-auto">
                     {% if current_user.is_authenticated %}
                         <!-- Email Visibility Toggle -->
@@ -89,10 +93,33 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link {% if request.endpoint == 'dashboard' %}active{% endif %}" 
-                               href="{{ url_for('dashboard') }}">
-                                <i class="fas fa-tachometer-alt me-1"></i> Dashboard
+                            <a class="nav-link {% if request.endpoint == 'visualizations' %}active{% endif %}" 
+                               href="{{ url_for('visualizations') }}">
+                                <i class="fas fa-chart-line me-1"></i> Visualizations
                             </a>
+                        </li>
+                        
+                        <!-- Virtual Influencer Dropdown -->
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle {% if request.endpoint in ['virtual_influencer', 'social_media_agents'] %}active{% endif %}" 
+                               href="#" id="virtualInfluencerDropdown" role="button" 
+                               data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-robot me-1"></i> Virtual Influencer
+                            </a>
+                            <ul class="dropdown-menu" aria-labelledby="virtualInfluencerDropdown">
+                                <li>
+                                    <a class="dropdown-item {% if request.endpoint == 'virtual_influencer' %}active{% endif %}" 
+                                       href="{{ url_for('virtual_influencer') }}">
+                                        <i class="fas fa-user-tie me-1"></i> Rent a Virtual Influencer
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item {% if request.endpoint == 'social_media_agents' %}active{% endif %}" 
+                                       href="{{ url_for('social_media_agents') }}">
+                                        <i class="fas fa-cogs me-1"></i> Social Media Agents
+                                    </a>
+                                </li>
+                            </ul>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="{{ url_for('logout') }}">

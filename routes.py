@@ -419,14 +419,14 @@ def social_media_agents():
 def search():
     query = request.args.get('q', '')
     if not query:
-        return redirect(url_for('dashboard'))
+        return redirect(url_for('visualizations'))
     
     # Search in YouTube channels
     channels = YouTubeChannel.query.filter(
         YouTubeChannel.title.ilike(f'%{query}%')
     ).all()
     
-    # Save the search
+    # Save the search to the database
     search = Search(
         user_id=current_user.id,
         search_term=query,
@@ -437,19 +437,30 @@ def search():
     
     # Get searchable users from database.csv (those with public_email enabled)
     users = []
+    # Define the database CSV path
+    DATABASE_CSV = os.path.join(os.getcwd(), 'data/database.csv')
+    
     if os.path.exists(DATABASE_CSV):
         try:
             import pandas as pd
             df = pd.read_csv(DATABASE_CSV)
             # Filter users with public email that match query
             if 'public_email' in df.columns:
+                # Only show users who have toggled public_email to True
                 user_matches = df[
                     (df['username'].str.contains(query, case=False, na=False) | 
                      df['email'].str.contains(query, case=False, na=False)) &
                     (df['public_email'].astype(str) == 'True')
                 ]
+                
                 if not user_matches.empty:
+                    # Convert to dictionary records
                     users = user_matches.to_dict('records')
+                    
+                    # Debug logging
+                    logger.debug(f"Found {len(users)} users with public email matching '{query}'")
+                else:
+                    logger.debug(f"No users with public email found matching '{query}'")
             else:
                 logger.warning("public_email column not found in database.csv")
         except Exception as e:
