@@ -235,6 +235,16 @@ a:hover {
   box-shadow: 0 0 0 0.2rem rgba(108, 99, 255, 0.25);
 }
 
+.form-control::placeholder {
+  color: var(--input-placeholder);
+  opacity: 0.8;
+}
+
+.form-control:focus::placeholder {
+  color: var(--input-placeholder);
+  opacity: 0.5;
+}
+
 .form-label {
   font-weight: 500;
   margin-bottom: 0.5rem;
