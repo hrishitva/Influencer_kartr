@@ -1,0 +1,8 @@
+email_validator==2.1.0.post1
+flask
+flask-login
+flask-sqlalchemy
+flask-wtf
+pandas
+google-api-python-client
+python-dotenv 

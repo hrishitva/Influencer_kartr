@@ -57,42 +57,51 @@ def login():
 
     form = LoginForm()
     if form.validate_on_submit():
-        # First check in the SQL database
-        user = User.query.filter_by(email=form.email.data).first()
+        try:
+            # First check in the SQL database
+            user = User.query.filter_by(email=form.email.data).first()
 
-        if user and user.check_password(form.password.data):
-            login_user(user)
-            flash('Login successful!', 'success')
-            return redirect(url_for('dashboard'))
-        else:
-            # Try CSV validation as fallback
-            is_valid, user_type = validate_user_login(form.email.data, form.password.data)
-            if is_valid:
-                # Create a user in the database if not exists
-                if not user:
-                    # Get username from CSV
-                    try:
-                        df = pd.read_csv('data/database.csv')
-                        user_data = df[df['email'] == form.email.data]
-                        username = user_data.iloc[0]['username'] if not user_data.empty else form.email.data.split('@')[0] if '@' in form.email.data else form.email.data
+            if user and user.check_password(form.password.data):
+                login_user(user)
+                flash('Login successful!', 'success')
+                return redirect(url_for('stats'))
+            else:
+                # Try CSV validation as fallback
+                is_valid, user_type = validate_user_login(form.email.data, form.password.data)
+                if is_valid:
+                    # Create a user in the database if not exists
+                    if not user:
+                        try:
+                            df = pd.read_csv('data/database.csv')
+                            user_data = df[df['email'] == form.email.data]
+                            if not user_data.empty:
+                                username = user_data.iloc[0]['username']
+                            else:
+                                username = form.email.data.split('@')[0] if '@' in form.email.data else form.email.data
 
-                        # Create user in database
-                        user = User(username=username, email=form.email.data, user_type=user_type)
-                        user.set_password(form.password.data)
-                        db.session.add(user)
-                        db.session.commit()
-                    except Exception as e:
-                        logger.error(f"Error creating user from CSV: {str(e)}")
-
-                    # Get the user again
-                    user = User.query.filter_by(email=form.email.data).first()
-
-                if user:
-                    login_user(user)
-                    flash('Login successful via CSV validation!', 'success')
-                    return redirect(url_for('dashboard'))
-
-            flash('Login unsuccessful. Please check email and password.', 'danger')
+                            # Create user in database
+                            user = User(username=username, email=form.email.data, user_type=user_type)
+                            user.set_password(form.password.data)
+                            db.session.add(user)
+                            db.session.commit()
+                            
+                            # Get the user again
+                            user = User.query.filter_by(email=form.email.data).first()
+                            
+                            if user:
+                                login_user(user)
+                                flash('Login successful via CSV validation!', 'success')
+                                return redirect(url_for('stats'))
+                        except Exception as e:
+                            logger.error(f"Error creating user from CSV: {str(e)}")
+                            flash('Error during login. Please try again.', 'danger')
+                    else:
+                        flash('Invalid email or password.', 'danger')
+                else:
+                    flash('Invalid email or password.', 'danger')
+        except Exception as e:
+            logger.error(f"Login error: {str(e)}")
+            flash('An error occurred during login. Please try again.', 'danger')
 
     return render_template('login.html', title='Login', form=form)
 
