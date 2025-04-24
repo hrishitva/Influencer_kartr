@@ -1,268 +1,509 @@
 {% extends "layout.html" %}
 
-{% block title %}YouTube Demo - Kartr{% endblock %}
-
 {% block content %}
-<div class="row mb-4">
-    <div class="col-md-8 offset-md-2 text-center">
-        <h1 class="display-5 mb-3">YouTube Video Analysis</h1>
-        <p class="lead">
-            {% if current_user.user_type == 'influencer' %}
-            Extract valuable insights from your videos for better content strategy
-            {% else %}
-            Extract information about potential influencers and their content
-            {% endif %}
-        </p>
-    </div>
-</div>
-
-<div class="youtube-input-container">
-    <div class="card">
-        <div class="card-body">
-            <form method="POST" action="{{ url_for('demo') }}">
-                {{ form.hidden_tag() }}
-                <div class="input-group">
-                    {{ form.youtube_url(class="form-control youtube-url-input", placeholder="Paste YouTube video URL here") }}
-                    {{ form.submit(class="btn btn-primary") }}
-                </div>
-                <div class="form-text mt-2">
-                    Enter a YouTube video URL to extract detailed information and insights.
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
-{% if error %}
-<div class="alert alert-danger">
-    {{ error }}
-</div>
-{% endif %}
-
-{% if video_info %}
-<div class="demo-container">
-    <div class="row">
-        <!-- Basic Video Information -->
-        <div class="col-lg-6 mb-4">
-            <div class="card h-100">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">Video Information</h5>
-                    {% if user_type == 'sponsor' %}
-                    <span class="badge bg-primary">Sponsor View</span>
-                    {% else %}
-                    <span class="badge bg-success">Influencer View</span>
-                    {% endif %}
-                </div>
-                <div class="card-body">
-                    <h4>{{ video_info.title }}</h4>
-                    
-                    <div class="channel-info mb-4">
-                        <div>
-                            <div class="channel-name">{{ video_info.channel_title }}</div>
-                            <div class="channel-subscribers">{{ "{:,}".format(video_info.subscriber_count) }} subscribers</div>
-                        </div>
-                    </div>
-                    
-                    <div class="row text-center mb-4">
-                        <div class="col-4">
-                            <div class="stats-number" data-value="{{ video_info.view_count }}">{{ "{:,}".format(video_info.view_count) }}</div>
-                            <div class="stats-title">Views</div>
-                        </div>
-                        <div class="col-4">
-                            <div class="stats-number" data-value="{{ video_info.like_count }}">{{ "{:,}".format(video_info.like_count) }}</div>
-                            <div class="stats-title">Likes</div>
-                        </div>
-                        <div class="col-4">
-                            <div class="stats-number" data-value="{{ video_info.comment_count }}">{{ "{:,}".format(video_info.comment_count) }}</div>
-                            <div class="stats-title">Comments</div>
-                        </div>
-                    </div>
-                    
-                    <h6>Content Keywords</h6>
-                    <div class="keyword-tags mb-4">
-                        {% for keyword in video_info.keywords %}
-                        <span class="keyword-tag">{{ keyword }}</span>
-                        {% endfor %}
-                    </div>
-                    
-                    <h6>Engagement Analysis</h6>
-                    <div class="d-flex align-items-center mb-3">
-                        <div class="me-2">Engagement Rate:</div>
-                        <div class="progress flex-grow-1" style="height: 10px;">
-                            <div class="progress-bar" role="progressbar" 
-                                 style="width: {% if video_info.engagement_rate * 5 > 100 %}100{% else %}{{ video_info.engagement_rate * 5 }}{% endif %}%;"
-                                 aria-valuenow="{{ video_info.engagement_rate }}" aria-valuemin="0" aria-valuemax="100">
-                                 {{ video_info.engagement_rate }}%
-                            </div>
-                        </div>
-                        <div class="ms-2 fw-bold">{{ video_info.engagement_rate }}%</div>
-                    </div>
-                    
-                    <div class="form-text mb-4">
-                        {% if video_info.engagement_rate > 5 %}
-                        <span class="text-success">Excellent engagement</span> - This video is performing above average!
-                        {% elif video_info.engagement_rate > 3 %}
-                        <span class="text-primary">Good engagement</span> - This video is performing well.
-                        {% elif video_info.engagement_rate > 1 %}
-                        <span class="text-warning">Average engagement</span> - This video has typical engagement levels.
-                        {% else %}
-                        <span class="text-danger">Low engagement</span> - This video may need improvement in engagement.
-                        {% endif %}
-                    </div>
-                    
-                    <div class="mt-3">
-                        <a href="#" class="btn btn-sm btn-outline-primary" onclick="window.open('https://www.youtube.com/watch?v={{ video_info.video_id }}', '_blank')">
-                            <i class="fab fa-youtube me-1"></i> Watch on YouTube
-                        </a>
-                        <a href="#" class="btn btn-sm btn-outline-primary" onclick="window.open('https://www.youtube.com/channel/{{ video_info.channel_id }}', '_blank')">
-                            <i class="fas fa-user me-1"></i> Visit Channel
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
+<div class="container analyzer-container">
+    <style>
+        .result-section {
+            margin-top: 2.5rem;
+        }
         
-        <!-- Advanced Analytics -->
-        <div class="col-lg-6 mb-4">
-            <div class="card h-100">
+        .analyzer-card {
+            box-shadow: 0 4px 24px rgba(0,0,0,0.09);
+            border-radius: 16px;
+            padding: 2rem 2.5rem;
+            background: #fff;
+            border: none;
+        }
+        
+        .result-header {
+            border-bottom: 1px solid #e6e6e6;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+        }
+        
+        .video-info-section {
+            display: flex;
+            align-items: flex-start;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        #videoThumbnailContainer {
+            min-width: 180px;
+            max-width: 320px;
+            flex-shrink: 0;
+        }
+        
+        #videoThumbnail {
+            width: 100%;
+            max-width: 320px;
+            border-radius: 10px;
+            margin-bottom: 0.7rem;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.10);
+            border: 1px solid #e6e6e6;
+        }
+        
+        .video-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.7rem;
+            color: #222;
+        }
+        
+        .channel-badge, .stats-badge {
+            font-weight: 600;
+            color: #3a3a3a;
+            margin-right: 0.3em;
+        }
+        
+        #channelName {
+            font-weight: 500;
+            color: #007bff;
+        }
+        
+        .d-flex.flex-wrap > div {
+            margin-bottom: 0.3rem;
+        }
+        
+        .creator-section, .sponsor-section {
+            margin-bottom: 1.7rem;
+        }
+        
+        .creator-section h5,
+        .sponsor-section h5 {
+            font-size: 1.13rem;
+            font-weight: 600;
+            margin-bottom: 0.7rem;
+            color: #333;
+        }
+        
+        .creator-card {
+            background: #f4f8fb;
+            border-radius: 10px;
+            padding: 1rem 1.3rem;
+            margin-top: 0.3rem;
+            border-left: 4px solid #007bff;
+        }
+        
+        .creator-card strong {
+            color: #444;
+        }
+        
+        .sponsor-card {
+            background: #f7f7fa;
+            border-radius: 10px;
+            padding: 0.7rem 1.2rem;
+            margin-bottom: 0.6rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 4px solid #28a745;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.03);
+        }
+        
+        .sponsor-name {
+            font-weight: 600;
+            color: #222;
+        }
+        
+        .sponsor-industry, .sponsor-frequency {
+            color: #666;
+            font-size: 1em;
+            margin-left: 0.7rem;
+        }
+        
+        .no-sponsors-alert {
+            color: #b94a48;
+            background: #fbeeea;
+            border-radius: 8px;
+            padding: 0.7rem 1.2rem;
+            margin-top: 0.7rem;
+            font-size: 1.07em;
+            border-left: 4px solid #b94a48;
+        }
+        
+        #saveResultsBtn {
+            margin-top: 1.2rem;
+            font-size: 1.13em;
+            padding: 0.7em 1.7em;
+            border-radius: 8px;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+        }
+        
+        @media (max-width: 992px) {
+            .analyzer-card {
+                padding: 1.2rem 0.7rem;
+            }
+            .video-info-section {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            #videoThumbnailContainer {
+                max-width: 100%;
+            }
+        }
+    </style>
+    <h1 class="analyzer-title">Influencer & Sponsor Analyzer</h1>
+    <p class="analyzer-description">
+        Analyze YouTube videos to identify influencers and their sponsors. Enter a YouTube video URL or channel ID below.
+    </p>
+    
+    <!-- Analysis Form -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card analyzer-card">
                 <div class="card-header">
-                    <h5 class="mb-0">Advanced Insights</h5>
+                    <h5 class="mb-0">Video Analysis</h5>
                 </div>
                 <div class="card-body">
-                    <!-- Comment Sentiment Chart -->
-                    <h6>Comment Sentiment Analysis</h6>
-                    <div class="chart-container mb-4" style="height: 220px;">
-                        <canvas id="sentimentChart"></canvas>
-                    </div>
-                    
-                    <!-- Top Comments -->
-                    <h6>Top Comments</h6>
-                    {% if video_info.top_comments %}
-                        {% for comment in video_info.top_comments %}
-                        <div class="comment-item">
-                            <div class="comment-header">
-                                <div class="comment-author">{{ comment.author }}</div>
-                                <div class="comment-date">{{ comment.published_at[:10] }}</div>
-                            </div>
-                            <div class="comment-text">{{ comment.text[:100] + '...' if comment.text|length > 100 else comment.text }}</div>
-                            <div class="comment-likes">
-                                <i class="fas fa-thumbs-up"></i> {{ comment.likes }}
-                            </div>
+                    <form id="videoForm">
+                        <div class="mb-3">
+                            <label for="videoUrl" class="form-label">YouTube Video URL</label>
+                            <input type="text" class="form-control" id="videoUrl" placeholder="https://www.youtube.com/watch?v=...">
                         </div>
-                        {% endfor %}
-                    {% else %}
-                        <div class="alert alert-info">No comments data available for this video.</div>
-                    {% endif %}
-                    
-                    <!-- Potential Sponsors -->
-                    {% if user_type == 'influencer' and video_info.potential_sponsors %}
-                    <h6 class="mt-4">Potential Sponsors Mentioned</h6>
-                    <div class="keyword-tags mb-3">
-                        {% for sponsor in video_info.potential_sponsors %}
-                        <span class="keyword-tag">{{ sponsor }}</span>
-                        {% endfor %}
-                    </div>
-                    <div class="form-text">
-                        These brands were detected in your video description or comments and might be potential sponsors.
-                    </div>
-                    {% endif %}
-                    
-                    <!-- Sponsorship Opportunities (for Influencers) -->
-                    {% if user_type == 'influencer' %}
-                    <div class="mt-4">
-                        <h6>Sponsorship Opportunities</h6>
-                        <div class="alert alert-info">
-                            Based on your content and engagement metrics, your channel could be attractive to sponsors in these categories:
-                            <ul class="mb-0 mt-2">
-                                {% for keyword in video_info.keywords[:3] %}
-                                <li>{{ keyword|capitalize }} brands</li>
-                                {% endfor %}
-                            </ul>
+                        <button type="submit" class="btn btn-primary">Analyze Video</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card analyzer-card">
+                <div class="card-header">
+                    <h5 class="mb-0">Channel Analysis</h5>
+                </div>
+                <div class="card-body">
+                    <form id="channelForm">
+                        <div class="mb-3">
+                            <label for="channelId" class="form-label">YouTube Channel Name</label>
+                            <input type="text" class="form-control" id="channelId" placeholder="Enter channel name or ID">
                         </div>
-                    </div>
-                    {% endif %}
-                    
-                    <!-- Influencer Assessment (for Sponsors) -->
-                    {% if user_type == 'sponsor' %}
-                    <div class="mt-4">
-                        <h6>Influencer Assessment</h6>
-                        <div class="table-responsive">
-                            <table class="table table-bordered">
-                                <tbody>
-                                    <tr>
-                                        <th scope="row">Audience Size</th>
-                                        <td>
-                                            {% if video_info.influencer_info.subscribers > 1000000 %}
-                                            <span class="badge bg-primary">Macro Influencer</span>
-                                            {% elif video_info.influencer_info.subscribers > 100000 %}
-                                            <span class="badge bg-info">Mid-tier Influencer</span>
-                                            {% elif video_info.influencer_info.subscribers > 10000 %}
-                                            <span class="badge bg-success">Micro Influencer</span>
-                                            {% else %}
-                                            <span class="badge bg-secondary">Nano Influencer</span>
-                                            {% endif %}
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <th scope="row">Content Quality</th>
-                                        <td>
-                                            {% if video_info.engagement_rate > 5 %}
-                                            <span class="badge bg-success">High</span>
-                                            {% elif video_info.engagement_rate > 2 %}
-                                            <span class="badge bg-info">Medium</span>
-                                            {% else %}
-                                            <span class="badge bg-warning">Low</span>
-                                            {% endif %}
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <th scope="row">Audience Engagement</th>
-                                        <td>
-                                            {% if video_info.comment_count > 1000 %}
-                                            <span class="badge bg-success">High</span>
-                                            {% elif video_info.comment_count > 100 %}
-                                            <span class="badge bg-info">Medium</span>
-                                            {% else %}
-                                            <span class="badge bg-warning">Low</span>
-                                            {% endif %}
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <th scope="row">Estimated Reach</th>
-                                        <td>{{ "{:,}".format(video_info.view_count) }} views</td>
-                                    </tr>
-                                    <tr>
-                                        <th scope="row">Estimated Cost</th>
-                                        <td>${{ (video_info.influencer_info.subscribers / 1000 * 10)|round|int }} - ${{ (video_info.influencer_info.subscribers / 1000 * 15)|round|int }}</td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                        <div class="mb-3">
+                            <label for="maxVideos" class="form-label">Number of Videos to Analyze</label>
+                            <select class="form-select" id="maxVideos">
+                                <option value="3">3 videos</option>
+                                <option value="5" selected>5 videos</option>
+                                <option value="10">10 videos</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Analyze Channel</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Loading Indicator -->
+    <div id="loadingIndicator" class="loading-container" style="display: none;">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <div class="loading-text">Analyzing content... This may take a moment.</div>
+    </div>
+    
+    <!-- Results Section -->
+    <div class="result-section" id="resultSection" style="display: none;">
+        <div class="card analyzer-card">
+            <div class="result-header">
+                <h5 class="mb-0">Analysis Results</h5>
+            </div>
+            <div class="card-body result-body">
+                <!-- Video Info -->
+                <div id="videoInfo" class="video-info-section">
+                    <h4 id="videoTitle" class="video-title"></h4>
+                    <!-- Add thumbnail here -->
+                    <div id="videoThumbnailContainer" style="display:none; margin-bottom: 1rem;">
+                        <img id="videoThumbnail" src="" alt="Video Thumbnail" style="max-width: 320px; border-radius: 8px;">
+                        <div>
+                            <span class="stats-badge">Published:</span>
+                            <span id="publishedAt"></span>
                         </div>
                     </div>
-                    {% endif %}
+                    <div class="d-flex align-items-center mb-2">
+                        <span class="channel-badge">Channel:</span>
+                        <span id="channelName"></span>
+                    </div>
+                    <div class="d-flex flex-wrap">
+                        <div class="me-3">
+                            <span class="stats-badge">Views:</span>
+                            <span id="viewCount"></span>
+                        </div>
+                        <div>
+                            <span class="stats-badge">Subscribers:</span>
+                            <span id="subscriberCount"></span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Creator Info -->
+                <div class="creator-section">
+                    <h5>Creator Information</h5>
+                    <div class="creator-card">
+                        <div class="mb-2">
+                            <strong>Name:</strong> <span id="creatorName" class="creator-name"></span>
+                        </div>
+                        <div>
+                            <strong>Industry/Niche:</strong> <span id="creatorIndustry" class="creator-industry"></span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Sponsors Info -->
+                <div class="sponsor-section">
+                    <h5>Sponsor Information</h5>
+                    <div id="sponsorsContainer">
+                        <!-- Sponsors will be added here dynamically -->
+                    </div>
+                    <div id="noSponsors" class="no-sponsors-alert" style="display: none;">
+                        No sponsors detected in this content.
+                    </div>
+                </div>
+                
+                <!-- Download Results Button -->
+                <div class="mt-4">
+                    <button id="saveResultsBtn" class="btn btn-success">
+                        <i class="fas fa-download"></i> Save Results to CSV
+                    </button>
                 </div>
             </div>
         </div>
     </div>
 </div>
-{% endif %}
 {% endblock %}
 
 {% block scripts %}
-{% if video_info %}
+{{ super() }}
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Initialize sentiment chart
-        const sentimentData = {
-            sentimentData: {
-                positive: {{ video_info.comment_sentiment.positive }},
-                neutral: {{ video_info.comment_sentiment.neutral }},
-                negative: {{ video_info.comment_sentiment.negative }}
-            }
-        };
-        
-        initCharts(sentimentData);
+    document.getElementById('videoForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const videoUrl = document.getElementById('videoUrl').value;
+        analyzeVideo(videoUrl);
     });
+    
+    document.getElementById('channelForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const channelId = document.getElementById('channelId').value;
+        const maxVideos = document.getElementById('maxVideos').value;
+        analyzeChannel(channelId, maxVideos);
+    });
+    
+    function analyzeVideo(videoUrl) {
+        showLoading();
+        
+        fetch('/analyze_video', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ video_url: videoUrl }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            hideLoading();
+            displayResults(data);
+        })
+        .catch(error => {
+            hideLoading();
+            alert('Error analyzing video: ' + error);
+        });
+    }
+    
+    function analyzeChannel(channelId, maxVideos) {
+        showLoading();
+        
+        fetch('/analyze_channel', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ 
+                channel_id: channelId,
+                max_videos: maxVideos
+            }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            hideLoading();
+            displayChannelResults(data);
+        })
+        .catch(error => {
+            hideLoading();
+            alert('Error analyzing channel: ' + error);
+        });
+    }
+    
+    function displayResults(data) {
+        // Display video info
+        document.getElementById('videoTitle').textContent = data.video_title;
+        document.getElementById('channelName').textContent = data.channel_name;
+        document.getElementById('viewCount').textContent = formatNumber(data.view_count);
+        document.getElementById('subscriberCount').textContent = formatNumber(data.subscriber_count);
+        
+        // Show thumbnail if available
+        if (data.thumbnail_url) {
+            document.getElementById('videoThumbnail').src = data.thumbnail_url;
+            document.getElementById('videoThumbnailContainer').style.display = 'block';
+        } else {
+            document.getElementById('videoThumbnailContainer').style.display = 'none';
+        }
+        
+        // Set published date
+        document.getElementById('publishedAt').textContent = data.published_at || 'N/A';
+        
+        // Display creator info
+        document.getElementById('creatorName').textContent = data.analysis.creator.name;
+        document.getElementById('creatorIndustry').textContent = data.analysis.creator.industry;
+        
+        // Display sponsors
+        const sponsorsContainer = document.getElementById('sponsorsContainer');
+        sponsorsContainer.innerHTML = '';
+        
+        if (data.analysis.sponsors && data.analysis.sponsors.length > 0) {
+            document.getElementById('noSponsors').style.display = 'none';
+            
+            data.analysis.sponsors.forEach(sponsor => {
+                const sponsorCard = document.createElement('div');
+                sponsorCard.className = 'sponsor-card';
+                sponsorCard.innerHTML = `
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="sponsor-name">${sponsor.name}</span>
+                        <span class="sponsor-industry">${sponsor.industry}</span>
+                    </div>
+                `;
+                sponsorsContainer.appendChild(sponsorCard);
+            });
+            
+            // Save analysis data to CSV
+            saveAnalysisToCSV({
+                creator_name: data.analysis.creator.name,
+                creator_industry: data.analysis.creator.industry,
+                sponsors: data.analysis.sponsors,
+                video_title: data.video_title,
+                channel_name: data.channel_name
+            });
+        } else {
+            document.getElementById('noSponsors').style.display = 'block';
+            
+            // Save creator data even if no sponsors
+            saveAnalysisToCSV({
+                creator_name: data.analysis.creator.name,
+                creator_industry: data.analysis.creator.industry,
+                sponsors: [],
+                video_title: data.video_title,
+                channel_name: data.channel_name
+            });
+        }
+        
+        // Show results section
+        document.getElementById('resultSection').style.display = 'block';
+    }
+    
+    function displayChannelResults(data) {
+        // Hide thumbnail for channel analysis
+        document.getElementById('videoThumbnailContainer').style.display = 'none';
+        // Display channel info
+        document.getElementById('videoTitle').textContent = `Channel Analysis: ${data.videos_analyzed} videos analyzed`;
+        document.getElementById('channelName').textContent = data.creator.name || "Unknown";
+        
+        // Hide the view and subscriber count section for channel analysis
+        document.getElementById('viewCount').parentElement.style.display = 'none';
+        document.getElementById('subscriberCount').parentElement.style.display = 'none';
+        
+        // Display creator info
+        document.getElementById('creatorName').textContent = data.creator.name || "Unknown";
+        document.getElementById('creatorIndustry').textContent = data.creator.industry || "Unknown";
+        
+        // Display sponsors
+        const sponsorsContainer = document.getElementById('sponsorsContainer');
+        sponsorsContainer.innerHTML = '';
+        
+        if (data.common_sponsors && data.common_sponsors.length > 0) {
+            document.getElementById('noSponsors').style.display = 'none';
+            
+            data.common_sponsors.forEach(sponsor => {
+                const sponsorCard = document.createElement('div');
+                sponsorCard.className = 'sponsor-card';
+                sponsorCard.innerHTML = `
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="sponsor-name">${sponsor.name}</span>
+                        <div>
+                            <span class="sponsor-frequency">Frequency: ${sponsor.frequency}/${data.videos_analyzed}</span>
+                            <span class="sponsor-industry">${sponsor.industry}</span>
+                        </div>
+                    </div>
+                `;
+                sponsorsContainer.appendChild(sponsorCard);
+            });
+            
+            // Save channel analysis data to CSV
+            saveAnalysisToCSV({
+                creator_name: data.creator.name || "Unknown",
+                creator_industry: data.creator.industry || "Unknown",
+                sponsors: data.common_sponsors.map(s => ({
+                    name: s.name,
+                    industry: s.industry
+                })),
+                video_title: `Channel Analysis: ${data.videos_analyzed} videos`,
+                channel_name: data.creator.name || "Unknown"
+            });
+        } else {
+            document.getElementById('noSponsors').style.display = 'block';
+            
+            // Save creator data even if no sponsors
+            saveAnalysisToCSV({
+                creator_name: data.creator.name || "Unknown",
+                creator_industry: data.creator.industry || "Unknown",
+                sponsors: [],
+                video_title: `Channel Analysis: ${data.videos_analyzed} videos`,
+                channel_name: data.creator.name || "Unknown"
+            });
+        }
+        
+        // Show results section
+        document.getElementById('resultSection').style.display = 'block';
+    }
+    
+    function saveAnalysisToCSV(analysisData) {
+        fetch('/save_analysis', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(analysisData),
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Analysis saved to CSV:', data);
+        })
+        .catch(error => {
+            console.error('Error saving analysis to CSV:', error);
+        });
+    }
+    
+    document.getElementById('saveResultsBtn').addEventListener('click', function() {
+        alert('Results have been saved to CSV file in the data directory.');
+    });
+    
+    function showLoading() {
+        document.getElementById('loadingIndicator').style.display = 'block';
+        document.getElementById('resultSection').style.display = 'none';
+    }
+    
+    function hideLoading() {
+        document.getElementById('loadingIndicator').style.display = 'none';
+    }
+    
+    function formatNumber(numStr) {
+        if (numStr === 'N/A') return numStr;
+        const num = parseInt(numStr);
+        if (isNaN(num)) return numStr;
+        
+        if (num >= 1000000) {
+            return (num / 1000000).toFixed(1) + 'M';
+        } else if (num >= 1000) {
+            return (num / 1000).toFixed(1) + 'K';
+        }
+        return num.toString();
+    }
 </script>
-{% endif %}
 {% endblock %}

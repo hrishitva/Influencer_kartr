@@ -1,495 +1,355 @@
 import os
-import pandas as pd
-from youtube_transcript_api import YouTubeTranscriptApi
-from urllib.parse import urlparse, parse_qs
+import json
+import re
+from dotenv import load_dotenv
 import google.generativeai as genai
-import time
-import sys
-from googleapiclient.discovery import build
-from googleapiclient.errors import HttpError
+import googleapiclient.discovery
+import googleapiclient.errors
 
-# ========== CONFIGURATION ==========
+# Configure API keys
+YOUTUBE_API_KEY = ""
+GEMINI_API_KEY = ""
 
-# Enter your API key here
-API_KEY = "AIzaSyBeLDwohTIA2c0UrXYTHesGLEWqHSnqRNM"
-YOUTUBE_API_KEY = "AIzaSyCats7k8Ss6BaZMOufj1xL767vO-MFh264"
-MODEL_NAME = "models/gemini-2.0-flash"
-CSV_FILENAME = os.path.join(os.getcwd(), 'data/ANALYSIS.CSV')  # Save analysis data in ANALYSIS.CSV
-BATCH_SIZE = 10
+# Configure Gemini API
+genai.configure(api_key=GEMINI_API_KEY)
 
-DELAY = 2
-
-# ===================================
-
-def initialize_csv(filename=CSV_FILENAME):
-    """Create the CSV with headers using pandas if it doesn't exist."""
-    print(f"Checking for file at: {os.path.abspath(filename)}")  # Print the absolute path for debugging
-    CSV_COLUMNS = ['youtube video link', 'transcript', 'Sponsor Name', 'Sponsor Industry', 
-                   'Video Creator Name', 'Video Creator Industry', 'Sponsor Website Link']
-    if not os.path.isfile(filename):
-        df = pd.DataFrame(columns=CSV_COLUMNS)
-        df.to_csv(filename, index=False, encoding='utf-8')
-        print(f"{filename} created with headers.")
-    else:
-        print(f"{filename} already exists.")  # Added explicit message when file exists
-
-def extract_video_id(yt_url):
-    """Extracts the video ID from a YouTube URL."""
-    try:
-        parsed_url = urlparse(yt_url)
-        if parsed_url.hostname in ('www.youtube.com', 'youtube.com', 'm.youtube.com'):
-            if parsed_url.path == '/watch':
-                query_params = parse_qs(parsed_url.query)
-                if 'v' in query_params:
-                    return query_params['v'][0]
-            elif parsed_url.path.startswith('/embed/'):
-                return parsed_url.path.split('/')[2]
-            elif parsed_url.path.startswith('/shorts/'):  # Handle YouTube shorts
-                return parsed_url.path.split('/')[2]
-        elif parsed_url.hostname == 'youtu.be':  # Handle youtu.be
-            return parsed_url.path[1:]
-
-        raise ValueError("Invalid YouTube URL format.")
-    except Exception as e:
-        raise ValueError(f"Error parsing URL: {e}")
-
-def get_transcript(video_id):
-    """Retrieves the transcript from a YouTube video."""
-    try:
-        # First try to get available transcript languages
-        transcript_list = YouTubeTranscriptApi.list_transcripts(video_id)
-        
-        # Try to find English transcript first
-        try:
-            # Look for English transcript
-            transcript = transcript_list.find_transcript(['en'])
-            transcript_data = transcript.fetch()
-            print("Found English transcript")
-        except:
-            # If English not available, get auto-generated or fall back to any available transcript
-            try:
-                transcript = transcript_list.find_generated_transcript(['en'])
-                transcript_data = transcript.fetch()
-                print("Found auto-generated English transcript")
-            except:
-                # Fall back to default transcript and translate if needed
-                transcript = transcript_list.find_transcript(['en', 'en-US', 'en-GB'])
-                if transcript.language_code != 'en':
-                    print(f"Translating transcript from {transcript.language_code} to English")
-                    transcript = transcript.translate('en')
-                transcript_data = transcript.fetch()
-                print(f"Using translated transcript")
-        
-        transcript_text = " ".join([t['text'] for t in transcript_data])
-        return transcript_text
-    except Exception as e:
-        print(f"Error getting transcript for video ID {video_id}: {e}")
-        # Fall back to original method if the above fails
-        try:
-            transcript_data = YouTubeTranscriptApi.get_transcript(video_id)
-            transcript_text = " ".join([t['text'] for t in transcript_data])
-            print("Using default transcript")
-            return transcript_text
-        except Exception as e:
-            print(f"All transcript retrieval methods failed: {e}")
-            return ""
-
-def analyze_transcript(transcript, model_name=MODEL_NAME):
-    """Analyzes the transcript using the Gemini AI model."""
-    if not transcript:
-        return "No transcript to analyze."
-
-    prompt = f"""
-You are a YouTube analysis AI. Given the following video transcript, extract:
-1. Sponsor name(s) -mandatory
-2. Sponsor’s industry -mandatory
-3. Video creator name -mandatory
-4. Video creator's industry -mandatory
-5. Sponsor website or link if mentioned -mandatory
-
-Transcript:
-{transcript[:4000]}
-
-Return your answer in this exact format:
-Sponsor Name: <...>
-Sponsor Industry: <...>
-Video Creator Name: <...>
-Video Creator Industry: <...>
-Sponsor Video Link (if any): <...>
+def extract_video_id(url):
     """
-
-    try:
-        model = genai.GenerativeModel(model_name=model_name)
-        response = model.generate_content(prompt)
-        if response and response.text:
-            return response.text.strip()
-        else:
-            return "No response from Gemini."
-    except Exception as e:
-        return f"Error analyzing with Gemini: {e}"
-
-def save_to_csv(video_link, transcript, gemini_output, filename=CSV_FILENAME):
-    """Saves the data to a CSV file."""
-    # Extracting fields from gemini_output and organizing them into individual components
-    sponsor_name = ""
-    sponsor_industry = ""
-    video_creator_name = ""
-    video_creator_industry = ""
-    sponsor_website = ""
-
-    # Assuming the gemini output follows the format:
-    if gemini_output:
-        lines = gemini_output.split("\n")
-        for line in lines:
-            if line.startswith("Sponsor Name:"):
-                sponsor_name = line.replace("Sponsor Name:", "").strip()
-            elif line.startswith("Sponsor Industry:"):
-                sponsor_industry = line.replace("Sponsor Industry:", "").strip()
-            elif line.startswith("Video Creator Name:"):
-                video_creator_name = line.replace("Video Creator Name:", "").strip()
-            elif line.startswith("Video Creator Industry:"):
-                video_creator_industry = line.replace("Video Creator Industry:", "").strip()
-            elif line.startswith("Sponsor Video Link (if any):"):
-                sponsor_website = line.replace("Sponsor Video Link (if any):", "").strip()
-
-    # Prepare the data, making sure empty values are explicitly set to empty strings
-    data = {
-        'youtube video link': [video_link],
-        'transcript': [transcript],
-        'Sponsor Name': [sponsor_name if sponsor_name else ''],
-        'Sponsor Industry': [sponsor_industry if sponsor_industry else ''],
-        'Video Creator Name': [video_creator_name if video_creator_name else ''],
-        'Video Creator Industry': [video_creator_industry if video_creator_industry else ''],
-        'Sponsor Website Link': [sponsor_website if sponsor_website else '']
-    }
-
-    try:
-        df = pd.DataFrame(data)
-        file_exists = os.path.isfile(filename)
-        df.to_csv(filename, mode='a', header=not file_exists, index=False, encoding='utf-8')
-        print("Saved to ANALYSIS.CSV successfully!")
-    except Exception as e:
-        print(f"Failed to save to CSV: {e}")
-
-def get_channel_id_by_name(channel_name):
-    """Get channel ID from a channel name using YouTube API."""
-    if not YOUTUBE_API_KEY:
-        print("Error: YouTube API key is missing. Please add it to the configuration.")
-        return None
+    Extract YouTube video ID from various URL formats
+    """
+    youtube_regex = (
+        r'(https?://)?(www\.)?'
+        r'(youtube|youtu|youtube-nocookie)\.(com|be)/'
+        r'(watch\?v=|embed/|v/|.+\?v=)?([^&=%\?]{11})')
+    
+    match = re.match(youtube_regex, url)
+    if match:
+        return match.group(6)
+    
+    # Handle youtu.be format
+    if 'youtu.be' in url:
+        return url.split('/')[-1].split('?')[0]
+    
+    # If it's already just an ID
+    if len(url) == 11:
+        return url
         
+    return None
+
+def get_channel_id_from_name(channel_name):
+    """
+    Get a YouTube channel ID from a channel name using search
+    """
     try:
-        youtube = build('youtube', 'v3', developerKey=YOUTUBE_API_KEY)
+        youtube = googleapiclient.discovery.build(
+            "youtube", "v3", developerKey=YOUTUBE_API_KEY
+        )
         
         # Search for the channel
         search_response = youtube.search().list(
             q=channel_name,
-            type='channel',
-            part='id,snippet',
+            type="channel",
+            part="snippet",
             maxResults=1
         ).execute()
         
-        if not search_response.get('items'):
-            print(f"No channel found with name: {channel_name}")
+        if not search_response.get("items"):
             return None
             
-        channel_id = search_response['items'][0]['id']['channelId']
-        channel_title = search_response['items'][0]['snippet']['title']
-        print(f"Found channel: {channel_title} (ID: {channel_id})")
-        return channel_id
+        # Return the channel ID
+        return search_response["items"][0]["snippet"]["channelId"]
         
-    except HttpError as e:
-        print(f"Error accessing YouTube API: {e}")
+    except Exception as e:
+        print(f"Error finding channel ID: {e}")
         return None
 
-def get_channel_videos(channel_id, max_results=50):
-    """Get videos from a YouTube channel."""
-    if not YOUTUBE_API_KEY:
-        print("Error: YouTube API key is missing. Please add it to the configuration.")
-        return []
-        
+def get_channel_videos(channel_id, max_results=10):
+    """
+    Get recent videos from a YouTube channel
+    """
     try:
-        youtube = build('youtube', 'v3', developerKey=YOUTUBE_API_KEY)
+        youtube = googleapiclient.discovery.build(
+            "youtube", "v3", developerKey=YOUTUBE_API_KEY
+        )
         
-        # Get uploads playlist ID
+        # Get channel uploads playlist ID
         channels_response = youtube.channels().list(
-            part='contentDetails',
+            part="contentDetails",
             id=channel_id
         ).execute()
         
-        if not channels_response['items']:
-            print(f"No channel found with ID: {channel_id}")
+        if not channels_response["items"]:
             return []
             
-        uploads_playlist_id = channels_response['items'][0]['contentDetails']['relatedPlaylists']['uploads']
+        uploads_playlist_id = channels_response["items"][0]["contentDetails"]["relatedPlaylists"]["uploads"]
         
         # Get videos from uploads playlist
-        videos = []
-        next_page_token = None
+        videos_response = youtube.playlistItems().list(
+            part="snippet",
+            playlistId=uploads_playlist_id,
+            maxResults=max_results
+        ).execute()
         
-        while len(videos) < max_results:
-            playlist_response = youtube.playlistItems().list(
-                part='snippet',
-                playlistId=uploads_playlist_id,
-                maxResults=min(50, max_results - len(videos)),
-                pageToken=next_page_token
-            ).execute()
-            
-            for item in playlist_response['items']:
-                video_id = item['snippet']['resourceId']['videoId']
-                video_url = f"https://www.youtube.com/watch?v={video_id}"
-                videos.append(video_url)
-                
-            next_page_token = playlist_response.get('nextPageToken')
-            if not next_page_token or len(videos) >= max_results:
-                break
-                
-            time.sleep(DELAY)  # Avoid rate limiting
+        videos = []
+        for item in videos_response.get("items", []):
+            video_id = item["snippet"]["resourceId"]["videoId"]
+            videos.append({
+                "id": video_id,
+                "title": item["snippet"]["title"],
+                "published_at": item["snippet"]["publishedAt"]
+            })
             
         return videos
-    except HttpError as e:
-        print(f"Error accessing YouTube API: {e}")
+        
+    except Exception as e:
+        print(f"Error fetching channel videos: {e}")
         return []
 
-def process_video_batch(video_urls):
-    """Process a batch of videos."""
-    success_count = 0
-    fail_count = 0
-    
-    for i, url in enumerate(video_urls):
-        print(f"\nProcessing video {i+1}/{len(video_urls)}: {url}")
+def get_video_details(video_id):
+    """
+    Get detailed information about a YouTube video
+    """
+    try:
+        youtube = googleapiclient.discovery.build(
+            "youtube", "v3", developerKey=YOUTUBE_API_KEY
+        )
+        
+        # Get video details
+        video_response = youtube.videos().list(
+            part="snippet,contentDetails,statistics",
+            id=video_id
+        ).execute()
+        
+        if not video_response["items"]:
+            return None
+            
+        video_data = video_response["items"][0]
+        
+        # Add this line to extract snippet
+        snippet = video_data["snippet"]
+        
+        # Get channel details
+        channel_id = video_data["snippet"]["channelId"]
+        channel_response = youtube.channels().list(
+            part="snippet,statistics,brandingSettings",
+            id=channel_id
+        ).execute()
+        
+        channel_data = channel_response["items"][0]
+        
+        # Get video comments for additional context
         try:
-            video_id = extract_video_id(url)
-            print(f"Video ID: {video_id}")
-            transcript = get_transcript(video_id)
-            
-            if not transcript:
-                print("No transcript available, but saving anyway.")
-                
-            gemini_output = analyze_transcript(transcript)
-            print("\nGemini Output Summary:", gemini_output.split('\n')[0] if gemini_output else "No output")
-            save_to_csv(url, transcript, gemini_output)
-            success_count += 1
-            
-        except Exception as e:
-            print(f"Error processing video: {e}")
-            fail_count += 1
-            
-        # Add delay to avoid rate limiting
-        if i < len(video_urls) - 1:
-            print(f"Waiting {DELAY} seconds before next video...")
-            time.sleep(DELAY)
-    
-    print(f"\nBatch processing complete. Success: {success_count}, Failed: {fail_count}")
-    return success_count, fail_count
-
-def channel_search_mode():
-    """Search for a channel by name and process its videos."""
-    print("\n=== YouTube Channel Video Processor ===\n")
-    
-    # Get YouTube API key if not set
-    global YOUTUBE_API_KEY
-    
-    # Get channel name from user
-    channel_name = input("Enter YouTube channel name: ").strip()
-    if not channel_name:
-        print("Channel name is required.")
-        return
-        
-    # Get channel ID
-    channel_id = get_channel_id_by_name(channel_name)
-    if not channel_id:
-        return
-        
-    # Ask for max videos to process
-    try:
-        max_videos = input("Maximum number of videos to process (default 50): ").strip()
-        max_videos = int(max_videos) if max_videos else 50
-    except ValueError:
-        print("Invalid number, using default of 50.")
-        max_videos = 50
-        
-    # Get videos from channel
-    print(f"Fetching up to {max_videos} videos from channel...")
-    video_urls = get_channel_videos(channel_id, max_videos)
-    
-    if not video_urls:
-        print("No videos found or error occurred.")
-        return
-        
-    print(f"Found {len(video_urls)} videos.")
-    
-    # Confirm processing
-    confirm = input(f"Process {len(video_urls)} videos? (y/n): ").strip().lower()
-    if confirm != 'y':
-        print("Operation cancelled.")
-        return
-        
-    # Process videos
-    genai.configure(api_key=API_KEY)
-    initialize_csv()
-    process_video_batch(video_urls)
-
-def search_videos_by_industry(industry_keyword, max_results=50):
-    """Search for videos related to a specific industry that might have sponsors."""
-    if not YOUTUBE_API_KEY:
-        print("Error: YouTube API key is missing. Please add it to the configuration.")
-        return []
-        
-    try:
-        youtube = build('youtube', 'v3', developerKey=YOUTUBE_API_KEY)
-        
-        # Search for videos with industry keyword + "sponsor" to increase chances of finding sponsored content
-        search_query = f"{industry_keyword} sponsor"
-        print(f"Searching for videos with query: '{search_query}'")
-        
-        videos = []
-        next_page_token = None
-        
-        while len(videos) < max_results:
-            search_response = youtube.search().list(
-                q=search_query,
-                type='video',
-                part='id,snippet',
-                maxResults=min(50, max_results - len(videos)),
-                pageToken=next_page_token,
-                videoDuration='medium',  # Focus on medium-length videos (more likely to have sponsors)
-                relevanceLanguage='en'   # English videos for better transcript availability
+            comments_response = youtube.commentThreads().list(
+                part="snippet",
+                videoId=video_id,
+                maxResults=10,
+                order="relevance"
             ).execute()
             
-            for item in search_response['items']:
-                video_id = item['id']['videoId']
-                video_title = item['snippet']['title']
-                channel_title = item['snippet']['channelTitle']
-                video_url = f"https://www.youtube.com/watch?v={video_id}"
-                videos.append({
-                    'url': video_url,
-                    'title': video_title,
-                    'channel': channel_title
-                })
-                print(f"Found: {video_title} by {channel_title}")
-                
-            next_page_token = search_response.get('nextPageToken')
-            if not next_page_token or len(videos) >= max_results:
-                break
-                
-            time.sleep(DELAY)  # Avoid rate limiting
-            
-        return videos
-    except HttpError as e:
-        print(f"Error accessing YouTube API: {e}")
-        return []
+            comments = []
+            for item in comments_response.get("items", []):
+                comment_text = item["snippet"]["topLevelComment"]["snippet"]["textDisplay"]
+                comments.append(comment_text)
+        except:
+            comments = []
+        
+        # --- Add these lines to extract thumbnail_url and published_at ---
+        thumbnails = snippet.get('thumbnails', {})
+        thumbnail_url = thumbnails.get('high', {}).get('url') or thumbnails.get('default', {}).get('url')
+        published_at = snippet.get('publishedAt')
 
-def industry_search_mode():
-    """Search for videos in a specific industry with sponsors."""
-    print("\n=== Industry-Specific Sponsor Search ===\n")
-    
-    # Get industry keyword from user
-    industry = input("Enter industry to search for (e.g., tech, beauty, fitness): ").strip()
-    if not industry:
-        print("Industry keyword is required.")
-        return
+        return {
+            "video_id": video_id,
+            "video_title": video_data["snippet"]["title"],
+            "video_description": video_data["snippet"]["description"],
+            "video_tags": video_data["snippet"].get("tags", []),
+            "view_count": video_data["statistics"].get("viewCount", "N/A"),
+            "like_count": video_data["statistics"].get("likeCount", "N/A"),
+            "comment_count": video_data["statistics"].get("commentCount", "N/A"),
+            "channel_id": channel_id,
+            "channel_name": channel_data["snippet"]["title"],
+            "channel_description": channel_data["snippet"]["description"],
+            "channel_keywords": channel_data.get("brandingSettings", {}).get("channel", {}).get("keywords", ""),
+            "subscriber_count": channel_data["statistics"].get("subscriberCount", "N/A"),
+            "top_comments": comments,
+            "thumbnail_url": thumbnail_url,         # <-- Added
+            "published_at": published_at,           # <-- Fixed to use local variable
+        }
         
-    # Ask for max videos to search
+    except Exception as e:
+        print(f"Error fetching video details: {e}")
+        return None
+
+def analyze_content_with_gemini(video_data):
+    """
+    Use Gemini API to analyze video content and identify sponsors and creator information
+    """
+    if not video_data:
+        return {"error": "No video data available for analysis"}
+    
+    # Create a comprehensive prompt for Gemini
+    prompt = f"""
+    Analyze this YouTube video information and extract:
+    1. The creator's full name (the person or entity who made the video)
+    2. The creator's primary industry/niche (be specific)
+    3. All sponsors mentioned in the video (companies paying for promotion)
+    4. Each sponsor's industry sector
+    
+    VIDEO INFORMATION:
+    Title: {video_data['video_title']}
+    
+    Description:
+    {video_data['video_description']}
+    
+    Channel: {video_data['channel_name']}
+    Channel Description: {video_data['channel_description']}
+    Channel Keywords: {video_data['channel_keywords']}
+    
+    Video Tags: {', '.join(video_data.get('video_tags', []))}
+    
+    Top Comments:
+    {' | '.join(video_data.get('top_comments', [])[:5])}
+    
+    Format your response as a JSON object with this structure:
+    {{
+        "creator": {{
+            "name": "Full Creator Name",
+            "industry": "Specific Industry/Niche"
+        }},
+        "sponsors": [
+            {{
+                "name": "Sponsor Company Name",
+                "industry": "Sponsor's Industry Sector"
+            }}
+        ]
+    }}
+    
+    If no sponsors are detected, return an empty array for sponsors.
+    Provide only the JSON object, no additional text.
+    """
+    
     try:
-        max_videos = input("Maximum number of videos to search for (default 20): ").strip()
-        max_videos = int(max_videos) if max_videos else 20
-    except ValueError:
-        print("Invalid number, using default of 20.")
-        max_videos = 20
+        model = genai.GenerativeModel('gemini-2.0-flash')
+        response = model.generate_content(prompt)
         
-    # Search for videos
-    print(f"Searching for up to {max_videos} videos related to '{industry}' with potential sponsors...")
-    video_results = search_videos_by_industry(industry, max_videos)
-    
-    if not video_results:
-        print("No videos found or error occurred.")
-        return
+        # Extract JSON from response
+        response_text = response.text
         
-    print(f"\nFound {len(video_results)} potential videos with sponsors in the {industry} industry.")
+        # Clean up any markdown formatting
+        if "```json" in response_text:
+            json_str = response_text.split("```json")[1].split("```")[0].strip()
+        elif "```" in response_text:
+            json_str = response_text.split("```")[1].split("```")[0].strip()
+        else:
+            json_str = response_text.strip()
+        
+        # Parse JSON
+        analysis_result = json.loads(json_str)
+        return analysis_result
+        
+    except Exception as e:
+        print(f"Error analyzing with Gemini: {e}")
+        return {"error": f"Failed to analyze content: {str(e)}"}
+
+def analyze_influencer_sponsors(video_url_or_id):
+    """
+    Main function to analyze a YouTube video for influencer and sponsor information
+    """
+    # Extract video ID
+    video_id = extract_video_id(video_url_or_id)
+    if not video_id:
+        return {"error": "Invalid YouTube URL or video ID"}
     
-    # Display found videos with numbers
-    for i, video in enumerate(video_results):
-        print(f"{i+1}. {video['title']} (by {video['channel']})")
+    # Get detailed video information
+    video_data = get_video_details(video_id)
+    if not video_data:
+        return {"error": "Failed to retrieve video details"}
     
-    # Ask user which videos to process
-    process_option = input("\nProcess videos? (all/numbers/none): ").strip().lower()
+    # Analyze content with Gemini
+    analysis = analyze_content_with_gemini(video_data)
     
-    videos_to_process = []
+    # Combine results
+    result = {
+        "video_id": video_id,
+        "video_title": video_data["video_title"],
+        "channel_name": video_data["channel_name"],
+        "view_count": video_data["view_count"],
+        "subscriber_count": video_data["subscriber_count"],
+        "thumbnail_url": video_data.get("thumbnail_url", ""),    # <-- Add this line
+        "published_at": video_data.get("published_at", ""),      # <-- Add this line
+        "analysis": analysis
+    }
     
-    if process_option == 'all':
-        videos_to_process = [video['url'] for video in video_results]
-    elif process_option == 'none':
-        print("Operation cancelled.")
-        return
+    return result
+
+def batch_analyze_channel(channel_name_or_id, max_videos=5):
+    """
+    Analyze multiple recent videos from a channel to identify consistent sponsors
+    """
+    # First check if input is a channel ID or name
+    if channel_name_or_id.startswith("UC") and len(channel_name_or_id) == 24:
+        # It's likely a channel ID
+        channel_id = channel_name_or_id
     else:
-        try:
-            # Parse numbers like "1,3,5-7"
-            selections = process_option.split(',')
-            for selection in selections:
-                if '-' in selection:
-                    start, end = map(int, selection.split('-'))
-                    for num in range(start, end + 1):
-                        if 1 <= num <= len(video_results):
-                            videos_to_process.append(video_results[num-1]['url'])
+        # Try to get channel ID from name
+        channel_id = get_channel_id_from_name(channel_name_or_id)
+        if not channel_id:
+            return {"error": f"Could not find channel with name: {channel_name_or_id}"}
+    
+    videos = get_channel_videos(channel_id, max_results=max_videos)
+    if not videos:
+        return {"error": "Failed to retrieve channel videos"}
+    
+    results = []
+    for video in videos:
+        print(f"Analyzing video: {video['title']}")
+        analysis = analyze_influencer_sponsors(video["id"])
+        results.append(analysis)
+    
+    # Aggregate sponsor data
+    all_sponsors = {}
+    for result in results:
+        if "analysis" in result and "sponsors" in result["analysis"]:
+            for sponsor in result["analysis"]["sponsors"]:
+                sponsor_name = sponsor["name"]
+                if sponsor_name in all_sponsors:
+                    all_sponsors[sponsor_name]["count"] += 1
                 else:
-                    num = int(selection)
-                    if 1 <= num <= len(video_results):
-                        videos_to_process.append(video_results[num-1]['url'])
-        except ValueError:
-            print("Invalid selection format. Processing all videos.")
-            videos_to_process = [video['url'] for video in video_results]
+                    all_sponsors[sponsor_name] = {
+                        "industry": sponsor["industry"],
+                        "count": 1
+                    }
     
-    if not videos_to_process:
-        print("No videos selected for processing.")
-        return
-        
-    print(f"Processing {len(videos_to_process)} videos...")
+    # Sort sponsors by frequency
+    sorted_sponsors = [{"name": name, "industry": data["industry"], "frequency": data["count"]} 
+                      for name, data in sorted(all_sponsors.items(), key=lambda x: x[1]["count"], reverse=True)]
     
-    # Process selected videos
-    genai.configure(api_key=API_KEY)
-    initialize_csv()
-    process_video_batch(videos_to_process)
-
-# Update the main function to include the new industry search option
-def main():
-    """Main function to run the script."""
-    print("\n=== YouTube Sponsorship Data Collection Tool ===\n")
-    print("1. Process a single video")
-    print("2. Process videos from a channel")
-    print("3. Search for sponsored videos by industry")
-    print("4. Exit")
-    
-    choice = input("\nEnter your choice (1-4): ").strip()
-    
-    if choice == '1':
-        # Original single video processing
-        genai.configure(api_key=API_KEY)
-        initialize_csv()
-        yt_url = input("Enter YouTube video link: ").strip()
-        try:
-            video_id = extract_video_id(yt_url)
-            print(f"Video ID: {video_id}")
-            transcript = get_transcript(video_id)
-            if not transcript:
-                print("No transcript available, but saving anyway.")
-            gemini_output = analyze_transcript(transcript)
-            print("\nGemini Output:\n", gemini_output)
-            save_to_csv(yt_url, transcript, gemini_output)
-        except Exception as e:
-            print(f"Error: {e}")
-    
-    elif choice == '2':
-        channel_search_mode()
-    
-    elif choice == '3':
-        industry_search_mode()
-    
-    elif choice == '4':
-        print("Exiting program.")
-        sys.exit(0)
-    
-    else:
-        print("Invalid choice. Please try again.")
+    return {
+        "channel_id": channel_id,
+        "videos_analyzed": len(results),
+        "creator": results[0]["analysis"]["creator"] if results and "analysis" in results[0] else {},
+        "common_sponsors": sorted_sponsors
+    }
 
 if __name__ == "__main__":
-    main()
+    print("YouTube Influencer and Sponsor Analyzer")
+    print("---------------------------------------")
+    
+    mode = input("Analyze (1) Single video or (2) Channel? Enter 1 or 2: ")
+    
+    if mode == "1":
+        video_url = input("Enter YouTube video URL or ID: ")
+        result = analyze_influencer_sponsors(video_url)
+        print("\nAnalysis Result:")
+        print(json.dumps(result, indent=2))
+        
+    elif mode == "2":
+        channel_name = input("Enter YouTube channel name or ID: ")
+        max_videos = int(input("Number of recent videos to analyze (1-10): "))
+        result = batch_analyze_channel(channel_name, max_videos=max(1, min(10, max_videos)))
+        print("\nChannel Analysis Result:")
+        print(json.dumps(result, indent=2))
+        
+    else:
+        print("Invalid selection. Please run the script again.")
+
