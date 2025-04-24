@@ -1,0 +1,4 @@
+video_link,transcript,products_mentioned,influencer_name,sponsor_brand,pricing,engagement_metrics
+https://www.youtube.com/watch?v=example1,Sample transcript 1,Product A|Product B,Influencer 1,Brand X,$199,likes:1000|comments:200|shares:50
+https://www.youtube.com/watch?v=example2,Sample transcript 2,Product C,Influencer 2,Brand Y,$99.99,likes:500|comments:100|shares:25
+https://www.youtube.com/watch?v=example3,Sample transcript 3,Product D|Product E|Product F,Influencer 3,Brand Z,$149.95,likes:2000|comments:300|shares:150

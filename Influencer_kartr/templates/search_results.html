@@ -1,0 +1,75 @@
+{% extends "layout.html" %}
+
+{% block title %}Search Results - {{ query }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <h2 class="mb-4">Search Results for "{{ query }}"</h2>
+    
+    <!-- Channel Results -->
+    {% if channels %}
+        <h3 class="mt-4 mb-3">YouTube Channels</h3>
+        <div class="row">
+            {% for channel in channels %}
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ channel.title }}</h5>
+                            <p class="card-text">
+                                <small class="text-muted">
+                                    <i class="fas fa-users"></i> {{ channel.subscriber_count }} subscribers<br>
+                                    <i class="fas fa-video"></i> {{ channel.video_count }} videos<br>
+                                    <i class="fas fa-eye"></i> {{ channel.view_count }} views
+                                </small>
+                            </p>
+                            <a href="{{ url_for('stats') }}?youtube_url=https://www.youtube.com/channel/{{ channel.channel_id }}" 
+                               class="btn btn-primary">
+                                View Stats
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+    
+    <!-- User Results (with public emails) -->
+    {% if users %}
+        <h3 class="mt-4 mb-3">Kartr Users</h3>
+        <div class="row">
+            {% for user in users %}
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ user.username }}</h5>
+                            <p class="card-text">
+                                <strong>Type:</strong> {{ user.user_type|capitalize }}<br>
+                                <strong>Email:</strong> {{ user.email }}<br>
+                                <strong>Joined:</strong> {{ user.date_registered }}
+                            </p>
+                            {% if user.user_type == 'influencer' %}
+                                <span class="badge bg-primary">Influencer</span>
+                            {% else %}
+                                <span class="badge bg-success">Sponsor</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+    
+    <!-- No Results -->
+    {% if not channels and not users %}
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle"></i> No results found for "{{ query }}"
+        </div>
+    {% endif %}
+    
+    <div class="mt-4">
+        <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Dashboard
+        </a>
+    </div>
+</div>
+{% endblock %} 
