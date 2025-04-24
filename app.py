@@ -1,11 +1,10 @@
-
-
 import os
 import logging
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, login_required, current_user
 from sqlalchemy.orm import DeclarativeBase
+from stats import API_KEY as YOUTUBE_API_KEY
 
 # Set up logging
 logging.basicConfig(level=logging.DEBUG)
@@ -30,8 +29,8 @@ app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
     "pool_pre_ping": True,
 }
 
-# Set YouTube API key from environment variable
-app.config["YOUTUBE_API_KEY"] = os.environ.get("YOUTUBE_API_KEY", "")
+# Set YouTube API key from stats.py
+app.config["YOUTUBE_API_KEY"] = YOUTUBE_API_KEY
 
 # Initialize the database with the app
 db.init_app(app)

@@ -1,7 +1,8 @@
-username,email,password,user_type,date_registered,public_email
-admin,admin@example.com,pbkdf2:sha256:150000$WLYrkYEw$72b472d8b56dd90bb6a9fe52a3e0e49c5af20a5f3e59e45a7a42dcb10a80a6e6,sponsor,2025-04-24 00:00:00,False
-demo_influencer,influencer@example.com,pbkdf2:sha256:150000$WLYrkYEw$72b472d8b56dd90bb6a9fe52a3e0e49c5af20a5f3e59e45a7a42dcb10a80a6e6,influencer,2025-04-24 00:00:00,True
-john_doe,john@example.com,pbkdf2:sha256:150000$WLYrkYEw$72b472d8b56dd90bb6a9fe52a3e0e49c5af20a5f3e59e45a7a42dcb10a80a6e6,influencer,2025-04-24 00:00:00,False
-jane_smith,jane@example.com,pbkdf2:sha256:150000$WLYrkYEw$72b472d8b56dd90bb6a9fe52a3e0e49c5af20a5f3e59e45a7a42dcb10a80a6e6,sponsor,2025-04-24 00:00:00,True
-egg,egg@gmail.com,scrypt:32768:8:1$coLNQof8CMfYlpdm$c45815a7cf4d2f70efbb1a437e66f4f3c8c8794d7edcc65da6644fa984b18bfe815b7c1410a935891e59255c996f8f7983925349047e5d73b2d121e5d5f64ee1,influencer,2025-04-24 06:00:16,True
-123456,123456@gmail.com,scrypt:32768:8:1$kPVDb6niCgELhjLZ$84275e4f51fb71e612a0a3ed9a40a79bee8a2fe5d28c071f0b63f895fe002f68e4b6785565b65b30ebfbfde5a674434c9e57f00945a4564e75d9bc7de7dff318,influencer,2025-04-24 06:00:51,False
+username,email,password,user_type,date_registered,public_email,personal_account_yt_links
+admin,admin@example.com,pbkdf2:sha256:150000$WLYrkYEw$72b472d8b56dd90bb6a9fe52a3e0e49c5af20a5f3e59e45a7a42dcb10a80a6e6,sponsor,2025-04-24 00:00:00,False,
+demo_influencer,influencer@example.com,pbkdf2:sha256:150000$WLYrkYEw$72b472d8b56dd90bb6a9fe52a3e0e49c5af20a5f3e59e45a7a42dcb10a80a6e6,influencer,2025-04-24 00:00:00,True,
+john_doe,john@example.com,pbkdf2:sha256:150000$WLYrkYEw$72b472d8b56dd90bb6a9fe52a3e0e49c5af20a5f3e59e45a7a42dcb10a80a6e6,influencer,2025-04-24 00:00:00,False,
+jane_smith,jane@example.com,pbkdf2:sha256:150000$WLYrkYEw$72b472d8b56dd90bb6a9fe52a3e0e49c5af20a5f3e59e45a7a42dcb10a80a6e6,sponsor,2025-04-24 00:00:00,True,
+egg,egg@gmail.com,scrypt:32768:8:1$coLNQof8CMfYlpdm$c45815a7cf4d2f70efbb1a437e66f4f3c8c8794d7edcc65da6644fa984b18bfe815b7c1410a935891e59255c996f8f7983925349047e5d73b2d121e5d5f64ee1,influencer,2025-04-24 06:00:16,True,
+123456,123456@gmail.com,scrypt:32768:8:1$kPVDb6niCgELhjLZ$84275e4f51fb71e612a0a3ed9a40a79bee8a2fe5d28c071f0b63f895fe002f68e4b6785565b65b30ebfbfde5a674434c9e57f00945a4564e75d9bc7de7dff318,influencer,2025-04-24 06:00:51,False,
+rajat,heyrajat@gmail.com,scrypt:32768:8:1$7wqTAWQkP0XUr0HH$9277ff83d3bf0cc9fed5f493ed5eda2a1eee42a97b62f3d300593b52c1a674c9117ee1437314a979f5f795ffa7c242c94d81928a19a4fd04289a8dcb070fbc77,influencer,2025-04-24 20:39:32,True,https://youtu.be/r9Y35xwNPiI?si=LSA15_JU4VYRn7lE
