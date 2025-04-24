@@ -9,7 +9,7 @@ import numpy as np
 from collections import Counter
 
 # ==== CONFIGURE THIS ====
-API_KEY = 'AIzaSyDldUk1uAXbUWY1NZCDzWvOotaNAoDDmNU'  # Your YouTube Data API v3 key
+API_KEY = ''  # Your YouTube Data API v3 key
 
 def extract_channel_id(channel_url):
     # Handles URLs like:
