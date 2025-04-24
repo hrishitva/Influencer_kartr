@@ -38,7 +38,7 @@
             <div class="search-container">
                 <div class="input-group">
                     <input type="text" class="form-control search-input" placeholder="Search influencers or sponsors..." aria-label="Search">
-                    <button class="btn btn-outline-secondary search-btn" type="button">
+                    <button class="btn btn-primary search-btn" type="button">
                         <i class="fas fa-search"></i>
                     </button>
                 </div>
@@ -53,17 +53,6 @@
             </button>
             
             <div class="collapse navbar-collapse" id="navbarNav">
-                <!-- Search Bar (Only shown when logged in) -->
-                {% if current_user.is_authenticated %}
-                <form class="d-flex mx-auto" action="{{ url_for('search') }}" method="GET">
-                    <div class="input-group" style="max-width: 300px;">
-                        <input type="search" class="form-control" placeholder="Search influencers or sponsors" name="q" aria-label="Search">
-                        <button class="btn btn-outline-primary" type="submit">
-                            <i class="fas fa-search"></i>
-                        </button>
-                    </div>
-                </form>
-                {% endif %}
                 <ul class="navbar-nav ms-auto">
                     {% if current_user.is_authenticated %}
                         <!-- Email Visibility Toggle -->
@@ -304,7 +293,7 @@
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
-                        visible: this.checked
+                        email_visible: this.checked
                     })
                 })
                 .then(response => response.json())

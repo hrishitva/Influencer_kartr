@@ -286,7 +286,7 @@ a:hover {
 /* Stats and Demo Pages */
 .youtube-input-container {
   max-width: 700px;
-  margin: 0 auto 2rem;
+  margin: 2rem auto;
 }
 
 .stats-card, .demo-card {
@@ -569,42 +569,29 @@ footer .tagline {
 /* Search Bar Styles */
 .search-container {
     position: relative;
-    flex: 1;
-    max-width: 500px;
-    margin: 0 1rem;
+    max-width: 400px;
+    margin: 0 auto;
 }
 
 .search-input {
-    background-color: var(--search-bg);
-    border: 1px solid var(--search-border);
-    color: var(--search-text);
-    border-radius: 25px;
+    border-radius: 20px 0 0 20px;
+    border: 1px solid var(--border-color);
+    background: var(--input-bg);
+    color: var(--text-color);
     padding: 0.5rem 1rem;
     transition: all 0.3s ease;
-}
-
-.search-input::placeholder {
-    color: var(--search-placeholder);
 }
 
 .search-input:focus {
+    box-shadow: none;
     border-color: var(--primary-color);
-    box-shadow: 0 0 0 0.2rem rgba(108, 99, 255, 0.25);
+    background: var(--input-focus-bg);
 }
 
 .search-btn {
-    background-color: var(--search-bg);
-    border: 1px solid var(--search-border);
-    color: var(--search-text);
-    border-radius: 25px;
-    padding: 0.5rem 1rem;
+    border-radius: 0 20px 20px 0;
+    padding: 0.5rem 1.25rem;
     transition: all 0.3s ease;
-}
-
-.search-btn:hover {
-    background-color: var(--primary-color);
-    border-color: var(--primary-color);
-    color: white;
 }
 
 .search-results {
@@ -612,31 +599,26 @@ footer .tagline {
     top: 100%;
     left: 0;
     right: 0;
-    background-color: var(--search-result-bg);
-    border: 1px solid var(--search-border);
-    border-radius: 8px;
+    background: var(--dropdown-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin-top: 0.5rem;
     max-height: 400px;
     overflow-y: auto;
-    display: none;
     z-index: 1000;
 }
 
 .search-result-item {
-    padding: 0.75rem 1rem;
-    border-bottom: 1px solid var(--search-border);
     display: flex;
     align-items: center;
+    padding: 0.75rem 1rem;
     cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.search-result-item:last-child {
-    border-bottom: none;
+    transition: background-color 0.2s ease;
 }
 
 .search-result-item:hover {
-    background-color: var(--search-result-hover);
+    background-color: var(--hover-bg);
 }
 
 .search-result-avatar {
@@ -652,67 +634,86 @@ footer .tagline {
 }
 
 .search-result-name {
-    font-weight: 600;
-    color: var(--search-text);
+    font-weight: 500;
+    color: var(--text-color);
     margin-bottom: 0.25rem;
 }
 
 .search-result-type {
     font-size: 0.875rem;
-    color: var(--search-placeholder);
+    color: var(--text-muted);
+    margin-bottom: 0.25rem;
 }
 
 .search-result-email {
     font-size: 0.875rem;
-    color: var(--primary-color);
-    margin-top: 0.25rem;
+    color: var(--text-muted);
 }
 
-/* Responsive adjustments */
-@media (max-width: 992px) {
+@media (max-width: 991.98px) {
     .search-container {
-        margin: 1rem 0;
         max-width: 100%;
+        margin: 1rem 0;
+    }
+    
+    .search-input,
+    .search-btn {
+        font-size: 0.875rem;
     }
 }
 
 /* Demo Page Styles */
 .youtube-url-input {
-    background-color: var(--card-bg);
+    border-radius: 20px 0 0 20px;
     border: 1px solid var(--border-color);
+    background: var(--input-bg);
     color: var(--text-color);
-    padding: 0.75rem 1rem;
-    border-radius: 8px;
+    padding: 0.75rem 1.25rem;
+    font-size: 1rem;
     transition: all 0.3s ease;
 }
 
-.youtube-url-input::placeholder {
-    color: var(--input-placeholder);
-    opacity: 0.8;
-}
-
 .youtube-url-input:focus {
+    box-shadow: none;
     border-color: var(--primary-color);
-    box-shadow: 0 0 0 0.2rem rgba(108, 99, 255, 0.25);
+    background: var(--input-focus-bg);
 }
 
-.form-text {
-    color: var(--helper-text);
-    font-size: 0.875rem;
-    margin-top: 0.5rem;
+.youtube-input-container .btn-primary {
+    border-radius: 0 20px 20px 0;
+    padding: 0.75rem 1.5rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
 }
 
-/* Responsive adjustments */
-@media (max-width: 991.98px) {
-    .navbar-collapse {
-        background-color: var(--navbar-bg);
-        border-top: 1px solid var(--navbar-border);
-        padding: 1rem;
-        margin-top: 0.5rem;
+.youtube-input-container .card {
+    border: none;
+    background: var(--card-bg);
+    transition: all 0.3s ease;
+}
+
+.youtube-input-container .card-body {
+    padding: 2rem;
+}
+
+.youtube-input-container .form-text {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+@media (max-width: 767.98px) {
+    .youtube-input-container {
+        margin: 1.5rem auto;
     }
-
-    .navbar-nav .nav-link {
-        padding: 0.75rem 1rem;
+    
+    .youtube-input-container .card-body {
+        padding: 1.5rem;
+    }
+    
+    .youtube-url-input,
+    .youtube-input-container .btn-primary {
+        font-size: 0.875rem;
+        padding: 0.625rem 1rem;
     }
 }
 
@@ -798,5 +799,80 @@ footer .tagline {
     
     .tagline {
         font-size: 0.8rem;
+    }
+}
+
+.setup-steps {
+    padding: 2rem 0;
+}
+
+.step-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 15px;
+    padding: 2rem;
+    height: 100%;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.step-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+}
+
+.step-number {
+    position: absolute;
+    top: 1rem;
+    left: 1rem;
+    width: 32px;
+    height: 32px;
+    background: var(--primary-color);
+    color: #ffffff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 1.1rem;
+    z-index: 1;
+}
+
+.step-title {
+    color: var(--text-color);
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 1rem 0;
+    padding-left: 2.5rem;
+}
+
+.step-description {
+    color: var(--text-color);
+    font-size: 1rem;
+    line-height: 1.6;
+    margin-bottom: 1rem;
+    opacity: 0.9;
+}
+
+.step-icon {
+    font-size: 2.5rem;
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+    opacity: 0.8;
+}
+
+@media (max-width: 768px) {
+    .step-card {
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .step-title {
+        font-size: 1.1rem;
+    }
+
+    .step-description {
+        font-size: 0.9rem;
     }
 }

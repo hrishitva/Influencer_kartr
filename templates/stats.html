@@ -17,15 +17,15 @@
 </div>
 
 <div class="youtube-input-container">
-    <div class="card">
+    <div class="card shadow-sm">
         <div class="card-body">
             <form method="POST" action="{{ url_for('stats') }}">
                 {{ form.hidden_tag() }}
                 <div class="input-group">
                     {{ form.youtube_url(class="form-control youtube-url-input", placeholder="Paste YouTube video URL here") }}
-                    {{ form.submit(class="btn btn-primary") }}
+                    {{ form.submit(class="btn btn-primary px-4") }}
                 </div>
-                <div class="form-text mt-2">
+                <div class="form-text mt-2 text-center">
                     Enter a YouTube video URL to analyze its performance and the channel's statistics.
                 </div>
             </form>
