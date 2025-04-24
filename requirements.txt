@@ -6,3 +6,11 @@ flask-wtf
 pandas
 google-api-python-client
 python-dotenv 
+google-generativeai
+networkx
+numpy
+plotly
+sqlalchemy
+werkzeug
+wtforms
+youtube-transcript-api
