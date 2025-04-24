@@ -111,57 +111,7 @@ def logout():
     flash('You have been logged out.', 'info')
     return redirect(url_for('login'))
 
-@app.route('/visualizations')
-@login_required
-def visualizations():
-    # Import visualization functions from graph.py
-    from graph import load_analysis_data, generate_engagement_chart, generate_growth_chart, generate_content_performance_chart
-    
-    # Use a specific column selection to avoid querying non-existent columns
-    searches = db.session.query(
-        Search.id, 
-        Search.user_id, 
-        Search.search_term, 
-        Search.date_searched
-    ).filter_by(user_id=current_user.id).order_by(Search.date_searched.desc()).limit(10).all()
 
-    # Get analysis data from ANALYSIS.CSV
-    analysis_data = load_analysis_data()
-    
-    # Prepare visualization data
-    visualization_data = {
-        'engagement_chart': None,
-        'growth_chart': None,
-        'content_chart': None
-    }
-    
-    if current_user.user_type == 'influencer':
-        youtube_channels = YouTubeChannel.query.filter_by(user_id=current_user.id).all()
-        
-        # Generate charts if there are channels
-        if youtube_channels:
-            # Convert SQLAlchemy object to dict for the first channel
-            channel_data = {
-                'subscriber_count': youtube_channels[0].subscriber_count,
-                'view_count': youtube_channels[0].view_count,
-                'title': youtube_channels[0].title
-            }
-            
-            # Generate charts
-            visualization_data['growth_chart'] = generate_growth_chart(channel_data)
-            
-        return render_template('dashboard.html', title='Visualizations', 
-                              user_type='influencer', 
-                              youtube_channels=youtube_channels,
-                              searches=searches,
-                              visualization_data=visualization_data,
-                              analysis_data=analysis_data)
-    else:  # sponsor
-        return render_template('dashboard.html', title='Visualizations', 
-                              user_type='sponsor',
-                              searches=searches,
-                              visualization_data=visualization_data,
-                              analysis_data=analysis_data)
 
 # Keep the old route for backward compatibility, redirecting to the new one
 @app.route('/dashboard')
@@ -375,23 +325,14 @@ def demo():
 
                 # Also run demo.py functionality to extract transcript and save to ANALYSIS.CSV
                 try:
-                    from youtube_utils import extract_video_id
-                    from demo import get_transcript, analyze_transcript
-
-                    # Get the video ID
-                    video_id = extract_video_id(youtube_url)
-                    if video_id:
-                        # Get transcript
-                        transcript = get_transcript(video_id)
-
-                        # Analyze transcript (simplified version since we may not have API key)
-                        analysis = f"Video Info: {info}\nExtracted from YouTube API"
-
-                        # Save to ANALYSIS.CSV
-                        save_analysis_to_csv(youtube_url, transcript, analysis)
-                        logger.info(f"Saved demo analysis to ANALYSIS.CSV for URL: {youtube_url}")
+                    # Use the analyze_influencer_sponsors function from demo.py
+                    result = analyze_influencer_sponsors(youtube_url)
+                    if result and not "error" in result:
+                        # Add influencer analysis to video_info
+                        video_info['influencer_analysis'] = result
+                        logger.info(f"Added influencer analysis for URL: {youtube_url}")
                 except Exception as demo_error:
-                    logger.error(f"Error running demo analysis: {str(demo_error)}")
+                    logger.error(f"Error running influencer analysis: {str(demo_error)}")
             else:
                 error = "Could not extract information from the video."
         except Exception as e:
@@ -522,3 +463,115 @@ def api_search_suggestions():
         })
     
     return jsonify(suggestions)
+
+    
+# Import functions from demo.py - fix the imports to match what's actually in demo.py
+from demo import analyze_influencer_sponsors, batch_analyze_channel
+
+# Add these functions to your demo.py file or import them from elsewhere if they exist
+import csv
+
+@app.route('/analyze_video', methods=['POST'])
+@login_required
+def analyze_video():
+    """Analyze a YouTube video for influencer and sponsor information"""
+    data = request.json
+    video_url = data.get('video_url')
+    
+    if not video_url:
+        return jsonify({"error": "No video URL provided"}), 400
+    
+    try:
+        # Use the analyze_influencer_sponsors function from demo.py
+        result = analyze_influencer_sponsors(video_url)
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/analyze_channel', methods=['POST'])
+@login_required
+def analyze_channel():
+    """Analyze a YouTube channel for influencer and sponsor information"""
+    data = request.json
+    channel_id = data.get('channel_id')
+    max_videos = int(data.get('max_videos', 5))
+    
+    if not channel_id:
+        return jsonify({"error": "No channel ID provided"}), 400
+    
+    try:
+        # Use the batch_analyze_channel function from demo.py
+        result = batch_analyze_channel(channel_id, max_videos=max_videos)
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/save_analysis', methods=['POST'])
+@login_required
+def save_analysis():
+    """Save analysis data to CSV file"""
+    data = request.json
+    
+    # Create data directory if it doesn't exist
+    os.makedirs('data', exist_ok=True)
+    
+    # CSV file path
+    csv_file = 'data/analysis_results.csv'
+    file_exists = os.path.isfile(csv_file)
+    
+    try:
+        with open(csv_file, 'a', newline='', encoding='utf-8') as f:
+            writer = csv.writer(f)
+            
+            # Write header if file doesn't exist
+            if not file_exists:
+                writer.writerow([
+                    'Date', 'User ID', 'Video/Channel Title', 'Channel Name',
+                    'Creator Name', 'Creator Industry', 'Sponsor Name', 'Sponsor Industry'
+                ])
+            
+            # Write creator row with no sponsor
+            if not data.get('sponsors'):
+                writer.writerow([
+                    datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                    current_user.id,
+                    data.get('video_title', 'Unknown'),
+                    data.get('channel_name', 'Unknown'),
+                    data.get('creator_name', 'Unknown'),
+                    data.get('creator_industry', 'Unknown'),
+                    'No Sponsor',
+                    'N/A'
+                ])
+            else:
+                # Write a row for each sponsor
+                for sponsor in data.get('sponsors', []):
+                    writer.writerow([
+                        datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                        current_user.id,
+                        data.get('video_title', 'Unknown'),
+                        data.get('channel_name', 'Unknown'),
+                        data.get('creator_name', 'Unknown'),
+                        data.get('creator_industry', 'Unknown'),
+                        sponsor.get('name', 'Unknown'),
+                        sponsor.get('industry', 'Unknown')
+                    ])
+        
+        return jsonify({"success": True, "message": "Analysis saved to CSV"})
+    
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+from graph import load_creator_sponsor_graph, load_industry_graph
+
+@app.route('/visualization')
+def visualization():
+    return render_template('visualization.html')
+
+@app.route('/api/creator_sponsor_graph')
+def api_creator_sponsor_graph():
+    return jsonify(load_creator_sponsor_graph())
+
+@app.route('/api/industry_graph')
+def api_industry_graph():
+    return jsonify(load_industry_graph())

@@ -1,0 +1,259 @@
+{% extends 'layout.html'%}
+
+{% block content %}
+    <style>
+    .visualization-bg {
+        background: linear-gradient(135deg, #f8fafc 0%, #e0e7ff 100%);
+        min-height: 100vh;
+        width: 100%;
+        margin: 0;
+        padding: 0;
+    }
+    .visualization-wrapper {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding-top: 2rem;
+        padding-bottom: 2rem;
+        min-height: 100vh;
+        }
+    .visualization-card {
+        background: rgba(255,255,255,0.92);
+        box-shadow: 0 8px 32px 0 rgba(31,38,135,0.12);
+        border-radius: 18px;
+        padding: 32px 24px 24px 24px;
+        margin-bottom: 40px;
+        backdrop-filter: blur(8px);
+        transition: box-shadow 0.3s;
+        animation: fadeIn 1.2s;
+        max-width: 900px;
+        width: 100%;
+        position: relative;
+        overflow: hidden;
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(40px);}
+        to   { opacity: 1; transform: translateY(0);}
+    }
+    .graph-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 18px;
+        background: linear-gradient(90deg, #6f42c1 0%, #007bff 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        text-align: center;
+    }
+    #graph1, #graph2 {
+        width: 100%;
+        height: 540px;
+        border-radius: 12px;
+        background: rgba(240,240,255,0.7);
+        box-shadow: 0 2px 16px 0 rgba(111,66,193,0.08);
+        margin-bottom: 12px;
+        transition: box-shadow 0.3s;
+        position: relative;
+    }
+    #graph1:hover, #graph2:hover {
+        box-shadow: 0 6px 32px 0 rgba(111,66,193,0.18);
+    }
+    .legend {
+        display: flex;
+        gap: 24px;
+        margin-bottom: 16px;
+        margin-top: 8px;
+        justify-content: center;
+    }
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 1rem;
+        font-weight: 500;
+    }
+    .legend-dot {
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        display: inline-block;
+        margin-right: 4px;
+        border: 2px solid #fff;
+        box-shadow: 0 1px 4px #8882;
+    }
+    .legend-dot.creator { background: #023020; }
+    .legend-dot.sponsor { background: #add8e6; }
+    .legend-dot.creator_industry { background: #00008B; }
+    .legend-dot.sponsor_industry { background: #dc143c; }
+    .legend-dot.max { background: #ffb300; border: 2px solid #ffb300; }
+    @media (max-width: 900px) {
+        .visualization-card {
+            padding: 18px 6px 18px 6px;
+        }
+        #graph1, #graph2 {
+            height: 340px;
+        }
+    }
+    #graph-tooltip {
+        position: fixed;
+        pointer-events: none;
+        background: rgba(30,30,40,0.97);
+        color: #fff;
+        padding: 10px 16px;
+        border-radius: 8px;
+        font-size: 1rem;
+        font-family: 'Segoe UI', Arial, sans-serif;
+        box-shadow: 0 2px 12px #0005;
+        z-index: 9999;
+        display: none;
+        max-width: 320px;
+        white-space: pre-line;
+    }
+    </style>
+<div class="visualization-bg">
+    <div class="visualization-wrapper">
+        <h2 class="mb-4 graph-title" style="font-size:2.2rem;">Visualization Dashboard</h2>
+        <div class="visualization-card">
+            <div class="graph-title">Creator & Sponsor Correlation</div>
+            <div class="legend">
+                <span class="legend-item"><span class="legend-dot creator"></span>Creator</span>
+                <span class="legend-item"><span class="legend-dot sponsor"></span>Sponsor</span>
+                <span class="legend-item"><span class="legend-dot max"></span>Most Collaborated Sponsor</span>
+            </div>
+            <div id="graph1"></div>
+        </div>
+        <div class="visualization-card">
+            <div class="graph-title">Creator Industry & Sponsor Industry Correlation</div>
+            <div class="legend">
+                <span class="legend-item"><span class="legend-dot creator_industry"></span>Creator Industry</span>
+                <span class="legend-item"><span class="legend-dot sponsor_industry"></span>Sponsor Industry</span>
+                <span class="legend-item"><span class="legend-dot max"></span>Most Collaborated Sponsor Industry</span>
+            </div>
+            <div id="graph2"></div>
+        </div>
+        <div id="graph-tooltip"></div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script src="https://cdn.jsdelivr.net/npm/three@0.149.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/3d-force-graph@1.77.0/dist/3d-force-graph.min.js"></script>
+
+<script>
+// Utility: find node(s) with max incoming links (collaborations)
+function getMaxTargetNodes(links) {
+    const countMap = {};
+    links.forEach(link => {
+        countMap[link.target] = (countMap[link.target] || 0) + 1;
+    });
+    let maxCount = 0;
+    let maxNodes = [];
+    for (const [key, count] of Object.entries(countMap)) {
+        if (count > maxCount) {
+            maxCount = count;
+            maxNodes = [key];
+        } else if (count === maxCount) {
+            maxNodes.push(key);
+        }
+    }
+    return maxNodes;
+}
+
+// 3D Graph rendering with custom tooltip
+function render3DGraph(containerId, apiUrl, nodeTypeColors, highlightType) {
+    fetch(apiUrl)
+        .then(res => res.json())
+        .then(data => {
+            const maxNodes = getMaxTargetNodes(data.links);
+
+            const nodes = (data.nodes || []).map(node => {
+                let color = nodeTypeColors[node.type] || "#888";
+                if (maxNodes.includes(node.id)) color = "#ffb300";
+                return {
+                    ...node,
+                    color,
+                    val: maxNodes.includes(node.id) ? 8 : 5
+                };
+            });
+
+            if (!nodes.length && data.links) {
+                const nodeSet = new Set();
+                data.links.forEach(l => { nodeSet.add(l.source); nodeSet.add(l.target); });
+                nodeSet.forEach(id => {
+                    let type = id.split('_')[0];
+                    let color = nodeTypeColors[type] || "#888";
+                    if (maxNodes.includes(id)) color = "#ffb300";
+                    nodes.push({ id, name: id.substring(id.indexOf('_')+1), type, color, val: maxNodes.includes(id) ? 8 : 5 });
+                });
+            }
+
+            const links = data.links.map(l => ({
+                source: l.source,
+                target: l.target
+            }));
+
+            const container = document.getElementById(containerId);
+            container.innerHTML = "";
+
+            // Tooltip setup
+            const tooltip = document.getElementById('graph-tooltip');
+
+            const Graph = ForceGraph3D({
+                extraRenderers: [new THREE.WebGLRenderer({ antialias: true })]
+            })(container)
+                .graphData({ nodes, links })
+                .nodeAutoColorBy('type')
+                .nodeColor(node => node.color)
+                .nodeVal(node => node.val)
+                .nodeLabel(node => node.name || node.id)
+                .linkOpacity(0.5)
+                .linkWidth(1.5)
+                .linkDirectionalParticles(0)
+                .backgroundColor('#000000')
+                .showNavInfo(false)
+                .width(container.offsetWidth)
+                .height(container.offsetHeight)
+                .onNodeHover(node => {
+                    if (node) {
+                        tooltip.style.display = 'block';
+                        tooltip.innerHTML =
+                            `<b>Name:</b> ${node.name || node.id}<br>` +
+                            `<b>Type:</b> ${node.type}<br>` +
+                            `<b>ID:</b> ${node.id}`;
+                    } else {
+                        tooltip.style.display = 'none';
+                    }
+                });
+
+            // Move tooltip with mouse
+            container.addEventListener('mousemove', function(e) {
+                tooltip.style.left = (e.clientX + 18) + 'px';
+                tooltip.style.top = (e.clientY + 18) + 'px';
+            });
+
+            window.addEventListener('resize', () => {
+                Graph.width(container.offsetWidth);
+                Graph.height(container.offsetHeight);
+            });
+        });
+}
+// Graph 1: Creator & Sponsor Correlation
+render3DGraph(
+    'graph1',
+    '/api/creator_sponsor_graph',
+    { creator: '#023020', sponsor: '#add8e6' },
+    'sponsor'
+);
+
+// Graph 2: Creator Industry & Sponsor Industry Correlation
+render3DGraph(
+    'graph2',
+    '/api/industry_graph',
+    { creator_industry: '#00008B', sponsor_industry: '#dc143c' },
+    'sponsor_industry'
+);
+</script>
+{% endblock %}
