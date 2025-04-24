@@ -212,28 +212,33 @@
         const searchResults = document.querySelector('.search-results');
         let searchTimeout;
 
-        searchInput.addEventListener('input', (e) => {
-            clearTimeout(searchTimeout);
-            const query = e.target.value.trim();
-            
-            if (query.length < 2) {
-                searchResults.style.display = 'none';
-                return;
-            }
+        // Only add event listener if the search input exists
+        if (searchInput && searchResults) {
+            searchInput.addEventListener('input', (e) => {
+                clearTimeout(searchTimeout);
+                const query = e.target.value.trim();
+                
+                if (query.length < 2) {
+                    searchResults.style.display = 'none';
+                    return;
+                }
 
-            searchTimeout = setTimeout(() => {
-                fetch(`/api/search?q=${encodeURIComponent(query)}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        displaySearchResults(data);
-                    })
-                    .catch(error => {
-                        console.error('Search error:', error);
-                    });
-            }, 300);
-        });
+                searchTimeout = setTimeout(() => {
+                    fetch(`/api/search?q=${encodeURIComponent(query)}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            displaySearchResults(data);
+                        })
+                        .catch(error => {
+                            console.error('Search error:', error);
+                        });
+                }, 300);
+            });
+        }
 
         function displaySearchResults(results) {
+            if (!searchResults) return;
+            
             searchResults.innerHTML = '';
             
             if (results.length === 0) {
@@ -274,11 +279,13 @@
         }
 
         // Close search results when clicking outside
-        document.addEventListener('click', (e) => {
-            if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
-                searchResults.style.display = 'none';
-            }
-        });
+        if (searchInput && searchResults) {
+            document.addEventListener('click', (e) => {
+                if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+                    searchResults.style.display = 'none';
+                }
+            });
+        }
     </script>
     
     <!-- Email Visibility Toggle Script -->

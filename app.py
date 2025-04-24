@@ -83,6 +83,9 @@ app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
     "pool_pre_ping": True,
 }
 
+# Set YouTube API key from environment variable
+app.config["YOUTUBE_API_KEY"] = os.environ.get("YOUTUBE_API_KEY", "")
+
 # Initialize the database with the app
 db.init_app(app)
 

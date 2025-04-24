@@ -266,8 +266,10 @@ def stats():
     elif auto_update and user_channels:
         try:
             from stats import get_channel_stats
-            api_key = app.config.get('YOUTUBE_API_KEY', 'YOUR_API_KEY_HERE')
-            
+            api_key = app.config.get('YOUTUBE_API_KEY', '')
+            if not api_key:
+                logger.warning("YouTube API key not set. Please add it to your environment variables.")
+                
             for channel in user_channels:
                 channel_url = f"https://www.youtube.com/channel/{channel.channel_id}"
                 channel_data = get_channel_stats(channel_url, api_key)
@@ -303,7 +305,12 @@ def stats():
             
             # Get recent videos for this channel
             from stats import get_recent_videos
-            api_key = app.config.get('YOUTUBE_API_KEY', 'YOUR_API_KEY_HERE')
+            api_key = app.config.get('YOUTUBE_API_KEY', '')
+            if not api_key:
+                logger.warning("YouTube API key not set. Please add it to your environment variables.")
+                flash('YouTube API key is not set. Some features may not work properly.', 'warning')
+                return render_template('stats.html', title='YouTube Stats', form=form)
+            
             youtube = build('youtube', 'v3', developerKey=api_key)
             
             recent_videos = get_recent_videos(youtube, recent_channel.channel_id, api_key)
