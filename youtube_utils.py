@@ -9,7 +9,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 DATABASE_CSV = os.path.join(os.getcwd(), 'data/database.csv')
 ANALYSIS_CSV = os.path.join(os.getcwd(), 'data/ANALYSIS.CSV')
 
-def save_user_to_csv(username, email, password, user_type, public_email=False):
+def save_user_to_csv(username, email, password, user_type, public_email=False, channel_id=None):
     """
     Save user information to database.csv
     Ensures records are properly appended one below the other
@@ -20,6 +20,7 @@ def save_user_to_csv(username, email, password, user_type, public_email=False):
     - password: The user's password (will be hashed)
     - user_type: 'influencer' or 'sponsor'
     - public_email: Boolean indicating if the email should be public in searches
+    - channel_id: YouTube channel ID (optional)
     """
     # Hash the password for security
     hashed_password = generate_password_hash(password)
@@ -31,7 +32,7 @@ def save_user_to_csv(username, email, password, user_type, public_email=False):
     if not os.path.exists(DATABASE_CSV):
         with open(DATABASE_CSV, 'w', newline='') as file:
             writer = csv.writer(file)
-            writer.writerow(['username', 'email', 'password', 'user_type', 'date_registered', 'public_email'])
+            writer.writerow(['username', 'email', 'password', 'user_type', 'date_registered', 'public_email', 'channel_id'])
     
     # Read the file to check existing headers
     existing_headers = []
@@ -55,6 +56,14 @@ def save_user_to_csv(username, email, password, user_type, public_email=False):
         for row in existing_data:
             row.append('False')
     
+    # Update file if 'channel_id' is missing from headers
+    if 'channel_id' not in existing_headers and existing_headers:
+        headers_updated = True
+        existing_headers.append('channel_id')
+        # Add empty channel_id to all existing records
+        for row in existing_data:
+            row.append('')
+    
     # Prepare new record
     new_record = [
         username, 
@@ -62,7 +71,8 @@ def save_user_to_csv(username, email, password, user_type, public_email=False):
         hashed_password, 
         user_type, 
         datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-        str(public_email)
+        str(public_email),
+        channel_id if channel_id else ''
     ]
     
     # If headers were updated or for safety, rewrite the entire file
@@ -70,7 +80,7 @@ def save_user_to_csv(username, email, password, user_type, public_email=False):
         writer = csv.writer(file)
         # Write headers
         writer.writerow(existing_headers if existing_headers else 
-                        ['username', 'email', 'password', 'user_type', 'date_registered', 'public_email'])
+                        ['username', 'email', 'password', 'user_type', 'date_registered', 'public_email', 'channel_id'])
         
         # Write existing data
         for row in existing_data:
@@ -189,8 +199,13 @@ def update_email_visibility(email, is_visible):
             
             for row in reader:
                 if len(row) > 0 and row[1] == email:  # Email is in column index 1
-                    # Update the public_email field (last column)
-                    row[-1] = str(is_visible)
+                    # Find the index of public_email field
+                    public_email_index = headers.index('public_email') if 'public_email' in headers else -1
+                    if public_email_index >= 0:
+                        row[public_email_index] = str(is_visible)
+                    else:
+                        # If public_email field doesn't exist, add it to the end
+                        row.append(str(is_visible))
                     user_found = True
                 users.append(row)
         
@@ -208,6 +223,66 @@ def update_email_visibility(email, is_visible):
         return True
     except Exception as e:
         print(f"Error updating email visibility: {e}")
+        import traceback
+        traceback.print_exc()
+        return False
+
+def update_channel_id(email, channel_id):
+    """
+    Update YouTube channel ID in database.csv
+    
+    Parameters:
+    - email: The user's email
+    - channel_id: YouTube channel ID
+    
+    Returns:
+    - Boolean indicating success/failure
+    """
+    if not os.path.exists(DATABASE_CSV):
+        print(f"Error: {DATABASE_CSV} not found")
+        return False
+    
+    try:
+        # Read the data file directly with CSV to ensure we handle all fields correctly
+        users = []
+        headers = []
+        user_found = False
+        
+        with open(DATABASE_CSV, 'r', newline='') as file:
+            reader = csv.reader(file)
+            headers = next(reader)  # Get the header row
+            
+            # Add channel_id to headers if it doesn't exist
+            if 'channel_id' not in headers:
+                headers.append('channel_id')
+            
+            channel_id_index = headers.index('channel_id')
+            
+            for row in reader:
+                if len(row) > 0 and row[1] == email:  # Email is in column index 1
+                    # Make sure row has enough elements
+                    while len(row) <= channel_id_index:
+                        row.append('')
+                    
+                    # Update the channel_id field
+                    row[channel_id_index] = channel_id
+                    user_found = True
+                users.append(row)
+        
+        if not user_found:
+            print(f"Error: User with email {email} not found")
+            return False
+            
+        # Write back the updated data
+        with open(DATABASE_CSV, 'w', newline='') as file:
+            writer = csv.writer(file)
+            writer.writerow(headers)
+            writer.writerows(users)
+            
+        print(f"Successfully updated channel ID for {email} to {channel_id}")
+        return True
+    except Exception as e:
+        print(f"Error updating channel ID: {e}")
         import traceback
         traceback.print_exc()
         return False

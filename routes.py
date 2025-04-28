@@ -3,10 +3,34 @@ import os
 import subprocess
 import pandas as pd
 from datetime import datetime
-from flask import render_template, url_for, flash, redirect, request, jsonify
+import logging
+from flask import render_template, url_for, flash, redirect, request, jsonify, session
 from flask_login import login_user, current_user, logout_user, login_required
 from app import app, db
-from forms import RegistrationForm, LoginForm, YouTubeStatsForm, YouTubeDemoForm
+
+# Set up logging
+logger = logging.getLogger(__name__)
+
+# Try to import Firebase components
+try:
+    from app import firebase_auth
+    from firebase_helpers import user_exists_in_firebase, create_firebase_user
+    FIREBASE_AVAILABLE = firebase_auth is not None
+    if FIREBASE_AVAILABLE:
+        logger.debug("Firebase authentication is available")
+    else:
+        logger.warning("Firebase authentication is not available (firebase_auth is None)")
+except ImportError as e:
+    logger.warning(f"Firebase authentication is not available: {e}")
+    FIREBASE_AVAILABLE = False
+    
+    # Create dummy functions to avoid errors
+    def user_exists_in_firebase(auth, email, password):
+        return False, None
+        
+    def create_firebase_user(auth, email, password):
+        return False, None
+from forms import RegistrationForm, LoginForm, YouTubeStatsForm, YouTubeDemoForm, ForgotPasswordForm
 from models import User, YouTubeChannel, Search
 from youtube_api import get_video_stats, get_channel_stats, extract_video_info
 from youtube_utils import save_user_to_csv, validate_user_login, save_analysis_to_csv
@@ -30,23 +54,58 @@ def register():
 
     form = RegistrationForm()
     if form.validate_on_submit():
+        # First check if user already exists in our database
+        existing_user = User.query.filter_by(email=form.email.data).first()
+        if existing_user:
+            flash('A user with that email already exists. Please use a different email or log in.', 'danger')
+            return render_template('register.html', title='Register', form=form)
+        
+        firebase_user = None
+        # Try to create user in Firebase if available
+        if FIREBASE_AVAILABLE:
+            success, firebase_user = create_firebase_user(
+                firebase_auth,
+                form.email.data, 
+                form.password.data
+            )
+            
+            if not success:
+                logger.warning(f"Failed to create user in Firebase: {form.email.data}")
+                # We'll continue with local registration even if Firebase fails
+        
+        # Create user in our database
         user = User(username=form.username.data, email=form.email.data, user_type=form.user_type.data)
         user.set_password(form.password.data)
 
-        # Save to database
-        db.session.add(user)
-        db.session.commit()
+        try:
+            # Save to database
+            db.session.add(user)
+            db.session.commit()
 
-        # Also save to CSV file for validation
-        save_user_to_csv(
-            username=form.username.data,
-            email=form.email.data,
-            password=form.password.data,
-            user_type=form.user_type.data
-        )
+            # Also save to CSV file for validation
+            save_user_to_csv(
+                username=form.username.data,
+                email=form.email.data,
+                password=form.password.data,
+                user_type=form.user_type.data,
+                channel_id=''  # Initialize with empty channel_id
+            )
 
-        flash(f'Account created for {form.username.data}! You can now log in.', 'success')
-        return redirect(url_for('login'))
+            # Store Firebase user ID in session if Firebase is available
+            if FIREBASE_AVAILABLE and firebase_user:
+                session['firebase_user'] = form.email.data
+                session['firebase_user_id'] = firebase_user['localId'] if firebase_user else None
+                flash(f'Account created for {form.username.data} with Firebase integration!', 'success')
+            else:
+                flash(f'Account created for {form.username.data}!', 'success')
+                
+            return redirect(url_for('login'))
+            
+        except Exception as e:
+            # If database creation fails, log the error and show a message
+            logger.error(f"Database registration error: {str(e)}")
+            flash('Registration failed. There was an issue with our database. Please try again.', 'danger')
+            return render_template('register.html', title='Register', form=form)
 
     return render_template('register.html', title='Register', form=form)
 
@@ -58,10 +117,74 @@ def login():
     form = LoginForm()
     if form.validate_on_submit():
         try:
-            # First check in the SQL database
+            # First check if user exists in our database
             user = User.query.filter_by(email=form.email.data).first()
-
-            if user and user.check_password(form.password.data):
+            
+            firebase_exists = False
+            firebase_user = None
+            
+            # Try Firebase authentication if available
+            if FIREBASE_AVAILABLE:
+                firebase_exists, firebase_user = user_exists_in_firebase(
+                    firebase_auth,
+                    form.email.data, 
+                    form.password.data
+                )
+            
+            if FIREBASE_AVAILABLE and firebase_exists:
+                # User exists in Firebase
+                logger.info(f"User {form.email.data} authenticated with Firebase")
+                
+                # Store Firebase user info in session
+                session['firebase_user'] = form.email.data
+                session['firebase_user_id'] = firebase_user['localId'] if firebase_user else None
+                
+                if not user:
+                    # User exists in Firebase but not in our database, create them
+                    username = form.email.data.split('@')[0] if '@' in form.email.data else form.email.data
+                    user_type = 'influencer'  # Default user type
+                    
+                    # Create user in database
+                    user = User(username=username, email=form.email.data, user_type=user_type)
+                    user.set_password(form.password.data)
+                    db.session.add(user)
+                    db.session.commit()
+                    
+                    # Also save to CSV file for validation
+                    save_user_to_csv(
+                        username=username,
+                        email=form.email.data,
+                        password=form.password.data,
+                        user_type=user_type,
+                        channel_id=''  # Initialize with empty channel_id
+                    )
+                    
+                    logger.info(f"Created user {form.email.data} in database from Firebase login")
+                
+                # Log the user in with Flask-Login
+                login_user(user)
+                flash('Login successful with Firebase!', 'success')
+                return redirect(url_for('stats'))
+                
+            elif user and user.check_password(form.password.data):
+                # User exists in our database
+                
+                # Try to create the user in Firebase if available and user doesn't exist there
+                if FIREBASE_AVAILABLE and not firebase_exists:
+                    success, firebase_user = create_firebase_user(
+                        firebase_auth,
+                        form.email.data, 
+                        form.password.data
+                    )
+                    
+                    if success:
+                        logger.info(f"Created user {form.email.data} in Firebase from database login")
+                        session['firebase_user'] = form.email.data
+                        session['firebase_user_id'] = firebase_user['localId'] if firebase_user else None
+                    else:
+                        logger.warning(f"Failed to create user {form.email.data} in Firebase")
+                
+                # Log the user in with Flask-Login
                 login_user(user)
                 flash('Login successful!', 'success')
                 return redirect(url_for('stats'))
@@ -85,6 +208,19 @@ def login():
                             db.session.add(user)
                             db.session.commit()
                             
+                            # Try to create the user in Firebase if available
+                            if FIREBASE_AVAILABLE:
+                                success, firebase_user = create_firebase_user(
+                                    firebase_auth,
+                                    form.email.data, 
+                                    form.password.data
+                                )
+                                
+                                if success:
+                                    logger.info(f"Created user {form.email.data} in Firebase from CSV login")
+                                    session['firebase_user'] = form.email.data
+                                    session['firebase_user_id'] = firebase_user['localId'] if firebase_user else None
+                            
                             # Get the user again
                             user = User.query.filter_by(email=form.email.data).first()
                             
@@ -105,11 +241,167 @@ def login():
 
     return render_template('login.html', title='Login', form=form)
 
+@app.route('/forgot-password', methods=['GET', 'POST'])
+def forgot_password():
+    """Handle forgot password requests"""
+    if current_user.is_authenticated:
+        return redirect(url_for('stats'))
+        
+    # Check if Firebase is available
+    if not FIREBASE_AVAILABLE:
+        flash('Firebase authentication is not available. Password reset is not possible at this time.', 'warning')
+        return redirect(url_for('login'))
+        
+    form = ForgotPasswordForm()
+    if form.validate_on_submit():
+        email = form.email.data
+        
+        # Import the send_password_reset_email function
+        from firebase_helpers import send_password_reset_email
+        
+        # Send password reset email
+        success, error_message = send_password_reset_email(firebase_auth, email)
+        
+        if success:
+            flash('Password reset email sent. Please check your inbox and follow the instructions to reset your password.', 'success')
+            return redirect(url_for('login'))
+        else:
+            flash(error_message, 'danger')
+            
+    return render_template('forgot_password.html', title='Forgot Password', form=form)
+
 @app.route('/logout')
 def logout():
+    # Clear Firebase session variables
+    if 'firebase_user' in session:
+        session.pop('firebase_user')
+    if 'firebase_user_id' in session:
+        session.pop('firebase_user_id')
+    
+    # Standard Flask-Login logout
     logout_user()
     flash('You have been logged out.', 'info')
     return redirect(url_for('login'))
+
+@app.route('/firebase-login', methods=['POST', 'GET'])
+def firebase_login():
+    # Check if Firebase is available
+    if not FIREBASE_AVAILABLE:
+        flash('Firebase authentication is not available. Please use standard login.', 'warning')
+        return redirect(url_for('login'))
+        
+    if current_user.is_authenticated:
+        return redirect(url_for('stats'))
+        
+    if 'firebase_user' in session:
+        # User is already logged in with Firebase
+        return redirect(url_for('stats'))
+        
+    if request.method == 'POST':
+        email = request.form.get('email')
+        password = request.form.get('password')
+
+        try:
+            # Authenticate with Firebase
+            user = firebase_auth.sign_in_with_email_and_password(email=email, password=password)
+            
+            # Store user info in session
+            session['firebase_user'] = email
+            
+            # Check if user exists in our database
+            db_user = User.query.filter_by(email=email).first()
+            
+            if not db_user:
+                # Create a new user in our database
+                username = email.split('@')[0]  # Use part before @ as username
+                
+                # Create a random password for database (they'll use Firebase to authenticate)
+                import secrets
+                random_password = secrets.token_hex(16)
+                
+                # Default to 'influencer' user type
+                user_type = 'influencer'
+                
+                # Create user in database
+                db_user = User(username=username, email=email, user_type=user_type)
+                db_user.set_password(random_password)
+                db.session.add(db_user)
+                db.session.commit()
+                
+                # Also save to CSV file for validation
+                from youtube_utils import save_user_to_csv
+                save_user_to_csv(
+                    username=username,
+                    email=email,
+                    password=random_password,
+                    user_type=user_type,
+                    channel_id=''  # Initialize with empty channel_id
+                )
+                
+                flash(f'Account created with Firebase authentication!', 'success')
+            
+            # Log the user in with Flask-Login
+            login_user(db_user)
+            
+            flash('Login successful with Firebase!', 'success')
+            return redirect(url_for('stats'))
+            
+        except Exception as e:
+            logger.error(f"Firebase login error: {str(e)}")
+            flash('Failed to login with Firebase. Please check your credentials.', 'danger')
+    
+    return render_template('firebase_login.html', title='Firebase Login')
+    
+@app.route('/firebase-register', methods=['POST', 'GET'])
+def firebase_register():
+    # Check if Firebase is available
+    if not FIREBASE_AVAILABLE:
+        flash('Firebase authentication is not available. Please use standard registration.', 'warning')
+        return redirect(url_for('register'))
+        
+    if current_user.is_authenticated:
+        return redirect(url_for('stats'))
+        
+    if request.method == 'POST':
+        email = request.form.get('email')
+        password = request.form.get('password')
+        username = request.form.get('username')
+        user_type = request.form.get('user_type', 'influencer')
+
+        try:
+            # Create user in Firebase
+            user = firebase_auth.create_user_with_email_and_password(email=email, password=password)
+            
+            # Create user in our database
+            db_user = User(username=username, email=email, user_type=user_type)
+            db_user.set_password(password)  # Store the same password in our database
+            db.session.add(db_user)
+            db.session.commit()
+            
+            # Also save to CSV file for validation
+            from youtube_utils import save_user_to_csv
+            save_user_to_csv(
+                username=username,
+                email=email,
+                password=password,
+                user_type=user_type,
+                channel_id=''  # Initialize with empty channel_id
+            )
+            
+            # Store user info in session
+            session['firebase_user'] = email
+            
+            # Log the user in with Flask-Login
+            login_user(db_user)
+            
+            flash(f'Account created for {username} with Firebase authentication!', 'success')
+            return redirect(url_for('stats'))
+            
+        except Exception as e:
+            logger.error(f"Firebase registration error: {str(e)}")
+            flash('Failed to register with Firebase. Please try again.', 'danger')
+    
+    return render_template('firebase_register.html', title='Firebase Register')
 
 
 
@@ -132,10 +424,52 @@ def stats():
     # Check if user has any YouTube channels
     user_channels = YouTubeChannel.query.filter_by(user_id=current_user.id).all()
     
-    # If user has no channels and is an influencer, this is their first time
+    # If user has no channels and is an influencer, check if they have a channel ID in the CSV file
     if not user_channels and current_user.user_type == 'influencer':
-        is_first_time = True
-        flash('Welcome! Please enter your YouTube channel URL to get started.', 'info')
+        # Check if user has a channel ID in the CSV file
+        import os
+        import csv
+        from youtube_utils import DATABASE_CSV
+        
+        if os.path.exists(DATABASE_CSV):
+            try:
+                with open(DATABASE_CSV, 'r', newline='') as file:
+                    reader = csv.DictReader(file)
+                    for row in reader:
+                        if row.get('email') == current_user.email and row.get('channel_id'):
+                            # User has a channel ID in the CSV file, let's create a YouTubeChannel record
+                            channel_id = row.get('channel_id')
+                            
+                            # Get channel stats using the channel ID
+                            from stats import get_channel_stats, API_KEY
+                            channel_url = f"https://www.youtube.com/channel/{channel_id}"
+                            channel_data = get_channel_stats(channel_url, API_KEY)
+                            
+                            if isinstance(channel_data, dict):
+                                # Create a new YouTubeChannel record
+                                new_channel = YouTubeChannel(
+                                    channel_id=channel_data['channel_id'],
+                                    title=channel_data['title'],
+                                    subscriber_count=channel_data['subscriber_count'],
+                                    video_count=channel_data['video_count'],
+                                    view_count=channel_data['view_count'],
+                                    user_id=current_user.id
+                                )
+                                db.session.add(new_channel)
+                                db.session.commit()
+                                
+                                # Update user_channels
+                                user_channels = [new_channel]
+                                
+                                flash('Your YouTube channel information has been loaded automatically!', 'success')
+                                break
+            except Exception as e:
+                logger.error(f"Error checking CSV for channel ID: {str(e)}")
+        
+        # If still no channels, this is their first time
+        if not user_channels:
+            is_first_time = True
+            flash('Welcome! Please enter your YouTube channel URL to get started.', 'info')
     
     # If user has channels, check if we need to auto-update
     elif user_channels and current_user.user_type == 'influencer':
@@ -191,7 +525,12 @@ def stats():
                             user_id=current_user.id
                         )
                         db.session.add(new_channel)
-                        flash('Channel added successfully!', 'success')
+                        
+                        # Also update the channel_id in the CSV file
+                        from youtube_utils import update_channel_id
+                        update_channel_id(current_user.email, channel_data['channel_id'])
+                        
+                        flash('Channel added successfully! You won\'t need to enter this information again.', 'success')
                     else:
                         # Update existing channel
                         existing_channel.subscriber_count = channel_data['subscriber_count']

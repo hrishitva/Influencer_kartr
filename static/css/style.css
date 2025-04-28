@@ -134,6 +134,27 @@ a:hover {
   color: var(--menu-hover-text);
 }
 
+.logo-container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0 5px;
+}
+
+.logo-img {
+  height: 40px;
+  width: auto;
+  object-fit: contain;
+}
+
+.tagline {
+  font-size: 0.9rem;
+  color: var(--tagline-color);
+  font-weight: 400;
+  letter-spacing: 0.5px;
+}
+
 .navbar-toggler {
   border-color: var(--border-color);
   color: var(--menu-text);
@@ -258,6 +279,10 @@ a:hover {
   transition: all 0.3s ease;
 }
 
+.btn:hover {
+  transform: translateY(-2px);
+}
+
 .btn-primary {
   background-color: var(--primary-color);
   border-color: var(--primary-color);
@@ -266,6 +291,25 @@ a:hover {
 .btn-primary:hover {
   background-color: var(--secondary-color);
   border-color: var(--secondary-color);
+  box-shadow: 0 0 10px rgba(108, 99, 255, 0.6);
+}
+
+/* Special glow effect for analyze buttons */
+.btn-analyze {
+  transition: all 0.3s ease, box-shadow 0.4s ease;
+}
+
+.btn-analyze:hover {
+  box-shadow: 0 0 15px rgba(108, 99, 255, 0.8) !important;
+  transform: translateY(-3px);
+}
+
+[data-theme="dark"] .btn-primary:hover {
+  box-shadow: 0 0 10px rgba(124, 115, 255, 0.7);
+}
+
+[data-theme="dark"] .btn-analyze:hover {
+  box-shadow: 0 0 15px rgba(124, 115, 255, 0.9) !important;
 }
 
 .btn-outline-primary {
@@ -276,6 +320,11 @@ a:hover {
 .btn-outline-primary:hover {
   background-color: var(--primary-color);
   color: white;
+  box-shadow: 0 0 10px rgba(108, 99, 255, 0.6);
+}
+
+[data-theme="dark"] .btn-outline-primary:hover {
+  box-shadow: 0 0 10px rgba(124, 115, 255, 0.7);
 }
 
 /* Alerts */
@@ -435,58 +484,80 @@ a:hover {
 
 /* Footer Styles */
 footer {
-  background-color: var(--footer-bg);
-  color: var(--footer-text);
+  background: linear-gradient(to top, #1a1e23, #2d3748); /* Gradient from darker to lighter gray (similar to from-gray-900 to-gray-800) */
+  color: #e2e8f0; /* Lighter text color for better contrast */
   padding: 2rem 0;
-  margin-top: auto;
-  box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.05);
+  margin-top: 2rem; /* Reduced from auto to 2rem (equivalent to mt-8) */
+  box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.15);
 }
 
 footer .text-muted {
-  color: var(--footer-text) !important;
+  color: #a0aec0 !important; /* Lighter muted text for dark background */
 }
 
 .footer-content {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
+  text-align: center;
+}
+
+.footer-brand {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 1rem;
 }
 
 .footer-logo {
   height: 40px;
-  margin-bottom: 5px;
-  display: block;
-  margin-left: auto;
-  margin-right: auto;
+  width: auto;
+  /* Add a subtle glow effect to the logo */
+  filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.3));
 }
 
-.footer-logo + .tagline {
-  font-size: 0.9rem;
-  color: var(--gray-color);
-  margin-top: 5px;
-  display: block;
-  text-align: center;
+.footer-brand .tagline {
+  font-size: 1rem;
+  color: #a0aec0; /* Lighter gray for dark background */
+  font-weight: 500;
 }
 
 footer .tagline {
-  color: var(--gray-color);
+  color: #a0aec0; /* Lighter gray for dark background */
   font-size: 0.9rem;
   font-weight: 500;
   letter-spacing: 0.5px;
 }
 
+.footer-links {
+  width: 100%;
+  margin-top: 1.5rem;
+}
+
+.footer-links-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 2rem;
+  width: 100%;
+}
+
 .footer-links a {
-  color: var(--footer-text);
+  color: #e2e8f0; /* Lighter text for better contrast */
   text-decoration: none;
-  transition: color 0.3s ease;
+  transition: all 0.3s ease;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  font-size: 0.9rem;
 }
 
 .footer-links a:hover {
-  color: var(--primary-color);
+  color: white;
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
 .copyright-text {
-  color: var(--footer-text);
+  color: #a0aec0; /* Lighter gray for dark background */
   font-size: 0.9rem;
 }
 
@@ -523,20 +594,30 @@ footer .tagline {
   .navbar-brand .tagline {
     display: none;
   }
-
+  
   .footer-content {
     flex-direction: column;
     text-align: center;
   }
 
-  .footer-links {
-    margin-top: 1rem;
+  .footer-links-container {
+    gap: 1rem;
   }
 
   .footer-links a {
-    margin: 0 0.75rem;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.85rem;
+  }
+  
+  .footer-brand {
+    gap: 0.75rem;
+  }
+  
+  .footer-logo {
+    height: 35px;
   }
 }
+
 
 /* Dashboard Profile Styles */
 .card-body .text-muted {
@@ -914,3 +995,4 @@ footer .tagline {
         font-size: 0.9rem;
     }
 }
+

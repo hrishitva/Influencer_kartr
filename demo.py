@@ -7,8 +7,8 @@ import googleapiclient.discovery
 import googleapiclient.errors
 
 # Configure API keys
-YOUTUBE_API_KEY = ""
-GEMINI_API_KEY = ""
+YOUTUBE_API_KEY = "AIzaSyDVL5ilpVtu0YSaUbgd8zbXvm4O5pGCobo"
+GEMINI_API_KEY = "AIzaSyD5nlsqDGjjED5SPOSI1O74Z6XLqhb5cpg"
 
 # Configure Gemini API
 genai.configure(api_key=GEMINI_API_KEY)

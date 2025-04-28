@@ -2,10 +2,11 @@
 
 import os
 import logging
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, session
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, login_required, current_user
 from sqlalchemy.orm import DeclarativeBase
+import pyrebase
 
 # Set up logging
 logging.basicConfig(level=logging.DEBUG)
@@ -21,6 +22,28 @@ db = SQLAlchemy(model_class=Base)
 # Initialize Flask app
 app = Flask(__name__)
 app.secret_key = os.environ.get("SESSION_SECRET", "kartr_secret_key_for_development")
+
+# Firebase configuration
+firebase_config = {
+    'apiKey': "AIzaSyAXAM1-aFmM-_nBXyfhgar1uoJ25N3Yvyg",
+    'authDomain': "influencerkartr.firebaseapp.com",
+    'projectId': "influencerkartr",
+    'storageBucket': "influencerkartr.firebasestorage.app",
+    'messagingSenderId': "3408915311",
+    'appId': "1:3408915311:web:f3431d19508025872a969a",
+    'measurementId': "G-SW7VBFSCRY",
+    'databaseURL': ""
+}
+
+# Initialize Firebase
+try:
+    firebase = pyrebase.initialize_app(config=firebase_config)
+    firebase_auth = firebase.auth()
+    logger.debug("Firebase initialized successfully")
+except Exception as e:
+    logger.error(f"Error initializing Firebase: {e}")
+    # Create a placeholder if Firebase initialization fails
+    firebase_auth = None
 
 # Configure database - for development using SQLite
 app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL", "sqlite:///kartr.db")
@@ -41,6 +64,12 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
 login_manager.login_message_category = 'info'
+
+# Create data directory for CSV files
+data_dir = os.path.join(os.getcwd(), 'data')
+if not os.path.exists(data_dir):
+    os.makedirs(data_dir)
+    logger.debug(f"Created data directory at {data_dir}")
 
 # Import models and create tables
 with app.app_context():
