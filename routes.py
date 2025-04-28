@@ -36,23 +36,41 @@ def register():
 
     form = RegistrationForm()
     if form.validate_on_submit():
-        user = User(username=form.username.data, email=form.email.data, user_type=form.user_type.data)
-        user.set_password(form.password.data)
+        try:
+            # Import Firebase configuration
+            from firebase_config import auth
+            
+            # Create user in Firebase
+            firebase_user = auth.create_user_with_email_and_password(
+                form.email.data, 
+                form.password.data
+            )
+            
+            # Create user in local database
+            user = User(username=form.username.data, email=form.email.data, user_type=form.user_type.data)
+            user.set_password(form.password.data)  # Still hash password for local auth
 
-        # Save to database
-        db.session.add(user)
-        db.session.commit()
+            # Save to database
+            db.session.add(user)
+            db.session.commit()
 
-        # Also save to CSV file for validation
-        save_user_to_csv(
-            username=form.username.data,
-            email=form.email.data,
-            password=form.password.data,
-            user_type=form.user_type.data
-        )
+            # Also save to CSV file for validation
+            save_user_to_csv(
+                username=form.username.data,
+                email=form.email.data,
+                password=form.password.data,
+                user_type=form.user_type.data
+            )
 
-        flash(f'Account created for {form.username.data}! You can now log in.', 'success')
-        return redirect(url_for('login'))
+            flash(f'Account created for {form.username.data}! You can now log in.', 'success')
+            return redirect(url_for('login'))
+        except Exception as e:
+            logger.error(f"Error during registration: {str(e)}")
+            # Check if the error is because the user already exists in Firebase
+            if "EMAIL_EXISTS" in str(e):
+                flash('Email already exists. Please use a different email or login.', 'danger')
+            else:
+                flash(f'Error during registration. Please try again.', 'danger')
 
     return render_template('register.html', title='Register', form=form)
 
@@ -64,50 +82,100 @@ def login():
     form = LoginForm()
     if form.validate_on_submit():
         try:
-            # First check in the SQL database
+            # Import Firebase configuration
+            from firebase_config import auth
+            
+            # Try to authenticate with Firebase
+            firebase_user = auth.sign_in_with_email_and_password(
+                form.email.data, 
+                form.password.data
+            )
+            
+            # If Firebase authentication is successful, check if user exists in our database
             user = User.query.filter_by(email=form.email.data).first()
-
-            if user and user.check_password(form.password.data):
+            
+            if user:
+                # User exists in our database, log them in
                 login_user(user)
                 flash('Login successful!', 'success')
                 return redirect(url_for('stats'))
             else:
-                # Try CSV validation as fallback
-                is_valid, user_type = validate_user_login(form.email.data, form.password.data)
-                if is_valid:
-                    # Create a user in the database if not exists
-                    if not user:
-                        try:
-                            df = pd.read_csv('data/database.csv')
-                            user_data = df[df['email'] == form.email.data]
-                            if not user_data.empty:
-                                username = user_data.iloc[0]['username']
-                            else:
-                                username = form.email.data.split('@')[0] if '@' in form.email.data else form.email.data
-
-                            # Create user in database
-                            user = User(username=username, email=form.email.data, user_type=user_type)
-                            user.set_password(form.password.data)
-                            db.session.add(user)
-                            db.session.commit()
-                            
-                            # Get the user again
-                            user = User.query.filter_by(email=form.email.data).first()
-                            
-                            if user:
-                                login_user(user)
-                                flash('Login successful via CSV validation!', 'success')
-                                return redirect(url_for('stats'))
-                        except Exception as e:
-                            logger.error(f"Error creating user from CSV: {str(e)}")
-                            flash('Error during login. Please try again.', 'danger')
-                    else:
-                        flash('Invalid email or password.', 'danger')
-                else:
-                    flash('Invalid email or password.', 'danger')
+                # User exists in Firebase but not in our database
+                # Create a new user in our database
+                try:
+                    # Try to get username and user_type from CSV if available
+                    username = form.email.data.split('@')[0] if '@' in form.email.data else form.email.data
+                    user_type = 'influencer'  # Default
+                    
+                    try:
+                        df = pd.read_csv('data/database.csv')
+                        user_data = df[df['email'] == form.email.data]
+                        if not user_data.empty:
+                            username = user_data.iloc[0]['username']
+                            user_type = user_data.iloc[0]['user_type']
+                    except Exception as csv_error:
+                        logger.warning(f"Could not read from CSV: {str(csv_error)}")
+                    
+                    # Create user in database
+                    user = User(username=username, email=form.email.data, user_type=user_type)
+                    user.set_password(form.password.data)  # Still hash password for local auth
+                    db.session.add(user)
+                    db.session.commit()
+                    
+                    # Log in the user
+                    login_user(user)
+                    flash('Login successful!', 'success')
+                    return redirect(url_for('stats'))
+                except Exception as e:
+                    logger.error(f"Error creating user from Firebase: {str(e)}")
+                    flash('Error during login. Please try again.', 'danger')
+                    
         except Exception as e:
             logger.error(f"Login error: {str(e)}")
-            flash('An error occurred during login. Please try again.', 'danger')
+            
+            # If Firebase authentication fails, try local authentication as fallback
+            if "INVALID_PASSWORD" in str(e) or "EMAIL_NOT_FOUND" in str(e):
+                # Try local authentication
+                user = User.query.filter_by(email=form.email.data).first()
+                
+                if user and user.check_password(form.password.data):
+                    login_user(user)
+                    flash('Login successful!', 'success')
+                    return redirect(url_for('stats'))
+                else:
+                    # Try CSV validation as final fallback
+                    is_valid, user_type = validate_user_login(form.email.data, form.password.data)
+                    if is_valid:
+                        # Create a user in the database if not exists
+                        if not user:
+                            try:
+                                df = pd.read_csv('data/database.csv')
+                                user_data = df[df['email'] == form.email.data]
+                                if not user_data.empty:
+                                    username = user_data.iloc[0]['username']
+                                else:
+                                    username = form.email.data.split('@')[0] if '@' in form.email.data else form.email.data
+
+                                # Create user in database
+                                user = User(username=username, email=form.email.data, user_type=user_type)
+                                user.set_password(form.password.data)
+                                db.session.add(user)
+                                db.session.commit()
+                                
+                                # Get the user again
+                                user = User.query.filter_by(email=form.email.data).first()
+                                
+                                if user:
+                                    login_user(user)
+                                    flash('Login successful via CSV validation!', 'success')
+                                    return redirect(url_for('stats'))
+                            except Exception as e:
+                                logger.error(f"Error creating user from CSV: {str(e)}")
+                                flash('Error during login. Please try again.', 'danger')
+                    
+                flash('Invalid email or password.', 'danger')
+            else:
+                flash('An error occurred during login. Please try again.', 'danger')
 
     return render_template('login.html', title='Login', form=form)
 
@@ -128,24 +196,36 @@ def forgot_password():
         user = User.query.filter_by(email=email).first()
         
         if user:
-            # Generate OTP
-            otp = generate_otp()
-            
-            # Store OTP with expiration time
-            if store_otp(email, otp):
-                # Send OTP to user's email
-                success, message = send_otp_email(email, otp)
+            try:
+                # Import Firebase configuration
+                from firebase_config import auth
                 
-                if success:
-                    flash('OTP has been sent to your email. Please check your inbox.', 'success')
-                    # Create OTP verification form with email pre-filled
-                    verify_form = OTPVerificationForm()
-                    verify_form.email.data = email
-                    return render_template('verify_otp.html', form=verify_form)
+                # Send password reset email via Firebase
+                auth.send_password_reset_email(email)
+                flash('Password reset link has been sent. Please check your inbox and follow the instructions.', 'success')
+                return redirect(url_for('login'))
+            except Exception as e:
+                logger.error(f"Firebase password reset error: {str(e)}")
+                
+                # Fall back to OTP method if Firebase fails
+                # Generate OTP
+                otp = generate_otp()
+                
+                # Store OTP with expiration time
+                if store_otp(email, otp):
+                    # Send OTP to user's email
+                    success, message = send_otp_email(email, otp)
+                    
+                    if success:
+                        flash('OTP has been sent to your email. Please check your inbox.', 'success')
+                        # Create OTP verification form with email pre-filled
+                        verify_form = OTPVerificationForm()
+                        verify_form.email.data = email
+                        return render_template('verify_otp.html', form=verify_form)
+                    else:
+                        flash(f'Failed to send OTP: {message}. Please try again.', 'danger')
                 else:
-                    flash(f'Failed to send OTP: {message}. Please try again.', 'danger')
-            else:
-                flash('Failed to generate OTP. Please try again.', 'danger')
+                    flash('Failed to generate OTP. Please try again.', 'danger')
         else:
             flash('Email not found. Please check your email or register.', 'danger')
     

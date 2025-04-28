@@ -28,7 +28,7 @@ class LoginForm(FlaskForm):
 
 class ForgotPasswordForm(FlaskForm):
     email = StringField('Email', validators=[DataRequired(), Email()])
-    submit = SubmitField('Send OTP')
+    submit = SubmitField('Send Reset Link')
     
     def validate_email(self, email):
         user = User.query.filter_by(email=email.data).first()

@@ -435,58 +435,80 @@ a:hover {
 
 /* Footer Styles */
 footer {
-  background-color: var(--footer-bg);
-  color: var(--footer-text);
+  background: linear-gradient(to top, #1a1e23, #2d3748); /* Gradient from darker to lighter gray (similar to from-gray-900 to-gray-800) */
+  color: #e2e8f0; /* Lighter text color for better contrast */
   padding: 2rem 0;
-  margin-top: auto;
-  box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.05);
+  margin-top: 2rem; /* Reduced from auto to 2rem (equivalent to mt-8) */
+  box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.15);
 }
 
 footer .text-muted {
-  color: var(--footer-text) !important;
+  color: #a0aec0 !important; /* Lighter muted text for dark background */
 }
 
 .footer-content {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
+  text-align: center;
+}
+
+.footer-brand {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 1rem;
 }
 
 .footer-logo {
   height: 40px;
-  margin-bottom: 5px;
-  display: block;
-  margin-left: auto;
-  margin-right: auto;
+  width: auto;
+  /* Add a subtle glow effect to the logo */
+  filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.3));
 }
 
-.footer-logo + .tagline {
-  font-size: 0.9rem;
-  color: var(--gray-color);
-  margin-top: 5px;
-  display: block;
-  text-align: center;
+.footer-brand .tagline {
+  font-size: 1rem;
+  color: #a0aec0; /* Lighter gray for dark background */
+  font-weight: 500;
 }
 
 footer .tagline {
-  color: var(--gray-color);
+  color: #a0aec0; /* Lighter gray for dark background */
   font-size: 0.9rem;
   font-weight: 500;
   letter-spacing: 0.5px;
 }
 
+.footer-links {
+  width: 100%;
+  margin-top: 1.5rem;
+}
+
+.footer-links-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 2rem;
+  width: 100%;
+}
+
 .footer-links a {
-  color: var(--footer-text);
+  color: #e2e8f0; /* Lighter text for better contrast */
   text-decoration: none;
-  transition: color 0.3s ease;
+  transition: all 0.3s ease;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  font-size: 0.9rem;
 }
 
 .footer-links a:hover {
-  color: var(--primary-color);
+  color: white;
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
 .copyright-text {
-  color: var(--footer-text);
+  color: #a0aec0; /* Lighter gray for dark background */
   font-size: 0.9rem;
 }
 
