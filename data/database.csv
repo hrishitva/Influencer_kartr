@@ -5,3 +5,4 @@ john_doe,john@example.com,pbkdf2:sha256:150000$WLYrkYEw$72b472d8b56dd90bb6a9fe52
 jane_smith,jane@example.com,pbkdf2:sha256:150000$WLYrkYEw$72b472d8b56dd90bb6a9fe52a3e0e49c5af20a5f3e59e45a7a42dcb10a80a6e6,sponsor,2025-04-24 00:00:00,True
 egg,egg@gmail.com,scrypt:32768:8:1$coLNQof8CMfYlpdm$c45815a7cf4d2f70efbb1a437e66f4f3c8c8794d7edcc65da6644fa984b18bfe815b7c1410a935891e59255c996f8f7983925349047e5d73b2d121e5d5f64ee1,influencer,2025-04-24 06:00:16,True
 123456,123456@gmail.com,scrypt:32768:8:1$kPVDb6niCgELhjLZ$84275e4f51fb71e612a0a3ed9a40a79bee8a2fe5d28c071f0b63f895fe002f68e4b6785565b65b30ebfbfde5a674434c9e57f00945a4564e75d9bc7de7dff318,influencer,2025-04-24 06:00:51,False
+heyrajat,heyrajat@gmail.com,scrypt:32768:8:1$lV2zcOO2jxB795L0$f83cf4db6c6e3254b7c5bc63f88b787f5c0edb4d817aeb5c2f057a0ec9a484bf4917642fc0f595204a855be623ce3473ecc8a2251c0a1cb5bf76ebdadc7ee9e6,influencer,2025-04-27 19:27:47,True

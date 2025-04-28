@@ -3,18 +3,24 @@ import os
 import subprocess
 import pandas as pd
 from datetime import datetime
-from flask import render_template, url_for, flash, redirect, request, jsonify
+from flask import render_template, url_for, flash, redirect, request, jsonify, session
 from flask_login import login_user, current_user, logout_user, login_required
 from app import app, db
-from forms import RegistrationForm, LoginForm, YouTubeStatsForm, YouTubeDemoForm
+from forms import RegistrationForm, LoginForm, YouTubeStatsForm, YouTubeDemoForm, ForgotPasswordForm, OTPVerificationForm
 from models import User, YouTubeChannel, Search
 from youtube_api import get_video_stats, get_channel_stats, extract_video_info
 from youtube_utils import save_user_to_csv, validate_user_login, save_analysis_to_csv
 from googleapiclient.discovery import build
+from email_utils import generate_otp, store_otp, verify_otp, send_otp_email
 
 # Set up logging
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
+
+@app.route('/contact')
+def contact():
+    """Route for the contact us page"""
+    return render_template('contact.html', title='Contact Us')
 
 @app.route('/')
 @app.route('/home')
@@ -111,6 +117,67 @@ def logout():
     flash('You have been logged out.', 'info')
     return redirect(url_for('login'))
 
+@app.route('/forgot-password', methods=['GET', 'POST'])
+def forgot_password():
+    if current_user.is_authenticated:
+        return redirect(url_for('stats'))
+    
+    form = ForgotPasswordForm()
+    if form.validate_on_submit():
+        email = form.email.data
+        user = User.query.filter_by(email=email).first()
+        
+        if user:
+            # Generate OTP
+            otp = generate_otp()
+            
+            # Store OTP with expiration time
+            if store_otp(email, otp):
+                # Send OTP to user's email
+                success, message = send_otp_email(email, otp)
+                
+                if success:
+                    flash('OTP has been sent to your email. Please check your inbox.', 'success')
+                    # Create OTP verification form with email pre-filled
+                    verify_form = OTPVerificationForm()
+                    verify_form.email.data = email
+                    return render_template('verify_otp.html', form=verify_form)
+                else:
+                    flash(f'Failed to send OTP: {message}. Please try again.', 'danger')
+            else:
+                flash('Failed to generate OTP. Please try again.', 'danger')
+        else:
+            flash('Email not found. Please check your email or register.', 'danger')
+    
+    return render_template('forgot_password.html', title='Forgot Password', form=form)
+
+@app.route('/verify-otp', methods=['GET', 'POST'])
+def verify_otp():
+    if current_user.is_authenticated:
+        return redirect(url_for('stats'))
+    
+    form = OTPVerificationForm()
+    
+    if form.validate_on_submit():
+        email = form.email.data
+        otp = form.otp.data
+        
+        # Verify OTP
+        if verify_otp(email, otp):
+            # OTP is valid, log in the user
+            user = User.query.filter_by(email=email).first()
+            
+            if user:
+                login_user(user)
+                flash('Login successful via OTP!', 'success')
+                return redirect(url_for('stats'))
+            else:
+                flash('User not found. Please register.', 'danger')
+                return redirect(url_for('register'))
+        else:
+            flash('Invalid or expired OTP. Please try again.', 'danger')
+    
+    return render_template('verify_otp.html', title='Verify OTP', form=form)
 
 
 # Keep the old route for backward compatibility, redirecting to the new one

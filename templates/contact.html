@@ -1,0 +1,463 @@
+{% extends "layout.html" %}
+
+{% block title %}Contact Us - Kartr{% endblock %}
+
+{% block content %}
+<div class="container contact-container">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card contact-card">
+                <div class="card-body p-0">
+                    <div class="row g-0">
+                        <!-- Contact Information Section -->
+                        <div class="col-md-5 contact-info-section">
+                            <div class="contact-info-content">
+                                <h2 class="contact-title">Get in Touch</h2>
+                                <p class="contact-subtitle">We'd love to hear from you. Here's how you can reach us.</p>
+                                
+                                <div class="contact-method">
+                                    <div class="contact-icon">
+                                        <i class="fas fa-map-marker-alt"></i>
+                                    </div>
+                                    <div class="contact-details">
+                                        <h5>Our Location</h5>
+                                        <p>123....<br>.....</p> <!--our location-->-->
+                                    </div>
+                                </div>
+                                
+                                <div class="contact-method">
+                                    <div class="contact-icon">
+                                        <i class="fas fa-phone-alt"></i>
+                                    </div>
+                                    <div class="contact-details">
+                                        <h5>Phone Number</h5>
+                                        <p>+1 (555) 123-4567</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="contact-method">
+                                    <div class="contact-icon">
+                                        <i class="fas fa-envelope"></i>
+                                    </div>
+                                    <div class="contact-details">
+                                        <h5>Email Address</h5>
+                                        <p>support@kartr.com</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="contact-method">
+                                    <div class="contact-icon">
+                                        <i class="fas fa-clock"></i>
+                                    </div>
+                                    <div class="contact-details">
+                                        <h5>Working Hours</h5>
+                                        <p>Monday - Friday: 9AM - 6PM<br>Saturday: 10AM - 4PM</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="social-links mt-4">
+                                    <a href="#" class="social-link"><i class="fab fa-facebook-f"></i></a>
+                                    <a href="#" class="social-link"><i class="fab fa-twitter"></i></a>
+                                    <a href="#" class="social-link"><i class="fab fa-instagram"></i></a>
+                                    <a href="#" class="social-link"><i class="fab fa-linkedin-in"></i></a>
+                                    <a href="#" class="social-link"><i class="fab fa-youtube"></i></a>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Contact Form Section -->
+                        <div class="col-md-7 contact-form-section">
+                            <div class="contact-form-content">
+                                <h2 class="form-title">Send Us a Message</h2>
+                                <p class="form-subtitle">Have questions or feedback? Fill out the form below and we'll get back to you as soon as possible.</p>
+                                
+                                <form id="contactForm" class="contact-form">
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <div class="form-floating">
+                                                <input type="text" class="form-control" id="name" placeholder="Your Name" required>
+                                                <label for="name"><i class="fas fa-user me-2"></i>Your Name</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <div class="form-floating">
+                                                <input type="email" class="form-control" id="email" placeholder="Your Email" required>
+                                                <label for="email"><i class="fas fa-envelope me-2"></i>Your Email</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <div class="form-floating">
+                                            <input type="text" class="form-control" id="subject" placeholder="Subject" required>
+                                            <label for="subject"><i class="fas fa-heading me-2"></i>Subject</label>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <div class="form-floating">
+                                            <textarea class="form-control" id="message" placeholder="Your Message" style="height: 150px" required></textarea>
+                                            <label for="message"><i class="fas fa-comment-alt me-2"></i>Your Message</label>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-3 form-check">
+                                        <input type="checkbox" class="form-check-input" id="privacyCheck" required>
+                                        <label class="form-check-label" for="privacyCheck">
+                                            I agree to the <a href="#">Privacy Policy</a> and consent to being contacted.
+                                        </label>
+                                    </div>
+                                    
+                                    <div class="text-end">
+                                        <button type="submit" class="btn btn-primary btn-lg contact-submit-btn">
+                                            <i class="fas fa-paper-plane me-2"></i>Send Message
+                                        </button>
+                                    </div>
+                                </form>
+                                
+                                <div class="form-response mt-3" style="display: none;">
+                                    <div class="alert alert-success">
+                                        <i class="fas fa-check-circle me-2"></i>
+                                        Thank you for your message! We'll get back to you soon.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- FAQ Section -->
+    <div class="row justify-content-center mt-5">
+        <div class="col-lg-10">
+            <div class="card faq-card">
+                <div class="card-body">
+                    <h2 class="text-center mb-4">Frequently Asked Questions</h2>
+                    
+                    <div class="accordion" id="faqAccordion">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="headingOne">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+                                    What is Kartr and how does it work?
+                                </button>
+                            </h2>
+                            <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    <p>Kartr is a YouTube influencer analytics platform that helps content creators and brands analyze performance metrics, audience engagement, and growth opportunities. Our platform uses advanced algorithms to provide actionable insights that can help improve your content strategy and increase your reach.</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="headingTwo">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                                    How do I get started with Kartr?
+                                </button>
+                            </h2>
+                            <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    <p>Getting started with Kartr is easy! Simply register for an account, choose your user type (influencer or brand), and enter your YouTube channel URL. Our system will automatically analyze your channel and provide you with detailed insights and recommendations.</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="headingThree">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                                    Is my data secure with Kartr?
+                                </button>
+                            </h2>
+                            <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    <p>Absolutely! At Kartr, we take data security very seriously. We use industry-standard encryption and security measures to protect your information. We never share your personal data with third parties without your explicit consent, and you have full control over your privacy settings.</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="headingFour">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour" aria-expanded="false" aria-controls="collapseFour">
+                                    What are Virtual Influencers?
+                                </button>
+                            </h2>
+                            <div id="collapseFour" class="accordion-collapse collapse" aria-labelledby="headingFour" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    <p>Virtual Influencers are AI-powered digital personalities that can help brands create engaging content and connect with audiences. Our Virtual Influencer feature allows you to customize and deploy these digital ambassadors for your marketing campaigns, providing a unique and innovative way to reach your target audience.</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="headingFive">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFive" aria-expanded="false" aria-controls="collapseFive">
+                                    How can I cancel my subscription?
+                                </button>
+                            </h2>
+                            <div id="collapseFive" class="accordion-collapse collapse" aria-labelledby="headingFive" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    <p>You can cancel your subscription at any time by going to your account settings and selecting the "Subscription" tab. From there, you can manage or cancel your subscription. If you need any assistance, our support team is always available to help you through the process.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+
+</div>
+{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* Contact Page Specific Styles */
+    .contact-container {
+        padding: 3rem 0;
+    }
+    
+    /* Fix for FAQ accordion in dark theme */
+    [data-theme="dark"] .accordion-button {
+        color: var(--text-color);
+        background-color: var(--card-bg);
+    }
+    
+    [data-theme="dark"] .accordion-button:not(.collapsed) {
+        color: var(--primary-color);
+        background-color: rgba(124, 115, 255, 0.1);
+    }
+    
+    [data-theme="dark"] .accordion-button::after {
+        filter: invert(1);
+    }
+    
+    [data-theme="dark"] .accordion-body {
+        background-color: var(--card-bg);
+        color: var(--text-color);
+    }
+    
+    .contact-card {
+        border: none;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        border-radius: 15px;
+        overflow: hidden;
+    }
+    
+    .contact-info-section {
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        color: white;
+        padding: 3rem 2rem;
+    }
+    
+    .contact-form-section {
+        background-color: var(--card-bg);
+        padding: 3rem 2rem;
+    }
+    
+    .contact-title, .form-title {
+        font-weight: 700;
+        margin-bottom: 1rem;
+        font-size: 2rem;
+    }
+    
+    .contact-subtitle, .form-subtitle {
+        margin-bottom: 2rem;
+        opacity: 0.9;
+    }
+    
+    .contact-method {
+        display: flex;
+        margin-bottom: 1.5rem;
+        align-items: flex-start;
+    }
+    
+    .contact-icon {
+        width: 50px;
+        height: 50px;
+        background-color: rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 1rem;
+        font-size: 1.2rem;
+    }
+    
+    .contact-details h5 {
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+        font-size: 1.1rem;
+    }
+    
+    .contact-details p {
+        margin-bottom: 0;
+        opacity: 0.9;
+        line-height: 1.5;
+    }
+    
+    .social-links {
+        display: flex;
+    }
+    
+    .social-link {
+        width: 40px;
+        height: 40px;
+        background-color: rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 0.75rem;
+        color: white;
+        transition: all 0.3s ease;
+    }
+    
+    .social-link:hover {
+        background-color: white;
+        color: var(--primary-color);
+        transform: translateY(-3px);
+    }
+    
+    .form-floating > label {
+        color: var(--secondary-text);
+    }
+    
+    .form-floating > .form-control:focus ~ label,
+    .form-floating > .form-control:not(:placeholder-shown) ~ label {
+        color: var(--primary-color);
+    }
+    
+    .form-floating > .form-control:focus,
+    .form-floating > .form-control:not(:placeholder-shown) {
+        border-color: var(--primary-color);
+    }
+    
+    .contact-submit-btn {
+        padding: 0.75rem 2rem;
+        font-weight: 600;
+        border-radius: 30px;
+        box-shadow: 0 5px 15px rgba(108, 99, 255, 0.3);
+        transition: all 0.3s ease;
+    }
+    
+    .contact-submit-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(108, 99, 255, 0.4);
+    }
+    
+    .faq-card {
+        border: none;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        border-radius: 15px;
+        overflow: hidden;
+    }
+    
+    .accordion-item {
+        border-color: var(--border-color);
+    }
+    
+    .accordion-button {
+        background-color: var(--card-bg);
+        color: var(--text-color);
+        font-weight: 600;
+        padding: 1.25rem 1.5rem;
+    }
+    
+    .accordion-button:not(.collapsed) {
+        color: var(--primary-color);
+        background-color: rgba(108, 99, 255, 0.05);
+    }
+    
+    .accordion-button:focus {
+        box-shadow: none;
+        border-color: var(--primary-color);
+    }
+    
+    .accordion-button::after {
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%236c63ff'%3e%3cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3e%3c/svg%3e");
+    }
+    
+    /* Dark mode adjustments */
+    [data-theme="dark"] .contact-form-section {
+        background-color: var(--card-bg);
+    }
+    
+    [data-theme="dark"] .accordion-button {
+        background-color: var(--card-bg);
+        color: var(--text-color);
+    }
+    
+    [data-theme="dark"] .accordion-button:not(.collapsed) {
+        background-color: rgba(124, 115, 255, 0.1);
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 767px) {
+        .contact-info-section, .contact-form-section {
+            padding: 2rem 1.5rem;
+        }
+        
+        .contact-title, .form-title {
+            font-size: 1.75rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const contactForm = document.getElementById('contactForm');
+        const formResponse = document.querySelector('.form-response');
+        
+        if (contactForm) {
+            contactForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                // Simulate form submission
+                const submitBtn = contactForm.querySelector('button[type="submit"]');
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Sending...';
+                
+                // Simulate API call delay
+                setTimeout(function() {
+                    contactForm.style.display = 'none';
+                    formResponse.style.display = 'block';
+                    
+                    // Scroll to response
+                    formResponse.scrollIntoView({ behavior: 'smooth' });
+                }, 1500);
+            });
+        }
+        
+        // Enhance accordion functionality
+        const accordionButtons = document.querySelectorAll('.accordion-button');
+        
+        // Add hover effect to make it clear they're clickable
+        accordionButtons.forEach(button => {
+            // Add visual cue on hover
+            button.addEventListener('mouseenter', function() {
+                this.style.textDecoration = 'underline';
+            });
+            
+            button.addEventListener('mouseleave', function() {
+                this.style.textDecoration = 'none';
+            });
+            
+            // Add click animation
+            button.addEventListener('click', function() {
+                // Add a subtle flash effect when clicked
+                this.style.transition = 'background-color 0.2s';
+                const originalBg = window.getComputedStyle(this).backgroundColor;
+                
+                this.style.backgroundColor = 'rgba(124, 115, 255, 0.2)';
+                setTimeout(() => {
+                    this.style.backgroundColor = originalBg;
+                }, 200);
+            });
+        });
+    });
+</script>
+{% endblock %}
