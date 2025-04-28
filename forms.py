@@ -26,6 +26,20 @@ class LoginForm(FlaskForm):
     password = PasswordField('Password', validators=[DataRequired()])
     submit = SubmitField('Login')
 
+class ForgotPasswordForm(FlaskForm):
+    email = StringField('Email', validators=[DataRequired(), Email()])
+    submit = SubmitField('Send OTP')
+    
+    def validate_email(self, email):
+        user = User.query.filter_by(email=email.data).first()
+        if not user:
+            raise ValidationError('Email not registered. Please check your email or register.')
+
+class OTPVerificationForm(FlaskForm):
+    email = StringField('Email', validators=[DataRequired(), Email()])
+    otp = StringField('OTP', validators=[DataRequired(), Length(min=6, max=6)])
+    submit = SubmitField('Verify & Login')
+
 class YouTubeStatsForm(FlaskForm):
     youtube_url = StringField('YouTube URL', validators=[DataRequired()])
     submit = SubmitField('Analyze')
