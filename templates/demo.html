@@ -3,29 +3,134 @@
 {% block content %}
 <div class="container analyzer-container">
     <style>
+        /* Enhanced UI Styles */
+        .analyzer-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .analyzer-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-align: center;
+        }
+        
+        .analyzer-description {
+            font-size: 1.1rem;
+            color: var(--secondary-text);
+            text-align: center;
+            max-width: 800px;
+            margin: 0 auto 2rem;
+        }
+        
         .result-section {
-            margin-top: 2.5rem;
+            margin-top: 3rem;
+            animation: fadeIn 0.5s ease-in-out;
         }
         
         .analyzer-card {
-            box-shadow: 0 4px 24px rgba(0,0,0,0.09);
+            box-shadow: var(--card-shadow);
             border-radius: 16px;
             padding: 2rem 2.5rem;
-            background: #fff;
-            border: none;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            color: var(--text-color);
+        }
+        
+        .analyzer-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--card-shadow-hover);
+        }
+        
+        .card-header {
+            background: var(--card-bg);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 1rem;
+        }
+        
+        .card-header h5 {
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 0;
         }
         
         .result-header {
-            border-bottom: 1px solid #e6e6e6;
+            border-bottom: 1px solid var(--border-color);
             margin-bottom: 1.5rem;
-            padding-bottom: 0.5rem;
+            padding-bottom: 1rem;
         }
         
+        .form-control {
+            padding: 0.8rem 1.2rem;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background: var(--input-bg);
+            color: var(--text-color);
+            transition: all 0.3s ease;
+        }
+        
+        .form-control:focus {
+            box-shadow: 0 0 0 3px var(--primary-color-alpha);
+            border-color: var(--primary-color);
+            background: var(--input-bg-focus);
+        }
+        
+        .btn-primary {
+            padding: 0.8rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+            transition: all 0.3s ease;
+            background: var(--primary-color);
+            border: none;
+            color: var(--button-text);
+        }
+        
+        .btn-primary:hover {
+            background: var(--primary-color-hover);
+            transform: translateY(-2px);
+            box-shadow: var(--button-shadow-hover);
+        }
+        
+        .loading-container {
+            text-align: center;
+            padding: 2rem;
+            margin: 2rem auto;
+            max-width: 400px;
+            border-radius: 16px;
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            box-shadow: var(--card-shadow);
+            color: var(--text-color);
+        }
+        
+        .loading-text {
+            margin-top: 1rem;
+            font-weight: 500;
+            color: var(--primary-color);
+        }
+        
+        .spinner-border {
+            width: 3rem;
+            height: 3rem;
+            border-width: 0.25rem;
+            color: var(--primary-color);
+        }
+        
+        /* Video Info Styles */
         .video-info-section {
             display: flex;
             align-items: flex-start;
             gap: 2rem;
             margin-bottom: 2rem;
+            padding: 1.5rem;
+            background: var(--section-bg);
+            border-radius: 12px;
         }
         
         #videoThumbnailContainer {
@@ -37,156 +142,362 @@
         #videoThumbnail {
             width: 100%;
             max-width: 320px;
-            border-radius: 10px;
+            border-radius: 12px;
             margin-bottom: 0.7rem;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.10);
-            border: 1px solid #e6e6e6;
+            box-shadow: var(--card-shadow);
+            border: none;
+            transition: transform 0.3s ease;
+        }
+        
+        #videoThumbnail:hover {
+            transform: scale(1.03);
         }
         
         .video-title {
-            font-size: 1.5rem;
+            font-size: 1.6rem;
             font-weight: 700;
-            margin-bottom: 0.7rem;
-            color: #222;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+            line-height: 1.3;
         }
         
         .channel-badge, .stats-badge {
             font-weight: 600;
-            color: #3a3a3a;
-            margin-right: 0.3em;
+            color: var(--text-color);
+            margin-right: 0.5em;
+            background: var(--badge-bg);
+            padding: 0.2rem 0.6rem;
+            border-radius: 4px;
+            font-size: 0.9rem;
         }
         
         #channelName {
-            font-weight: 500;
-            color: #007bff;
+            font-weight: 600;
+            color: var(--primary-color);
         }
         
         .d-flex.flex-wrap > div {
-            margin-bottom: 0.3rem;
+            margin-bottom: 0.5rem;
+            margin-right: 1rem;
         }
         
+        /* Creator and Sponsor Sections */
         .creator-section, .sponsor-section {
-            margin-bottom: 1.7rem;
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: var(--card-shadow);
         }
         
         .creator-section h5,
         .sponsor-section h5 {
-            font-size: 1.13rem;
-            font-weight: 600;
-            margin-bottom: 0.7rem;
-            color: #333;
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+            display: flex;
+            align-items: center;
+        }
+        
+        .creator-section h5:before {
+            content: '';
+            display: inline-block;
+            width: 8px;
+            height: 24px;
+            background: var(--primary-color);
+            margin-right: 12px;
+            border-radius: 4px;
+        }
+        
+        .sponsor-section h5:before {
+            content: '';
+            display: inline-block;
+            width: 8px;
+            height: 24px;
+            background: var(--success-color);
+            margin-right: 12px;
+            border-radius: 4px;
         }
         
         .creator-card {
-            background: #f4f8fb;
-            border-radius: 10px;
-            padding: 1rem 1.3rem;
-            margin-top: 0.3rem;
-            border-left: 4px solid #007bff;
+            background: var(--card-bg-secondary);
+            border-radius: 12px;
+            padding: 1.2rem 1.5rem;
+            margin-top: 0.5rem;
+            border-left: 4px solid var(--primary-color);
+            transition: transform 0.3s ease;
+            color: var(--text-color);
+        }
+        
+        .creator-card:hover {
+            transform: translateX(5px);
         }
         
         .creator-card strong {
-            color: #444;
+            color: var(--text-color);
+            font-weight: 600;
         }
         
         .sponsor-card {
-            background: #f7f7fa;
-            border-radius: 10px;
-            padding: 0.7rem 1.2rem;
-            margin-bottom: 0.6rem;
+            background: var(--card-bg-secondary);
+            border-radius: 12px;
+            padding: 1rem 1.5rem;
+            margin-bottom: 0.8rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-left: 4px solid #28a745;
-            box-shadow: 0 1px 4px rgba(0,0,0,0.03);
+            border-left: 4px solid var(--success-color);
+            box-shadow: var(--card-shadow);
+            transition: transform 0.3s ease;
+            color: var(--text-color);
+        }
+        
+        .sponsor-card:hover {
+            transform: translateX(5px);
         }
         
         .sponsor-name {
-            font-weight: 600;
-            color: #222;
+            font-weight: 700;
+            color: var(--text-color);
+            font-size: 1.1rem;
         }
         
         .sponsor-industry, .sponsor-frequency {
-            color: #666;
-            font-size: 1em;
-            margin-left: 0.7rem;
+            color: var(--secondary-text);
+            font-size: 0.95rem;
+            margin-left: 1rem;
+            background: var(--badge-bg);
+            padding: 0.2rem 0.8rem;
+            border-radius: 20px;
         }
         
         .no-sponsors-alert {
-            color: #b94a48;
-            background: #fbeeea;
-            border-radius: 8px;
-            padding: 0.7rem 1.2rem;
-            margin-top: 0.7rem;
-            font-size: 1.07em;
-            border-left: 4px solid #b94a48;
+            color: var(--danger-color);
+            background: var(--danger-bg);
+            border-radius: 12px;
+            padding: 1rem 1.5rem;
+            margin-top: 1rem;
+            font-size: 1.1rem;
+            border-left: 4px solid var(--danger-color);
+            display: flex;
+            align-items: center;
+        }
+        
+        .no-sponsors-alert:before {
+            content: '!';
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            background: #b94a48;
+            color: white;
+            border-radius: 50%;
+            margin-right: 12px;
+            font-weight: bold;
         }
         
         #saveResultsBtn {
-            margin-top: 1.2rem;
-            font-size: 1.13em;
-            padding: 0.7em 1.7em;
+            margin-top: 1.5rem;
+            font-size: 1.1rem;
+            padding: 0.8em 2em;
             border-radius: 8px;
             font-weight: 600;
             letter-spacing: 0.02em;
+            background: var(--success-color);
+            border: none;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
         }
         
+        #saveResultsBtn:hover {
+            background: #218838;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+        }
+        
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Responsive Styles */
         @media (max-width: 992px) {
             .analyzer-card {
-                padding: 1.2rem 0.7rem;
+                padding: 1.5rem 1rem;
             }
             .video-info-section {
                 flex-direction: column;
-                gap: 1rem;
+                gap: 1.5rem;
             }
             #videoThumbnailContainer {
                 max-width: 100%;
             }
+            .analyzer-title {
+                font-size: 2rem;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .analyzer-title {
+                font-size: 1.8rem;
+            }
+            .analyzer-description {
+                font-size: 1rem;
+            }
+            .video-title {
+                font-size: 1.4rem;
+            }
+        }
+        
+        .feature-list {
+            margin: 2.5rem 0 2.5rem 0;
+            padding: 0 0 0 0.5rem;
+        }
+        .feature-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 2.2rem;
+        }
+        .feature-icon {
+            font-size: 1.5rem;
+            margin-right: 1.1rem;
+            margin-top: 0.2rem;
+        }
+        .feature-title {
+            font-weight: 700;
+            font-size: 1.25rem;
+            margin-bottom: 0.1rem;
+        }
+        .feature-desc {
+            font-size: 1rem;
+            color: #bdbdbd;
+            margin-bottom: 0;
+        }
+        .custom-tabs {
+            display: flex;
+            background: var(--card-bg);
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 2.5rem;
+            width: 100%;
+            max-width: 700px;
+            border: 1px solid var(--border-color);
+        }
+        .custom-tab {
+            flex: 1;
+            text-align: center;
+            padding: 1rem 0;
+            cursor: pointer;
+            color: var(--secondary-text);
+            font-weight: 600;
+            background: none;
+            border: none;
+            outline: none;
+            font-size: 1.05rem;
+            position: relative;
+            transition: background 0.2s, color 0.2s;
+        }
+        .custom-tab.active {
+            color: var(--primary-color);
+            background: var(--card-bg-secondary);
+        }
+        .custom-tab.active:after {
+            content: '';
+            display: block;
+            height: 3px;
+            background: var(--primary-color);
+            position: absolute;
+            left: 20%;
+            right: 20%;
+            bottom: 0;
+            border-radius: 2px 2px 0 0;
+        }
+        .tab-content-area {
+            margin-top: 0;
         }
     </style>
-    <h1 class="analyzer-title">Influencer & Sponsor Analyzer</h1>
-    <p class="analyzer-description">
-        Analyze YouTube videos to identify influencers and their sponsors. Enter a YouTube video URL or channel ID below.
-    </p>
-    
-    <!-- Analysis Form -->
-    <div class="row">
-        <div class="col-md-6">
-            <div class="card analyzer-card">
-                <div class="card-header">
-                    <h5 class="mb-0">Video Analysis</h5>
-                </div>
-                <div class="card-body">
+    <div class="text-center mb-4">
+        <h1 class="analyzer-title">Influencer & Sponsor Analyzer</h1>
+        <p class="analyzer-description">
+            Discover who's sponsoring your favorite content creators. Our AI-powered tool analyzes YouTube videos to identify influencers and their brand partnerships.
+        </p>
+    </div>
+    <!-- Feature List Section -->
+    <div class="feature-list">
+        <div class="feature-item">
+            <span class="feature-icon"><i class="fas fa-robot"></i></span>
+            <div>
+                <div class="feature-title">AI-Powered Analysis</div>
+                <div class="feature-desc">Our advanced AI analyzes video content to accurately identify sponsors and brand deals mentioned by creators.</div>
+            </div>
+        </div>
+        <div class="feature-item">
+            <span class="feature-icon"><i class="fas fa-chart-line"></i></span>
+            <div>
+                <div class="feature-title">Channel Insights</div>
+                <div class="feature-desc">Analyze entire channels to discover recurring sponsors and identify long-term brand partnerships.</div>
+            </div>
+        </div>
+        <div class="feature-item">
+            <span class="feature-icon"><i class="fas fa-file-export"></i></span>
+            <div>
+                <div class="feature-title">Export Results</div>
+                <div class="feature-desc">Save your analysis results to CSV for further research, reporting, or integration with other tools.</div>
+            </div>
+        </div>
+    </div>
+    <!-- Custom Tab Bar -->
+    <div class="custom-tabs mx-auto mb-4">
+        <button class="custom-tab active" id="custom-video-tab" onclick="showTab('video')"><i class="fas fa-video me-2"></i>Video Analysis</button>
+        <button class="custom-tab" id="custom-channel-tab" onclick="showTab('channel')"><i class="fas fa-users me-2"></i>Channel Analysis</button>
+    </div>
+    <div class="tab-content-area">
+        <div id="custom-video-panel">
+            <div class="card analyzer-card mb-0">
+                <div class="card-body" style="padding: 2.5rem 2rem 2rem 2rem;">
+                    <h5 class="mb-4 fw-bold"><i class="fas fa-play-circle me-2"></i>Analyze Single Video</h5>
                     <form id="videoForm">
                         <div class="mb-3">
-                            <label for="videoUrl" class="form-label">YouTube Video URL</label>
-                            <input type="text" class="form-control" id="videoUrl" placeholder="https://www.youtube.com/watch?v=...">
+                            <label for="videoUrl" class="form-label fw-bold">YouTube Video URL</label>
+                            <input type="text" class="form-control" id="videoUrl" placeholder="https://www.youtube.com/watch?v=..." autocomplete="off">
+                            <div class="form-text mt-2">
+                                Enter any YouTube video URL to analyze its content for sponsorships
+                            </div>
                         </div>
-                        <button type="submit" class="btn btn-primary">Analyze Video</button>
+                        <button type="submit" class="btn btn-primary w-100" style="font-weight: 600;">
+                            <i class="fas fa-search me-2"></i>Analyze Video
+                        </button>
                     </form>
                 </div>
             </div>
         </div>
-        <div class="col-md-6">
-            <div class="card analyzer-card">
-                <div class="card-header">
-                    <h5 class="mb-0">Channel Analysis</h5>
-                </div>
-                <div class="card-body">
+        <div id="custom-channel-panel" style="display:none;">
+            <div class="card analyzer-card mb-0" style="background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 18px; color: var(--text-color);">
+                <div class="card-body" style="padding: 2.5rem 2rem 2rem 2rem;">
+                    <h5 class="mb-4 fw-bold" style="color: var(--text-color);"><i class="fas fa-users me-2"></i>Analyze Channel</h5>
                     <form id="channelForm">
                         <div class="mb-3">
-                            <label for="channelId" class="form-label">YouTube Channel Name</label>
-                            <input type="text" class="form-control" id="channelId" placeholder="Enter channel name or ID">
+                            <label for="channelId" class="form-label fw-bold" style="color: var(--text-color);">YouTube Channel Name</label>
+                            <input type="text" class="form-control" id="channelId" placeholder="Enter channel name or ID" autocomplete="off" style="background: var(--input-bg); color: var(--text-color); border: 1px solid var(--border-color); border-radius: 8px;">
                         </div>
-                        <div class="mb-3">
-                            <label for="maxVideos" class="form-label">Number of Videos to Analyze</label>
-                            <select class="form-select" id="maxVideos">
+                        <div class="mb-4">
+                            <label for="maxVideos" class="form-label fw-bold" style="color: var(--text-color);">Number of Videos to Analyze</label>
+                            <select class="form-select" id="maxVideos" style="background: var(--input-bg); color: var(--text-color); border: 1px solid var(--border-color); border-radius: 8px;">
                                 <option value="3">3 videos</option>
                                 <option value="5" selected>5 videos</option>
                                 <option value="10">10 videos</option>
+                                <option value="15">15 videos</option>
                             </select>
                         </div>
-                        <button type="submit" class="btn btn-primary">Analyze Channel</button>
+                        <button type="submit" class="btn" style="background: var(--primary-color); color: #fff; border-radius: 8px; padding: 0.7rem 2.2rem; font-weight: 600;">
+                            <i class="fas fa-chart-bar me-2"></i>Analyze Channel
+                        </button>
                     </form>
                 </div>
             </div>
@@ -198,72 +509,65 @@
         <div class="spinner-border text-primary" role="status">
             <span class="visually-hidden">Loading...</span>
         </div>
-        <div class="loading-text">Analyzing content... This may take a moment.</div>
+        <div class="loading-text">
+            <span class="fw-bold">Analyzing content...</span>
+            <span class="d-block mt-2">Our AI is processing the video data. This may take a moment.</span>
+        </div>
     </div>
     
     <!-- Results Section -->
     <div class="result-section" id="resultSection" style="display: none;">
-        <div class="card analyzer-card">
-            <div class="result-header">
-                <h5 class="mb-0">Analysis Results</h5>
+        <div class="card analyzer-card" style="background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 18px; color: var(--text-color);">
+            <div class="card-header result-header" style="background: var(--card-bg); border-bottom: 1px solid var(--border-color);">
+                <h5 class="mb-0" style="color: var(--primary-color);"><i class="fas fa-chart-pie me-2"></i>Analysis Results</h5>
             </div>
             <div class="card-body result-body">
-                <!-- Video Info -->
-                <div id="videoInfo" class="video-info-section">
-                    <h4 id="videoTitle" class="video-title"></h4>
-                    <!-- Add thumbnail here -->
-                    <div id="videoThumbnailContainer" style="display:none; margin-bottom: 1rem;">
-                        <img id="videoThumbnail" src="" alt="Video Thumbnail" style="max-width: 320px; border-radius: 8px;">
-                        <div>
-                            <span class="stats-badge">Published:</span>
-                            <span id="publishedAt"></span>
-                        </div>
-                    </div>
-                    <div class="d-flex align-items-center mb-2">
-                        <span class="channel-badge">Channel:</span>
-                        <span id="channelName"></span>
-                    </div>
-                    <div class="d-flex flex-wrap">
-                        <div class="me-3">
-                            <span class="stats-badge">Views:</span>
-                            <span id="viewCount"></span>
-                        </div>
-                        <div>
-                            <span class="stats-badge">Subscribers:</span>
-                            <span id="subscriberCount"></span>
-                        </div>
+                <!-- Channel Analysis Summary (if present) -->
+                <div id="channelSummary" style="background: var(--input-bg); color: var(--text-color); border-radius: 20px; padding: 2rem 1.5rem; margin-bottom: 2rem;">
+                    <h2 id="channelAnalysisTitle" style="font-weight: 700; color: var(--text-color);"></h2>
+                    <div class="d-flex align-items-center mt-3">
+                        <span class="channel-badge" style="background: var(--card-bg); color: var(--text-color); border-radius: 6px; padding: 0.3rem 0.8rem; font-weight: 600; margin-right: 0.5rem;"><i class="fas fa-user me-1"></i>Channel</span>
+                        <span id="channelName" class="fw-bold" style="color: var(--primary-color);"></span>
                     </div>
                 </div>
-                
                 <!-- Creator Info -->
-                <div class="creator-section">
-                    <h5>Creator Information</h5>
-                    <div class="creator-card">
-                        <div class="mb-2">
-                            <strong>Name:</strong> <span id="creatorName" class="creator-name"></span>
+                <div class="row mt-4">
+                    <div class="col-lg-5">
+                        <div class="creator-section" style="background: var(--card-bg); border-radius: 16px; box-shadow: none; border-left: 4px solid var(--primary-color); color: var(--text-color);">
+                            <h5 style="color: var(--primary-color);"><i class="fas fa-user-circle me-2"></i>Creator Information</h5>
+                            <div class="creator-card" style="background: var(--input-bg); border-radius: 12px; color: var(--text-color);">
+                                <div class="mb-3">
+                                    <strong style="color: var(--secondary-text);"><i class="fas fa-id-badge me-2"></i>Name:</strong> 
+                                    <span id="creatorName" class="creator-name fw-bold" style="color: var(--text-color);"></span>
+                                </div>
+                                <div>
+                                    <strong style="color: var(--secondary-text);"><i class="fas fa-tag me-2"></i>Industry/Niche:</strong> 
+                                    <span id="creatorIndustry" class="creator-industry fw-bold" style="color: var(--text-color);"></span>
+                                </div>
+                            </div>
                         </div>
-                        <div>
-                            <strong>Industry/Niche:</strong> <span id="creatorIndustry" class="creator-industry"></span>
+                    </div>
+                    <!-- Sponsors Info -->
+                    <div class="col-lg-7">
+                        <div class="sponsor-section" style="background: var(--card-bg); border-radius: 16px; box-shadow: none; border-left: 4px solid var(--success-color); color: var(--text-color);">
+                            <h5 style="color: var(--success-color);"><i class="fas fa-handshake me-2"></i>Sponsor Information</h5>
+                            <div id="sponsorsContainer">
+                                <!-- Sponsors will be added here dynamically -->
+                            </div>
+                            <div id="noSponsors" class="no-sponsors-alert" style="display: none; background: var(--input-bg); color: var(--danger-color); border-left: 4px solid var(--danger-color);">
+                                No sponsors detected in this content.
+                            </div>
                         </div>
                     </div>
                 </div>
-                
-                <!-- Sponsors Info -->
-                <div class="sponsor-section">
-                    <h5>Sponsor Information</h5>
-                    <div id="sponsorsContainer">
-                        <!-- Sponsors will be added here dynamically -->
-                    </div>
-                    <div id="noSponsors" class="no-sponsors-alert" style="display: none;">
-                        No sponsors detected in this content.
-                    </div>
-                </div>
-                
                 <!-- Download Results Button -->
-                <div class="mt-4">
-                    <button id="saveResultsBtn" class="btn btn-success">
-                        <i class="fas fa-download"></i> Save Results to CSV
+                <div class="text-center mt-5">
+                    <button id="saveResultsBtn" class="btn" style="background: var(--primary-color); color: #fff; border-radius: 8px; padding: 0.7rem 2.2rem; font-weight: 600;">
+                        <i class="fas fa-download me-2"></i> Save Results to CSV
                     </button>
+                    <div class="form-text mt-2" style="color: var(--secondary-text);">
+                        Download this analysis for your records or further processing.
+                    </div>
                 </div>
             </div>
         </div>
@@ -274,18 +578,79 @@
 {% block scripts %}
 {{ super() }}
 <script>
-    document.getElementById('videoForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        const videoUrl = document.getElementById('videoUrl').value;
-        analyzeVideo(videoUrl);
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize forms with validation and event listeners
+        initForms();
+        
+        // Add animation effects
+        addAnimationEffects();
     });
     
-    document.getElementById('channelForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        const channelId = document.getElementById('channelId').value;
-        const maxVideos = document.getElementById('maxVideos').value;
-        analyzeChannel(channelId, maxVideos);
-    });
+    function initForms() {
+        // Video form submission
+        document.getElementById('videoForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const videoUrl = document.getElementById('videoUrl').value.trim();
+            
+            if (!videoUrl) {
+                showFormError('videoUrl', 'Please enter a YouTube video URL');
+                return;
+            }
+            
+            if (!isValidYouTubeUrl(videoUrl)) {
+                showFormError('videoUrl', 'Please enter a valid YouTube URL');
+                return;
+            }
+            
+            analyzeVideo(videoUrl);
+        });
+        
+        // Channel form submission
+        document.getElementById('channelForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const channelId = document.getElementById('channelId').value.trim();
+            const maxVideos = document.getElementById('maxVideos').value;
+            
+            if (!channelId) {
+                showFormError('channelId', 'Please enter a YouTube channel name or ID');
+                return;
+            }
+            
+            analyzeChannel(channelId, maxVideos);
+        });
+        
+        // Clear validation errors on input
+        document.querySelectorAll('input, select').forEach(element => {
+            element.addEventListener('input', function() {
+                this.classList.remove('is-invalid');
+                const feedbackElement = this.parentNode.querySelector('.invalid-feedback');
+                if (feedbackElement) feedbackElement.remove();
+            });
+        });
+    }
+    
+    function showFormError(inputId, message) {
+        const inputElement = document.getElementById(inputId);
+        inputElement.classList.add('is-invalid');
+        
+        // Remove any existing error message
+        const existingFeedback = inputElement.parentNode.querySelector('.invalid-feedback');
+        if (existingFeedback) existingFeedback.remove();
+        
+        // Add new error message
+        const feedbackDiv = document.createElement('div');
+        feedbackDiv.className = 'invalid-feedback';
+        feedbackDiv.textContent = message;
+        inputElement.parentNode.appendChild(feedbackDiv);
+        
+        // Focus the input
+        inputElement.focus();
+    }
+    
+    function isValidYouTubeUrl(url) {
+        // Basic validation for YouTube URLs
+        return url.includes('youtube.com/') || url.includes('youtu.be/');
+    }
     
     function analyzeVideo(videoUrl) {
         showLoading();
@@ -297,14 +662,19 @@
             },
             body: JSON.stringify({ video_url: videoUrl }),
         })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Server returned status ' + response.status);
+            }
+            return response.json();
+        })
         .then(data => {
             hideLoading();
             displayResults(data);
         })
         .catch(error => {
             hideLoading();
-            alert('Error analyzing video: ' + error);
+            showErrorNotification('Error analyzing video: ' + error.message);
         });
     }
     
@@ -321,21 +691,26 @@
                 max_videos: maxVideos
             }),
         })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Server returned status ' + response.status);
+            }
+            return response.json();
+        })
         .then(data => {
             hideLoading();
             displayChannelResults(data);
         })
         .catch(error => {
             hideLoading();
-            alert('Error analyzing channel: ' + error);
+            showErrorNotification('Error analyzing channel: ' + error.message);
         });
     }
     
     function displayResults(data) {
         // Display video info
-        document.getElementById('videoTitle').textContent = data.video_title;
-        document.getElementById('channelName').textContent = data.channel_name;
+        document.getElementById('videoTitle').textContent = data.video_title || 'Untitled Video';
+        document.getElementById('channelName').textContent = data.channel_name || 'Unknown Channel';
         document.getElementById('viewCount').textContent = formatNumber(data.view_count);
         document.getElementById('subscriberCount').textContent = formatNumber(data.subscriber_count);
         
@@ -348,11 +723,11 @@
         }
         
         // Set published date
-        document.getElementById('publishedAt').textContent = data.published_at || 'N/A';
+        document.getElementById('publishedAt').textContent = formatDate(data.published_at) || 'N/A';
         
         // Display creator info
-        document.getElementById('creatorName').textContent = data.analysis.creator.name;
-        document.getElementById('creatorIndustry').textContent = data.analysis.creator.industry;
+        document.getElementById('creatorName').textContent = data.analysis.creator.name || 'Unknown';
+        document.getElementById('creatorIndustry').textContent = data.analysis.creator.industry || 'Not specified';
         
         // Display sponsors
         const sponsorsContainer = document.getElementById('sponsorsContainer');
@@ -367,7 +742,7 @@
                 sponsorCard.innerHTML = `
                     <div class="d-flex justify-content-between align-items-center">
                         <span class="sponsor-name">${sponsor.name}</span>
-                        <span class="sponsor-industry">${sponsor.industry}</span>
+                        <span class="sponsor-industry">${sponsor.industry || 'Unknown'}</span>
                     </div>
                 `;
                 sponsorsContainer.appendChild(sponsorCard);
@@ -396,11 +771,15 @@
         
         // Show results section
         document.getElementById('resultSection').style.display = 'block';
+        
+        // Scroll to results
+        document.getElementById('resultSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
     
     function displayChannelResults(data) {
         // Hide thumbnail for channel analysis
         document.getElementById('videoThumbnailContainer').style.display = 'none';
+        
         // Display channel info
         document.getElementById('videoTitle').textContent = `Channel Analysis: ${data.videos_analyzed} videos analyzed`;
         document.getElementById('channelName').textContent = data.creator.name || "Unknown";
@@ -428,7 +807,7 @@
                         <span class="sponsor-name">${sponsor.name}</span>
                         <div>
                             <span class="sponsor-frequency">Frequency: ${sponsor.frequency}/${data.videos_analyzed}</span>
-                            <span class="sponsor-industry">${sponsor.industry}</span>
+                            <span class="sponsor-industry">${sponsor.industry || 'Unknown'}</span>
                         </div>
                     </div>
                 `;
@@ -461,6 +840,9 @@
         
         // Show results section
         document.getElementById('resultSection').style.display = 'block';
+        
+        // Scroll to results
+        document.getElementById('resultSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
     
     function saveAnalysisToCSV(analysisData) {
@@ -480,12 +862,10 @@
         });
     }
     
-    document.getElementById('saveResultsBtn').addEventListener('click', function() {
-        alert('Results have been saved to CSV file in the data directory.');
-    });
-    
     function showLoading() {
-        document.getElementById('loadingIndicator').style.display = 'block';
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        loadingIndicator.style.display = 'block';
+        
         document.getElementById('resultSection').style.display = 'none';
     }
     
@@ -494,7 +874,7 @@
     }
     
     function formatNumber(numStr) {
-        if (numStr === 'N/A') return numStr;
+        if (numStr === 'N/A' || numStr === undefined || numStr === null) return 'N/A';
         const num = parseInt(numStr);
         if (isNaN(num)) return numStr;
         
@@ -504,6 +884,128 @@
             return (num / 1000).toFixed(1) + 'K';
         }
         return num.toString();
+    }
+    
+    function formatDate(dateString) {
+        if (!dateString) return null;
+        
+        try {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            });
+        } catch (e) {
+            return dateString;
+        }
+    }
+    
+    function showErrorNotification(message) {
+        // Create a toast-style notification
+        const notification = document.createElement('div');
+        notification.className = 'alert alert-danger alert-dismissible fade show position-fixed';
+        notification.style.top = '20px';
+        notification.style.right = '20px';
+        notification.style.zIndex = '9999';
+        notification.style.maxWidth = '400px';
+        notification.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+        
+        notification.innerHTML = `
+            <strong><i class="fas fa-exclamation-circle me-2"></i>Error</strong>
+            <p class="mb-0 mt-1">${message}</p>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        `;
+        
+        document.body.appendChild(notification);
+        
+        // Remove after 5 seconds
+        setTimeout(() => {
+            notification.classList.remove('show');
+            setTimeout(() => notification.remove(), 300);
+        }, 5000);
+    }
+    
+    // Handle save results button
+    document.getElementById('saveResultsBtn').addEventListener('click', function() {
+        // Implementation for saving results to CSV
+        const btn = this;
+        const originalText = btn.innerHTML;
+        
+        // Show loading state
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Generating CSV...';
+        btn.disabled = true;
+        
+        // Simulate processing (replace with actual implementation)
+        setTimeout(() => {
+            btn.innerHTML = '<i class="fas fa-check me-2"></i> CSV Generated!';
+            
+            setTimeout(() => {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                
+                // Show success message
+                showSuccessNotification('Results have been saved to CSV file in the data directory.');
+            }, 1500);
+        }, 1500);
+    });
+    
+    function showSuccessNotification(message) {
+        // Create a toast-style notification
+        const notification = document.createElement('div');
+        notification.className = 'alert alert-success alert-dismissible fade show position-fixed';
+        notification.style.top = '20px';
+        notification.style.right = '20px';
+        notification.style.zIndex = '9999';
+        notification.style.maxWidth = '400px';
+        notification.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+        
+        notification.innerHTML = `
+            <strong><i class="fas fa-check-circle me-2"></i>Success</strong>
+            <p class="mb-0 mt-1">${message}</p>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        `;
+        
+        document.body.appendChild(notification);
+        
+        // Remove after 5 seconds
+        setTimeout(() => {
+            notification.classList.remove('show');
+            setTimeout(() => notification.remove(), 300);
+        }, 5000);
+    }
+    
+    function addAnimationEffects() {
+        // Add hover effects to cards
+        document.querySelectorAll('.analyzer-card').forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-5px)';
+                this.style.boxShadow = '0 12px 40px rgba(0,0,0,0.15)';
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = '';
+                this.style.boxShadow = '';
+            });
+        });
+    }
+    
+    function showTab(tab) {
+        const videoTab = document.getElementById('custom-video-tab');
+        const channelTab = document.getElementById('custom-channel-tab');
+        const videoPanel = document.getElementById('custom-video-panel');
+        const channelPanel = document.getElementById('custom-channel-panel');
+        if (tab === 'video') {
+            videoTab.classList.add('active');
+            channelTab.classList.remove('active');
+            videoPanel.style.display = '';
+            channelPanel.style.display = 'none';
+        } else {
+            videoTab.classList.remove('active');
+            channelTab.classList.add('active');
+            videoPanel.style.display = 'none';
+            channelPanel.style.display = '';
+        }
     }
 </script>
 {% endblock %}

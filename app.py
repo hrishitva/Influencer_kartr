@@ -33,6 +33,17 @@ app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
 # Set YouTube API key from environment variable
 app.config["YOUTUBE_API_KEY"] = os.environ.get("YOUTUBE_API_KEY", "")
 
+# Import email configuration if available
+try:
+    from config import EMAIL_CONFIG
+    # Set email configuration in app config
+    app.config["EMAIL_USER"] = os.environ.get("EMAIL_USER", EMAIL_CONFIG.get("EMAIL_USER", ""))
+    app.config["EMAIL_PASSWORD"] = os.environ.get("EMAIL_PASSWORD", EMAIL_CONFIG.get("EMAIL_PASSWORD", ""))
+except ImportError:
+    # No config file found, use environment variables only
+    app.config["EMAIL_USER"] = os.environ.get("EMAIL_USER", "")
+    app.config["EMAIL_PASSWORD"] = os.environ.get("EMAIL_PASSWORD", "")
+
 # Initialize the database with the app
 db.init_app(app)
 
