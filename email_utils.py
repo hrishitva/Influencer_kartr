@@ -6,6 +6,12 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from datetime import datetime, timedelta
 
+# Import email configuration
+try:
+    from config import EMAIL_CONFIG
+except ImportError:
+    EMAIL_CONFIG = {}
+
 # Dictionary to store OTPs with expiration times
 otp_store = {}
 
@@ -42,9 +48,15 @@ def verify_otp(email, otp):
 
 def send_otp_email(recipient_email, otp):
     """Send OTP to user's email"""
-    # Get email credentials from environment variables
-    sender_email = os.environ.get('EMAIL_USER', '')
-    sender_password = os.environ.get('EMAIL_PASSWORD', '')
+    try:
+        # Try to get credentials from Flask app config first
+        from app import app
+        sender_email = app.config.get('EMAIL_USER', '')
+        sender_password = app.config.get('EMAIL_PASSWORD', '')
+    except (ImportError, RuntimeError):
+        # Fallback to environment variables or config file
+        sender_email = os.environ.get('EMAIL_USER', EMAIL_CONFIG.get('EMAIL_USER', ''))
+        sender_password = os.environ.get('EMAIL_PASSWORD', EMAIL_CONFIG.get('EMAIL_PASSWORD', ''))
     
     # If credentials are not set, return error
     if not sender_email or not sender_password:
@@ -77,7 +89,11 @@ def send_otp_email(recipient_email, otp):
     try:
         # Connect to SMTP server
         server = smtplib.SMTP('smtp.gmail.com', 587)
-        server.starttls()
+        server.ehlo()  # Identify ourselves to the server
+        server.starttls()  # Secure the connection
+        server.ehlo()  # Re-identify ourselves over TLS connection
+        
+        # Login to the server
         server.login(sender_email, sender_password)
         
         # Send email
@@ -87,4 +103,5 @@ def send_otp_email(recipient_email, otp):
         
         return True, "OTP sent successfully"
     except Exception as e:
+        print("unable to send otp:", e)
         return False, str(e)
