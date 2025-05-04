@@ -25,9 +25,73 @@ def contact():
 @app.route('/')
 @app.route('/home')
 def home():
+    """Route for the landing page"""
     if current_user.is_authenticated:
         return redirect(url_for('stats'))
-    return redirect(url_for('login'))
+    
+    # Get real-time stats from database.csv
+    stats = get_platform_stats()
+    return render_template('landing.html', title='Kartr - Connect Influencers and Sponsors', stats=stats)
+
+@app.route('/landing')
+def landing():
+    """Explicit route for the landing page"""
+    if current_user.is_authenticated:
+        return redirect(url_for('stats'))
+    
+    # Get real-time stats from database.csv
+    stats = get_platform_stats()
+    return render_template('landing.html', title='Kartr - Connect Influencers and Sponsors', stats=stats)
+
+def get_platform_stats():
+    """Get real-time platform statistics from database.csv"""
+    try:
+        import pandas as pd
+        import os
+        
+        # Check if database.csv exists
+        db_path = os.path.join('data', 'database.csv')
+        if not os.path.exists(db_path):
+            logger.warning(f"Database file not found at {db_path}")
+            return {
+                'influencers': 0,
+                'sponsors': 0,
+                'total_users': 0
+            }
+        
+        # Read the CSV file
+        df = pd.read_csv(db_path)
+        
+        # Count users by type
+        influencers = len(df[df['user_type'] == 'influencer'])
+        sponsors = len(df[df['user_type'] == 'sponsor'])
+        total_users = len(df)
+        
+        # Get stats from analysis.csv if it exists
+        analysis_path = os.path.join('data', 'ANALYSIS.CSV')
+        partnerships = 0
+        if os.path.exists(analysis_path):
+            try:
+                analysis_df = pd.read_csv(analysis_path)
+                # Count unique partnerships (this is an estimate based on available data)
+                partnerships = len(analysis_df)
+            except Exception as e:
+                logger.error(f"Error reading analysis.csv: {str(e)}")
+        
+        return {
+            'influencers': influencers,
+            'sponsors': sponsors,
+            'total_users': total_users,
+            'partnerships': partnerships
+        }
+    except Exception as e:
+        logger.error(f"Error getting platform stats: {str(e)}")
+        return {
+            'influencers': 0,
+            'sponsors': 0,
+            'total_users': 0,
+            'partnerships': 0
+        }
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -195,7 +259,7 @@ def login():
 def logout():
     logout_user()
     flash('You have been logged out.', 'info')
-    return redirect(url_for('login'))
+    return redirect(url_for('home'))
 
 @app.route('/forgot-password', methods=['GET', 'POST'])
 def forgot_password():
