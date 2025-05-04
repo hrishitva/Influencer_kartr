@@ -39,6 +39,11 @@ def register():
         try:
             # Import Firebase configuration
             from firebase_config import auth
+
+            if auth is None:
+                logger.error("Firebase auth is not initialized.")
+                flash('Firebase authentication service is not available. Please try again later.', 'danger')
+                return render_template('register.html', title='Register', form=form)
             
             # Create user in Firebase
             firebase_user = auth.create_user_with_email_and_password(
@@ -81,9 +86,58 @@ def login():
 
     form = LoginForm()
     if form.validate_on_submit():
+        # First try local authentication directly
+        user = User.query.filter_by(email=form.email.data).first()
+        
+        if user and user.check_password(form.password.data):
+            login_user(user)
+            flash('Login successful!', 'success')
+            return redirect(url_for('stats'))
+        
+        # If local authentication fails, try CSV validation
+        is_valid, user_type = validate_user_login(form.email.data, form.password.data)
+        if is_valid:
+            # Create a user in the database if not exists
+            if not user:
+                try:
+                    # Try to get username from CSV if available
+                    username = form.email.data.split('@')[0] if '@' in form.email.data else form.email.data
+                    
+                    try:
+                        df = pd.read_csv('data/database.csv')
+                        user_data = df[df['email'] == form.email.data]
+                        if not user_data.empty:
+                            username = user_data.iloc[0]['username']
+                    except Exception as csv_error:
+                        logger.warning(f"Could not read from CSV: {str(csv_error)}")
+                    
+                    # Create user in database
+                    user = User(username=username, email=form.email.data, user_type=user_type)
+                    user.set_password(form.password.data)
+                    db.session.add(user)
+                    db.session.commit()
+                    
+                    # Get the user again
+                    user = User.query.filter_by(email=form.email.data).first()
+                    
+                    if user:
+                        login_user(user)
+                        flash('Login successful via CSV validation!', 'success')
+                        return redirect(url_for('stats'))
+                except Exception as e:
+                    logger.error(f"Error creating user from CSV: {str(e)}")
+                    flash('Error during login. Please try again.', 'danger')
+                    return render_template('login.html', title='Login', form=form)
+        
+        # If local and CSV authentication fails, try Firebase
         try:
             # Import Firebase configuration
             from firebase_config import auth
+
+            if auth is None:
+                logger.error("Firebase auth is not initialized.")
+                flash('Firebase authentication service is not available. Please try again later.', 'danger')
+                return render_template('login.html', title='Login', form=form)
             
             # Try to authenticate with Firebase
             firebase_user = auth.sign_in_with_email_and_password(
@@ -129,53 +183,11 @@ def login():
                 except Exception as e:
                     logger.error(f"Error creating user from Firebase: {str(e)}")
                     flash('Error during login. Please try again.', 'danger')
+                    return render_template('login.html', title='Login', form=form)
                     
         except Exception as e:
             logger.error(f"Login error: {str(e)}")
-            
-            # If Firebase authentication fails, try local authentication as fallback
-            if "INVALID_PASSWORD" in str(e) or "EMAIL_NOT_FOUND" in str(e):
-                # Try local authentication
-                user = User.query.filter_by(email=form.email.data).first()
-                
-                if user and user.check_password(form.password.data):
-                    login_user(user)
-                    flash('Login successful!', 'success')
-                    return redirect(url_for('stats'))
-                else:
-                    # Try CSV validation as final fallback
-                    is_valid, user_type = validate_user_login(form.email.data, form.password.data)
-                    if is_valid:
-                        # Create a user in the database if not exists
-                        if not user:
-                            try:
-                                df = pd.read_csv('data/database.csv')
-                                user_data = df[df['email'] == form.email.data]
-                                if not user_data.empty:
-                                    username = user_data.iloc[0]['username']
-                                else:
-                                    username = form.email.data.split('@')[0] if '@' in form.email.data else form.email.data
-
-                                # Create user in database
-                                user = User(username=username, email=form.email.data, user_type=user_type)
-                                user.set_password(form.password.data)
-                                db.session.add(user)
-                                db.session.commit()
-                                
-                                # Get the user again
-                                user = User.query.filter_by(email=form.email.data).first()
-                                
-                                if user:
-                                    login_user(user)
-                                    flash('Login successful via CSV validation!', 'success')
-                                    return redirect(url_for('stats'))
-                            except Exception as e:
-                                logger.error(f"Error creating user from CSV: {str(e)}")
-                                flash('Error during login. Please try again.', 'danger')
-                    
-                flash('Invalid email or password.', 'danger')
-            else:
-                flash('An error occurred during login. Please try again.', 'danger')
+            flash('Invalid email or password.', 'danger')
 
     return render_template('login.html', title='Login', form=form)
 
