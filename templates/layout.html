@@ -12,7 +12,10 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Animate.css -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
     
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -22,75 +25,95 @@
     
     {% block extra_head %}{% endblock %}
     
-    <!-- Custom Navbar and Back Button Styles -->
+    <!-- Enhanced Navbar and UI Styles -->
     <style>
         /* Logo and Brand Styling */
+        .navbar {
+            padding: 0.6rem 0;
+            background-color: rgba(var(--bg-color-rgb, 255, 255, 255), 0.85);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            border-bottom: 1px solid rgba(var(--border-color-rgb, 222, 226, 230), 0.3);
+            transition: all 0.3s ease;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        [data-theme="dark"] .navbar {
+            background-color: rgba(44, 48, 52, 0.85);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        }
+        
         .navbar-logo {
             display: block;
-            margin-right: 20px;
+            margin-right: 1rem;
             z-index: 10;
+            position: relative;
+            padding: 0.3rem 0;
         }
         
         .logo-brand-container {
             display: flex;
             flex-direction: column;
             align-items: center;
+            gap: 0;
+            transition: all 0.3s ease;
+            transform: scale(0.95);
         }
         
         .logo-img {
-            height: 40px;
-            transition: transform 0.3s ease;
-            margin-bottom: 5px;
+            height: 24px;
+            transition: all 0.3s ease;
+            margin-bottom: 0;
+            filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
         }
         
         .navbar-logo:hover .logo-img {
-            transform: scale(1.05);
+            transform: scale(1.05) translateY(-1px);
+            filter: drop-shadow(0 2px 4px rgba(108, 99, 255, 0.3));
         }
         
         .brand-text {
             display: flex;
             flex-direction: column;
-            line-height: 1.1;
+            line-height: 1;
             align-items: center;
         }
         
         .brand-name {
-            font-size: 1.4rem;
-            font-weight: 700;
+            font-size: 1.5rem;
+            font-weight: 800;
             color: var(--primary-color);
             letter-spacing: -0.5px;
             background: linear-gradient(135deg, var(--primary-color), var(--secondary-color) 45%, var(--primary-color) 55%, var(--secondary-color));
             background-size: 200% 100%;
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            background-clip: text;
             position: relative;
             display: inline-block;
-            text-shadow: 0 2px 10px rgba(108, 99, 255, 0.2);
+            text-shadow: 0 1px 5px rgba(108, 99, 255, 0.2);
             animation: shimmer 3s infinite;
-            line-height: 1.2;
+            line-height: 1.1;
         }
         
         @keyframes shimmer {
-            0% {
-                background-position: 0% 50%;
-            }
-            50% {
-                background-position: 100% 50%;
-            }
-            100% {
-                background-position: 0% 50%;
-            }
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
         }
         
         .brand-name::after {
             content: '';
             position: absolute;
-            bottom: 0;
+            bottom: -2px;
             left: 0;
             width: 0;
             height: 2px;
             background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
             transition: width 0.3s ease;
+            border-radius: 2px;
         }
         
         .navbar-logo:hover .brand-name::after {
@@ -98,17 +121,222 @@
         }
         
         .tagline {
-            font-size: 0.7rem;
+            font-size: 0.85rem;
             color: var(--tagline-color);
             font-weight: 500;
-            letter-spacing: 0.5px;
-            opacity: 0.9;
+            letter-spacing: 0.3px;
+            opacity: 0.8;
             margin-top: 0;
             white-space: nowrap;
         }
         
+        /* Navigation Menu */
+        .navbar-nav {
+            gap: 0.25rem;
+        }
+        
+        .navbar-nav .nav-item {
+            position: relative;
+            margin: 0 0.15rem;
+        }
+        
+        .navbar-nav .nav-link {
+            color: var(--text-color);
+            padding: 0.5rem 0.75rem;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        
+        .navbar-nav .nav-link i {
+            transition: all 0.3s ease;
+        }
+        
+        .navbar-nav .nav-link:hover,
+        .navbar-nav .nav-link:focus {
+            color: var(--primary-color);
+        }
+        
+        .navbar-nav .nav-link.active {
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+        
+        /* Navbar Toggler */
+        .navbar-toggler {
+            border: 1px solid rgba(0,0,0,.1);
+            padding: 0.25rem 0.75rem;
+            border-radius: 0.25rem;
+            transition: all 0.3s ease;
+        }
+        
+        .navbar-toggler:focus {
+            box-shadow: 0 0 0 0.25rem rgba(0,123,255,.25);
+        }
+        
+        /* Search Bar */
+        .search-container {
+            position: relative;
+            max-width: 250px;
+            width: 100%;
+            margin: 0 0.5rem;
+            flex-shrink: 1;
+        }
+        
+        /* Card-like search container similar to stats page */
+        .search-container .input-group {
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            border-radius: 20px;
+            overflow: hidden;
+            flex-wrap: nowrap;
+        }
+        
+        .search-input {
+            border-radius: 20px 0 0 20px;
+            transition: all 0.3s ease;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+        
+        .search-input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(var(--primary-color-rgb, 108, 99, 255), 0.2);
+        }
+        
+        .search-btn {
+            border-top-right-radius: 20px;
+            border-bottom-right-radius: 20px;
+            transition: all 0.3s ease;
+            height: 42px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+            font-weight: 500;
+        }
+        
+        /* YouTube URL Input Styling */
+        .youtube-url-input {
+            font-size: 0.95rem;
+            height: 42px;
+            border-radius: 20px 0 0 20px;
+            border: 1px solid var(--border-color);
+            background-color: var(--card-bg);
+            padding-left: 1rem;
+        }
+        
+        .youtube-url-input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(var(--primary-color-rgb, 108, 99, 255), 0.2);
+        }
+        
+        .search-btn:hover {
+            background-color: var(--secondary-color);
+        }
+        
+        .search-results {
+            border-radius: 8px;
+            margin-top: 0.5rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            border: 1px solid var(--border-color);
+            padding: 0.5rem 0;
+            max-height: 400px;
+            overflow-y: auto;
+            background-color: var(--card-bg);
+        }
+        
+        /* Email Visibility Toggle */
+        .email-visibility-toggle {
+            margin-right: 0.5rem;
+            transition: all 0.3s ease;
+        }
+        
+        .form-check-input {
+            background-color: var(--toggle-bg);
+            border-color: var(--toggle-border);
+            margin-top: 0;
+        }
+        
+        .form-check-input:checked {
+            background-color: var(--toggle-checked-bg);
+            border-color: var(--toggle-checked-bg);
+        }
+        
+        .form-check-label {
+            color: var(--toggle-label);
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        
+        /* Theme Toggle Button */
+        #theme-toggle {
+            background: none;
+            border: none;
+            color: var(--text-color);
+            transition: all 0.3s ease;
+            padding: 0;
+            margin-left: 0.5rem;
+        }
+        
+        #theme-toggle:hover {
+            color: var(--primary-color);
+            transform: rotate(15deg);
+        }
+        
+        #theme-toggle i {
+            font-size: 1.1rem;
+        }
+        
+        /* Theme toggle icons are controlled via JavaScript */
+        
+        /* Dropdown Menu Styling */
+        .dropdown-menu {
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 0.5rem 0;
+            margin-top: 0.5rem;
+            background-color: var(--card-bg);
+        }
+        
+        .dropdown-item {
+            padding: 0.5rem 1rem;
+            color: var(--text-color);
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+        
+        .dropdown-item:hover {
+            background-color: rgba(var(--primary-color-rgb, 108, 99, 255), 0.1);
+            color: var(--primary-color);
+        }
+        
+        .dropdown-item.active {
+            background-color: rgba(var(--primary-color-rgb, 108, 99, 255), 0.1);
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+        
+        /* Navbar Toggler */
+        .navbar-toggler {
+            border: 1px solid rgba(0,0,0,.1);
+            padding: 0.25rem 0.75rem;
+            border-radius: 0.25rem;
+            transition: all 0.3s ease;
+        }
+        
+        .navbar-toggler:focus {
+            box-shadow: 0 0 0 0.25rem rgba(0,123,255,.25);
+        }
+        
         /* Responsive adjustments */
         @media (max-width: 991px) {
+            .navbar {
+                padding: 0.5rem 0;
+            }
+            
             .logo-brand-container {
                 flex-direction: row;
                 align-items: center;
@@ -116,17 +344,84 @@
             
             .logo-img {
                 margin-bottom: 0;
-                margin-right: 10px;
+                margin-right: 8px;
+                height: 22px;
             }
             
             .brand-text {
                 align-items: flex-start;
             }
+            
+            .search-container {
+                margin: 0.5rem 0;
+                max-width: 180px;
+            }
+            
+            .navbar-collapse {
+                padding: 0.5rem;
+                margin-top: 0.5rem;
+                background-color: var(--card-bg);
+                border-radius: 0 0 8px 8px;
+                box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            }
+            
+            .navbar-nav {
+                gap: 0.15rem;
+            }
+            
+            .navbar-nav .nav-link {
+                padding: 0.5rem 0.4rem;
+            }
+            
+            .navbar-nav .nav-link i {
+                font-size: 1rem;
+            }
+            
+            /* Compact email visibility toggle */
+            .email-visibility-toggle {
+                margin-right: 0.25rem;
+                white-space: nowrap;
+            }
+            
+            .form-check-label {
+                font-size: 0.8rem;
+            }
         }
         
         @media (max-width: 576px) {
+            .navbar {
+                padding: 0.4rem 0;
+            }
+            
+            .container {
+                padding-left: 0.5rem;
+                padding-right: 0.5rem;
+            }
+            
+            /* Single line navbar for mobile */
+            .navbar > .container {
+                display: flex;
+                flex-direction: row;
+                align-items: center;
+                justify-content: space-between;
+                flex-wrap: nowrap;
+            }
+            
+            /* Ensure all navbar elements stay in one line */
+            .navbar .d-flex {
+                flex: 1;
+                justify-content: flex-start;
+            }
+            
+            /* Compact logo */
+            .logo-brand-container {
+                transform: scale(0.8);
+                margin-right: 0;
+            }
+            
             .logo-img {
-                height: 35px;
+                height: 18px;
+                margin-right: 4px;
             }
             
             .brand-name {
@@ -134,64 +429,168 @@
             }
             
             .tagline {
-                font-size: 0.6rem;
+                font-size: 0.7rem;
+            }
+            
+            /* Compact search bar */
+            .search-container {
+                max-width: 120px;
+                margin: 0 0.25rem;
+            }
+            
+            .d-md-none.search-container {
+                max-width: 120px;
+                margin: 0 0.25rem;
+                flex-shrink: 1;
+            }
+            
+            .search-input {
+                padding: 0.25rem 0.5rem;
+                font-size: 0.8rem;
+                height: 32px;
+            }
+            
+            .youtube-url-input {
+                height: 32px;
+                font-size: 0.8rem;
+            }
+            
+            .search-btn {
+                padding: 0.25rem 0.35rem;
+                height: 32px;
+                font-size: 0.8rem;
+            }
+            
+            /* Navbar toggler */
+            .navbar-toggler {
+                padding: 0.2rem 0.4rem;
+                margin-left: 0.25rem;
+                font-size: 0.8rem;
+            }
+            
+            .navbar-toggler-icon {
+                width: 1em;
+                height: 1em;
+            }
+            
+            /* Collapsed navbar */
+            .navbar-collapse {
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                background-color: var(--card-bg);
+                box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+                border-radius: 0 0 8px 8px;
+                z-index: 1000;
+                padding: 0.5rem;
+            }
+            
+            /* Compact nav links */
+            .navbar-nav .nav-link {
+                padding: 0.4rem 0.5rem;
+                font-size: 0.9rem;
+                white-space: nowrap;
+            }
+            
+            .navbar-nav .nav-link i {
+                margin-right: 0.5rem;
+                font-size: 0.9rem;
+            }
+            
+            /* Dropdown menu styling */
+            .dropdown-menu {
+                min-width: 200px;
+                right: 0;
+                left: auto;
+            }
+            
+            /* Theme toggle button */
+            #theme-toggle {
+                padding: 0.4rem 0.35rem;
+                font-size: 0.9rem;
+            }
+            
+            #theme-toggle i {
+                font-size: 1rem;
+            }
+            
+            /* Form elements */
+            .form-check-input {
+                width: 1.5em;
+                height: 0.8em;
+                margin-top: 0.1em;
             }
         }
-        
-
-        
-
+        }
     </style>
 </head>
 <body>
-    <!-- Navbar -->
+    <!-- Enhanced Navbar -->
     <nav class="navbar navbar-expand-lg navbar-light sticky-top">
         <div class="container position-relative">
-            <!-- Logo with brand name below it -->
-            <a class="navbar-logo" href="{{ url_for('home') }}">
-                <div class="logo-brand-container">
-                    <img src="{{ url_for('static', filename='img/katr_logos/no_background_katr_logo.png') }}" alt="Kartr Logo" class="logo-img">
-                    <div class="brand-text">
-                        <span class="brand-name">Kartr</span>
-                        <span class="tagline">Shine and Connect</span>
+            <div class="d-flex align-items-center flex-nowrap">
+                <!-- Logo with brand name -->
+                <a class="navbar-logo" href="{{ url_for('home') }}">
+                    <div class="logo-brand-container">
+                        <img src="{{ url_for('static', filename='img/katr_logos/no_background_katr_logo.png') }}" alt="Kartr Logo" class="logo-img">
+                        <div class="brand-text">
+                            <span class="brand-name">Kartr</span>
+                        </div>
+                    </div>
+                </a>
+                
+                <!-- Search Bar (Only shown when logged in) -->
+                {% if current_user.is_authenticated %}
+                <div class="search-container d-none d-md-block">
+                    <div class="input-group">
+                        <input type="text" class="form-control search-input youtube-url-input" placeholder="Search influencers or sponsors..." aria-label="Search">
+                        <button class="btn btn-primary search-btn px-4" type="button">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                    <div class="search-results dropdown-menu">
+                        <!-- Search results will be populated here -->
                     </div>
                 </div>
-            </a>
-            
-
-            
-            <!-- Search Bar (Only shown when logged in) -->
-            {% if current_user.is_authenticated %}
-            <div class="search-container">
-                <div class="input-group">
-                    <input type="text" class="form-control search-input" placeholder="Search influencers or sponsors..." aria-label="Search">
-                    <button class="btn btn-primary search-btn" type="button">
-                        <i class="fas fa-search"></i>
-                    </button>
-                </div>
-                <div class="search-results dropdown-menu">
-                    <!-- Search results will be populated here -->
-                </div>
+                {% endif %}
             </div>
-            {% endif %}
             
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
+            <div class="d-flex align-items-center">
+                <!-- Mobile Search (Only shown when logged in) -->
+                {% if current_user.is_authenticated %}
+                <div class="search-container d-block d-md-none me-2">
+                    <div class="input-group">
+                        <input type="text" class="form-control search-input youtube-url-input" placeholder="Search..." aria-label="Search">
+                        <button class="btn btn-primary search-btn px-3" type="button">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- Navbar Toggler -->
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+            </div>
             
             <!-- Navigation Menu -->
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
+                <ul class="navbar-nav ms-auto d-flex flex-row flex-wrap align-items-center">
                     {% if current_user.is_authenticated %}
                         <!-- Email Visibility Toggle -->
                         <li class="nav-item email-visibility-toggle">
                             <div class="d-flex align-items-center">
-                                <i class="fas fa-envelope me-2"></i>
+                                <i class="fas fa-envelope me-1 d-none d-sm-inline"></i>
                                 <div class="form-check form-switch">
                                     <input class="form-check-input" type="checkbox" id="emailVisibilityToggle" 
                                            {% if current_user.email_visible %}checked{% endif %}>
-                                    <label class="form-check-label" for="emailVisibilityToggle">
+                                    <label class="form-check-label d-none d-sm-inline" for="emailVisibilityToggle">
                                         Public Email
+                                    </label>
+                                    <label class="form-check-label d-inline d-sm-none" for="emailVisibilityToggle">
+                                        Email
                                     </label>
                                 </div>
                             </div>
@@ -210,7 +609,7 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link {% if request.endpoint == 'visualizations' %}active{% endif %}" 
+                            <a class="nav-link {% if request.endpoint == 'visualization' %}active{% endif %}" 
                                href="{{ url_for('visualization') }}">
                                 <i class="fas fa-chart-line me-1"></i> Visualizations
                             </a>
@@ -258,8 +657,9 @@
                         </li>
                     {% endif %}
                     <li class="nav-item">
-                        <button id="theme-toggle" class="btn btn-link nav-link" aria-label="Toggle theme">
-                            <i class="fas fa-moon"></i>
+                        <button id="theme-toggle" aria-label="Toggle theme">
+                            <i class="fas fa-moon" id="moon-icon"></i>
+                            <i class="fas fa-sun" id="sun-icon" style="display: none;"></i>
                         </button>
                     </li>
                 </ul>
@@ -315,30 +715,7 @@
     
     {% block extra_scripts %}{% endblock %}
     
-    <!-- Theme Toggle Script -->
-    <script>
-        const themeToggle = document.getElementById('theme-toggle');
-        const html = document.documentElement;
-        
-        // Check for saved theme preference
-        const savedTheme = localStorage.getItem('theme') || 'light';
-        html.setAttribute('data-theme', savedTheme);
-        updateThemeIcon(savedTheme);
-        
-        themeToggle.addEventListener('click', () => {
-            const currentTheme = html.getAttribute('data-theme');
-            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-            
-            html.setAttribute('data-theme', newTheme);
-            localStorage.setItem('theme', newTheme);
-            updateThemeIcon(newTheme);
-        });
-        
-        function updateThemeIcon(theme) {
-            const icon = themeToggle.querySelector('i');
-            icon.className = theme === 'light' ? 'fas fa-moon' : 'fas fa-sun';
-        }
-    </script>
+    <!-- Theme Toggle Script moved to the end of the body -->
 
     <!-- Search Functionality Script -->
     <script>
@@ -526,6 +903,98 @@
                 });
             });
         }
+    </script>
+    
+    <!-- Theme Toggle Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const themeToggle = document.getElementById('theme-toggle');
+            const moonIcon = document.getElementById('moon-icon');
+            const sunIcon = document.getElementById('sun-icon');
+            const htmlElement = document.documentElement;
+            
+            // Check for saved theme preference or default to light
+            const currentTheme = localStorage.getItem('theme') || 'light';
+            
+            // Set initial theme
+            htmlElement.setAttribute('data-theme', currentTheme);
+            
+            // Update icon based on current theme
+            updateThemeIcon(currentTheme);
+            
+            // Add click event listener
+            themeToggle.addEventListener('click', function() {
+                // Toggle theme
+                const newTheme = htmlElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+                
+                // Apply animation
+                themeToggle.classList.add('animate__animated', 'animate__rubberBand');
+                
+                // Remove animation classes after animation completes
+                setTimeout(() => {
+                    themeToggle.classList.remove('animate__animated', 'animate__rubberBand');
+                }, 1000);
+                
+                // Update theme
+                htmlElement.setAttribute('data-theme', newTheme);
+                localStorage.setItem('theme', newTheme);
+                
+                // Update icon
+                updateThemeIcon(newTheme);
+                
+                // Show toast notification
+                showThemeChangeToast(newTheme);
+            });
+            
+            function updateThemeIcon(theme) {
+                if (theme === 'dark') {
+                    moonIcon.style.display = 'none';
+                    sunIcon.style.display = 'inline-block';
+                } else {
+                    moonIcon.style.display = 'inline-block';
+                    sunIcon.style.display = 'none';
+                }
+            }
+            
+            function showThemeChangeToast(theme) {
+                const toast = document.createElement('div');
+                toast.className = 'toast position-fixed bottom-0 end-0 m-3';
+                toast.style.backgroundColor = theme === 'dark' ? '#2c3034' : '#fff';
+                toast.style.color = theme === 'dark' ? '#fff' : '#212529';
+                toast.style.borderRadius = '8px';
+                toast.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
+                toast.style.padding = '0.75rem 1.25rem';
+                toast.style.zIndex = '1050';
+                toast.style.minWidth = '200px';
+                toast.style.opacity = '0';
+                toast.style.transition = 'opacity 0.3s ease';
+                
+                const icon = theme === 'dark' ? 'fa-moon' : 'fa-sun';
+                const message = theme === 'dark' ? 'Dark Mode Activated' : 'Light Mode Activated';
+                
+                toast.innerHTML = `
+                    <div class="d-flex align-items-center">
+                        <i class="fas ${icon} me-2" style="color: var(--primary-color);"></i>
+                        <span>${message}</span>
+                    </div>
+                `;
+                
+                document.body.appendChild(toast);
+                
+                // Fade in
+                setTimeout(() => {
+                    toast.style.opacity = '1';
+                }, 10);
+                
+                // Auto-dismiss after 2 seconds
+                setTimeout(() => {
+                    toast.style.opacity = '0';
+                    setTimeout(() => {
+                        toast.remove();
+                    }, 300);
+                }, 2000);
+            }
+        });
     </script>
     
     <!-- Main JS -->
