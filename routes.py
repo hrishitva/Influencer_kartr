@@ -712,7 +712,6 @@ def analyze_video():
         return jsonify({"error": str(e)}), 500
 
 @app.route('/analyze_channel', methods=['POST'])
-@login_required
 def analyze_channel():
     """Analyze a YouTube channel for influencer and sponsor information"""
     data = request.json
@@ -731,7 +730,6 @@ def analyze_channel():
 
 
 @app.route('/save_analysis', methods=['POST'])
-@login_required
 def save_analysis():
     """Save analysis data to CSV file"""
     data = request.json

@@ -524,10 +524,27 @@
             <div class="card-body result-body">
                 <!-- Channel Analysis Summary (if present) -->
                 <div id="channelSummary" style="background: var(--input-bg); color: var(--text-color); border-radius: 20px; padding: 2rem 1.5rem; margin-bottom: 2rem;">
-                    <h2 id="channelAnalysisTitle" style="font-weight: 700; color: var(--text-color);"></h2>
+                    <h2 id="videoTitle" style="font-weight: 700; color: var(--text-color);"></h2>
                     <div class="d-flex align-items-center mt-3">
                         <span class="channel-badge" style="background: var(--card-bg); color: var(--text-color); border-radius: 6px; padding: 0.3rem 0.8rem; font-weight: 600; margin-right: 0.5rem;"><i class="fas fa-user me-1"></i>Channel</span>
                         <span id="channelName" class="fw-bold" style="color: var(--primary-color);"></span>
+                    </div>
+                    <div id="videoThumbnailContainer" style="margin-top: 1rem; display: none;">
+                        <img id="videoThumbnail" class="img-fluid rounded" src="" alt="Video Thumbnail">
+                    </div>
+                    <div class="d-flex flex-wrap mt-3">
+                        <div class="me-4">
+                            <span class="stats-badge"><i class="fas fa-eye me-1"></i>Views</span>
+                            <span id="viewCount" class="fw-bold">0</span>
+                        </div>
+                        <div>
+                            <span class="stats-badge"><i class="fas fa-users me-1"></i>Subscribers</span>
+                            <span id="subscriberCount" class="fw-bold">0</span>
+                        </div>
+                        <div class="ms-4">
+                            <span class="stats-badge"><i class="fas fa-calendar me-1"></i>Published</span>
+                            <span id="publishedAt" class="fw-bold">N/A</span>
+                        </div>
                     </div>
                 </div>
                 <!-- Creator Info -->
