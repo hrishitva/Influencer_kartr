@@ -101,19 +101,19 @@ def register():
     form = RegistrationForm()
     if form.validate_on_submit():
         try:
-            # Import Firebase configuration
-            from firebase_config import auth
+            # Import Auth0 helper functions
+            from auth0_helpers import create_auth0_user
 
-            if auth is None:
-                logger.error("Firebase auth is not initialized.")
-                flash('Firebase authentication service is not available. Please try again later.', 'danger')
-                return render_template('register.html', title='Register', form=form)
-            
-            # Create user in Firebase
-            firebase_user = auth.create_user_with_email_and_password(
-                form.email.data, 
-                form.password.data
+            # Create user in Auth0
+            success, auth0_user = create_auth0_user(
+                email=form.email.data,
+                password=form.password.data,
+                username=form.username.data
             )
+            
+            if not success:
+                flash('Email already exists or service is unavailable. Please try again.', 'danger')
+                return render_template('register.html', title='Register', form=form)
             
             # Create user in local database
             user = User(username=form.username.data, email=form.email.data, user_type=form.user_type.data)
@@ -135,11 +135,7 @@ def register():
             return redirect(url_for('login'))
         except Exception as e:
             logger.error(f"Error during registration: {str(e)}")
-            # Check if the error is because the user already exists in Firebase
-            if "EMAIL_EXISTS" in str(e):
-                flash('Email already exists. Please use a different email or login.', 'danger')
-            else:
-                flash(f'Error during registration. Please try again.', 'danger')
+            flash(f'Error during registration. Please try again.', 'danger')
 
     return render_template('register.html', title='Register', form=form)
 
@@ -193,61 +189,59 @@ def login():
                     flash('Error during login. Please try again.', 'danger')
                     return render_template('login.html', title='Login', form=form)
         
-        # If local and CSV authentication fails, try Firebase
+        # If local and CSV authentication fails, try Auth0
         try:
-            # Import Firebase configuration
-            from firebase_config import auth
-
-            if auth is None:
-                logger.error("Firebase auth is not initialized.")
-                flash('Firebase authentication service is not available. Please try again later.', 'danger')
-                return render_template('login.html', title='Login', form=form)
+            # Import Auth0 helper functions
+            from auth0_helpers import user_exists_in_auth0
             
-            # Try to authenticate with Firebase
-            firebase_user = auth.sign_in_with_email_and_password(
-                form.email.data, 
-                form.password.data
+            # Try to authenticate with Auth0
+            exists, auth0_user = user_exists_in_auth0(
+                email=form.email.data, 
+                password=form.password.data
             )
             
-            # If Firebase authentication is successful, check if user exists in our database
-            user = User.query.filter_by(email=form.email.data).first()
-            
-            if user:
-                # User exists in our database, log them in
-                login_user(user)
-                flash('Login successful!', 'success')
-                return redirect(url_for('stats'))
-            else:
-                # User exists in Firebase but not in our database
-                # Create a new user in our database
-                try:
-                    # Try to get username and user_type from CSV if available
-                    username = form.email.data.split('@')[0] if '@' in form.email.data else form.email.data
-                    user_type = 'influencer'  # Default
-                    
-                    try:
-                        df = pd.read_csv('data/database.csv')
-                        user_data = df[df['email'] == form.email.data]
-                        if not user_data.empty:
-                            username = user_data.iloc[0]['username']
-                            user_type = user_data.iloc[0]['user_type']
-                    except Exception as csv_error:
-                        logger.warning(f"Could not read from CSV: {str(csv_error)}")
-                    
-                    # Create user in database
-                    user = User(username=username, email=form.email.data, user_type=user_type)
-                    user.set_password(form.password.data)  # Still hash password for local auth
-                    db.session.add(user)
-                    db.session.commit()
-                    
-                    # Log in the user
+            if exists and auth0_user:
+                # If Auth0 authentication is successful, check if user exists in our database
+                user = User.query.filter_by(email=form.email.data).first()
+                
+                if user:
+                    # User exists in our database, log them in
                     login_user(user)
                     flash('Login successful!', 'success')
                     return redirect(url_for('stats'))
-                except Exception as e:
-                    logger.error(f"Error creating user from Firebase: {str(e)}")
-                    flash('Error during login. Please try again.', 'danger')
-                    return render_template('login.html', title='Login', form=form)
+                else:
+                    # User exists in Auth0 but not in our database
+                    # Create a new user in our database
+                    try:
+                        # Try to get username and user_type from CSV if available
+                        username = form.email.data.split('@')[0] if '@' in form.email.data else form.email.data
+                        user_type = 'influencer'  # Default
+                        
+                        try:
+                            df = pd.read_csv('data/database.csv')
+                            user_data = df[df['email'] == form.email.data]
+                            if not user_data.empty:
+                                username = user_data.iloc[0]['username']
+                                user_type = user_data.iloc[0]['user_type']
+                        except Exception as csv_error:
+                            logger.warning(f"Could not read from CSV: {str(csv_error)}")
+                        
+                        # Create user in database
+                        user = User(username=username, email=form.email.data, user_type=user_type)
+                        user.set_password(form.password.data)  # Still hash password for local auth
+                        db.session.add(user)
+                        db.session.commit()
+                        
+                        # Log in the user
+                        login_user(user)
+                        flash('Login successful!', 'success')
+                        return redirect(url_for('stats'))
+                    except Exception as e:
+                        logger.error(f"Error creating user from Auth0: {str(e)}")
+                        flash('Error during login. Please try again.', 'danger')
+                        return render_template('login.html', title='Login', form=form)
+            else:
+                flash('Invalid email or password.', 'danger')
                     
         except Exception as e:
             logger.error(f"Login error: {str(e)}")
@@ -273,18 +267,41 @@ def forgot_password():
         
         if user:
             try:
-                # Import Firebase configuration
-                from firebase_config import auth
+                # Import Auth0 helper functions
+                from auth0_helpers import send_password_reset_email
                 
-                # Send password reset email via Firebase
-                auth.send_password_reset_email(email)
-                flash('Password reset link has been sent. Please check your inbox and follow the instructions.', 'success')
-                return redirect(url_for('login'))
+                # Send password reset email via Auth0
+                success, error_message = send_password_reset_email(email)
+                
+                if success:
+                    flash('Password reset link has been sent. Please check your inbox and follow the instructions.', 'success')
+                    return redirect(url_for('login'))
+                else:
+                    logger.error(f"Auth0 password reset error: {error_message}")
+                    
+                    # Fall back to OTP method if Auth0 fails
+                    # Generate OTP
+                    otp = generate_otp()
+                    
+                    # Store OTP with expiration time
+                    if store_otp(email, otp):
+                        # Send OTP to user's email
+                        success, message = send_otp_email(email, otp)
+                        
+                        if success:
+                            flash('OTP has been sent to your email. Please check your inbox.', 'success')
+                            # Create OTP verification form with email pre-filled
+                            verify_form = OTPVerificationForm()
+                            verify_form.email.data = email
+                            return render_template('verify_otp.html', form=verify_form)
+                        else:
+                            flash(f'Failed to send OTP: {message}. Please try again.', 'danger')
+                    else:
+                        flash('Failed to generate OTP. Please try again.', 'danger')
             except Exception as e:
-                logger.error(f"Firebase password reset error: {str(e)}")
+                logger.error(f"Password reset error: {str(e)}")
                 
-                # Fall back to OTP method if Firebase fails
-                # Generate OTP
+                # Fall back to OTP method
                 otp = generate_otp()
                 
                 # Store OTP with expiration time

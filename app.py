@@ -6,6 +6,10 @@ from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, login_required, current_user
 from sqlalchemy.orm import DeclarativeBase
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Set up logging
 logging.basicConfig(level=logging.DEBUG)
