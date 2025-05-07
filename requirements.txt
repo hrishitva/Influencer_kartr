@@ -14,3 +14,6 @@ sqlalchemy
 werkzeug
 wtforms
 youtube-transcript-api
+authlib
+requests
+python-jose
