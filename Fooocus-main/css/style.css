@@ -416,3 +416,12 @@ div:has(> #positive_prompt) {
 #inpaint_brush_color input[type=color]{
   background: none;
 }
+
+.logo-area img {
+  height: 48px;
+  margin-right: 14px;
+  transition: transform 0.3s;
+}
+.logo-area img:hover {
+  transform: scale(1.08) rotate(-4deg);
+}

@@ -800,11 +800,7 @@ def save_analysis():
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
 
-from graph import load_creator_sponsor_graph, load_industry_graph
 
-@app.route('/visualization')
-def visualization():
-    return render_template('visualization.html')
 
 @app.route('/api/creator_sponsor_graph')
 def api_creator_sponsor_graph():
@@ -813,3 +809,107 @@ def api_creator_sponsor_graph():
 @app.route('/api/industry_graph')
 def api_industry_graph():
     return jsonify(load_industry_graph())
+
+
+
+from gemini_imagen import generate_image_llm
+
+
+from video_creator import create_promotional_image_colab, enhance_prompt_with_brand
+
+@app.route('/generate_image', methods=['POST'])
+def generate_image():
+    face_image = request.files.get('face_image')
+    brand_image = request.files.get('brand_image')
+    prompt = request.form.get('prompt')
+    brand_name = request.form.get('brand_name', 'YourBrand')
+
+    if not all([face_image, brand_image, prompt]):
+        return jsonify({'error': 'Missing required fields'}), 400
+
+    # Save images temporarily
+    face_path = 'temp_face.png'
+    brand_path = 'temp_brand.png'
+    face_image.save(face_path)
+    brand_image.save(brand_path)
+
+    prompt = enhance_prompt_with_brand(prompt, brand_name)
+
+    try:
+        result = create_promotional_image_colab(
+            face_path,
+            brand_path,
+            prompt,
+            brand_name
+        )
+        if 'image_base64' in result:
+            return jsonify({'image_base64': result['image_base64']})
+        else:
+            return jsonify({'error': result.get('error', 'Unknown error from backend.')})
+    finally:
+        # Clean up temp files
+        if os.path.exists(face_path):
+            os.remove(face_path)
+        if os.path.exists(brand_path):
+            os.remove(brand_path)
+
+@app.route('/generate_llm_influencer', methods=['POST'])
+def generate_llm_influencer():
+    data = request.get_json()
+    prompt = data.get('prompt')
+    if not prompt:
+        return jsonify({"error": "Prompt is required."}), 400
+    result = generate_image_llm(prompt)
+    return jsonify(result)
+
+
+
+
+from graph import load_creator_sponsor_graph, load_industry_graph
+@app.route('/visualization')
+def visualization():
+    # Create data directory if it doesn't exist
+    os.makedirs('data', exist_ok=True)
+    
+    # CSV file path
+    csv_file = 'data/analysis_results.csv'
+    file_exists = os.path.isfile(csv_file)
+
+    with open(csv_file, 'a', newline='', encoding='utf-8') as f:
+            writer = csv.writer(f)
+            
+            # Write header if file doesn't exist
+            if not file_exists:
+                writer.writerow([
+                    'Date', 'User ID', 'Video/Channel Title', 'Channel Name',
+                    'Creator Name', 'Creator Industry', 'Sponsor Name', 'Sponsor Industry'
+                ])
+
+    return render_template('visualization.html')
+
+
+
+
+
+
+from flask import request, jsonify
+
+@app.route('/ask_graph_question', methods=['POST'])
+def ask_graph_question():
+    question = request.json.get('question', '')
+    # TODO: Implement retrieval/answer logic based on your graph data
+    answer = f"You asked: {question} (answer logic goes here)"
+    return jsonify({'answer': answer})
+
+from rag_ques import retrieve_relevant_rows, generate_gemini_answer
+
+@app.route('/ask_question', methods=['POST'])
+def ask_question():
+    data = request.get_json()
+    question = data.get('question', '')
+    results = retrieve_relevant_rows(question)
+    context = results.to_string(index=False) if not results.empty else "No relevant data found."
+    answer = generate_gemini_answer(question, context)
+    return jsonify({'answer': answer})
+
+
