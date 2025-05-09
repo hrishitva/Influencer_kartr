@@ -24,6 +24,8 @@ from modules.ui_gradio_extensions import reload_javascript
 from modules.auth import auth_enabled, check_auth
 from modules.util import is_json
 
+import gradio.themes as grthemes
+
 def get_task(*args):
     args = list(args)
     args.pop(0)
@@ -145,14 +147,117 @@ def inpaint_mode_change(mode, inpaint_engine_version):
 
 reload_javascript()
 
-title = f'Fooocus {fooocus_version.version}'
+title = f'Virtual Influencer Studio'
 
 if isinstance(args_manager.args.preset, str):
     title += ' ' + args_manager.args.preset
 
-shared.gradio_root = gr.Blocks(title=title).queue()
+custom_theme = grthemes.Default(
+    primary_hue="violet", 
+    secondary_hue="cyan",
+    neutral_hue="slate",
+    font=[grthemes.GoogleFont("Montserrat"), "Arial", "sans-serif"],
+)
+
+custom_css = """
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&display=swap');
+body {
+    background: linear-gradient(120deg, #f8fafc 0%, #e0e7ff 100%);
+    font-family: 'Montserrat', Arial, sans-serif;
+}
+.gradio-container {
+    border-radius: 18px;
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+    background: rgba(255,255,255,0.92);
+    padding-top: 32px;
+}
+.gr-block, .gr-column, .gr-row {
+    background: rgba(255,255,255,0.85);
+    border-radius: 16px;
+    box-shadow: 0 4px 24px 0 rgba(31, 38, 135, 0.07);
+    margin-bottom: 18px;
+    padding: 18px;
+}
+.gr-block.gradio-container {
+    box-shadow: none;
+    background: transparent;
+    padding-top: 0;
+}
+button, .gr-button {
+    background: linear-gradient(90deg, #7c3aed 0%, #06b6d4 100%) !important;
+    color: #fff !important;
+    border: none !important;
+    border-radius: 10px !important;
+    font-weight: 700;
+    font-size: 1.08rem;
+    letter-spacing: 0.02em;
+    transition: box-shadow 0.2s, transform 0.2s;
+    box-shadow: 0 2px 8px rgba(124,58,237,0.08);
+}
+button:hover, .gr-button:hover {
+    background: linear-gradient(90deg, #06b6d4 0%, #7c3aed 100%) !important;
+    transform: translateY(-2px) scale(1.03);
+    box-shadow: 0 6px 18px rgba(6,182,212,0.13);
+}
+input, textarea, select {
+    border-radius: 8px !important;
+    border: 1.5px solid #a5b4fc !important;
+    background: #f1f5f9 !important;
+    font-family: 'Montserrat', Arial, sans-serif;
+    font-size: 1rem;
+    padding: 8px 12px;
+}
+.gr-textbox, .gr-dropdown, .gr-checkbox, .gr-slider, .gr-radio {
+    margin-bottom: 12px;
+}
+.gr-gallery, .gr-image {
+    border-radius: 14px !important;
+    box-shadow: 0 2px 12px rgba(124,58,237,0.07);
+}
+.gr-accordion, .gr-tabs {
+    border-radius: 12px !important;
+    background: rgba(236, 239, 255, 0.7);
+}
+.gr-html {
+    font-size: 1.01rem;
+    color: #6366f1;
+}
+::-webkit-scrollbar {
+    width: 8px;
+    background: #e0e7ff;
+}
+::-webkit-scrollbar-thumb {
+    background: #a5b4fc;
+    border-radius: 6px;
+}
+.logo-area {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 18px;
+}
+.logo-area img {
+    height: 48px;
+    margin-right: 14px;
+}
+.logo-area h1 {
+    font-family: 'Montserrat', Arial, sans-serif;
+    font-weight: 700;
+    font-size: 2rem;
+    color: #7c3aed;
+    margin: 0;
+}
+@media (max-width: 600px) {
+    .logo-area h1 { font-size: 1.2rem; }
+    .logo-area img { height: 32px; }
+    .gr-block, .gr-column, .gr-row { padding: 8px; }
+}
+"""
+shared.gradio_root = gr.Blocks(title=title, theme=custom_theme, css=custom_css).queue()
 
 with shared.gradio_root:
+    gr.HTML('<div class="logo-area"><img src="Influencer_kartr/static/img/katr_logos/no_background_katr_logo.png"/><h1>Virtual Influencer Studio</h1></div>')
+    gr.HTML('<div style="text-align:center; color:#64748b; margin-bottom:18px;">Welcome! Use the controls below to generate and enhance your influencer images.</div>')
     currentTask = gr.State(worker.AsyncTask(args=[]))
     inpaint_engine_state = gr.State('empty')
     with gr.Row():

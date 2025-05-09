@@ -2,6 +2,95 @@
 
 {% block content %}
 <div class="virtual-influencer-page">
+    <!-- Tab Navigation -->
+    <ul class="nav nav-tabs mb-4" id="influencerTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="create-influencer-tab" data-bs-toggle="tab" data-bs-target="#create-influencer-pane" type="button" role="tab" aria-controls="create-influencer-pane" aria-selected="true">
+                <i class="fas fa-magic"></i> Create your virtual influencer
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="create-video-tab" data-bs-toggle="tab" data-bs-target="#create-video-pane" type="button" role="tab" aria-controls="create-video-pane" aria-selected="false">
+                <i class="fas fa-video"></i> Create your Image Generation
+            </button>
+        </li>
+        
+    </ul>
+    <div class="tab-content" id="influencerTabsContent">
+        <div class="tab-pane fade show active" id="create-influencer-pane" role="tabpanel" aria-labelledby="create-influencer-tab">
+            <!-- ... your existing virtual influencer content ... -->
+        </div>
+        <div class="tab-pane fade" id="create-video-pane" role="tabpanel" aria-labelledby="create-video-tab">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="fas fa-video"></i> Image Generation</h5>
+                        <form id="imageGenForm" enctype="multipart/form-data">
+                            <div class="mb-3">
+                                <label for="virtualImage" class="form-label">Virtual Influencer Image</label>
+                                <input type="file" class="form-control" id="virtualImage" name="face_image" accept="image/*" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="brandImage" class="form-label">Brand Image</label>
+                                <input type="file" class="form-control" id="brandImage" name="brand_image" accept="image/*" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="brandName" class="form-label">Brand Name</label>
+                                <input type="text" class="form-control" id="brandName" name="brand_name" placeholder="Enter the brand name..." required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="imagePrompt" class="form-label">Image Prompt</label>
+                                <textarea class="form-control" id="imagePrompt" name="prompt" rows="3" placeholder="Describe your image..." required></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary"><i class="fas fa-bolt"></i> Generate Image</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <img id="resultImage" style="display:none; max-width:100%; margin-top:20px;" />
+        </div>
+    </div>
+
+    <!-- Modal for Fooocus and LLM Image Generation -->
+    <div class="mb-4 text-end">
+        <button class="btn btn-success" id="createVirtualInfluencerBtn">
+            <i class="fas fa-magic"></i> Create your virtual influencer using Fooocus
+        </button>
+        <button class="btn btn-info" id="createVirtualInfluencerLLMBtn" style="margin-left: 10px;">
+            <i class="fas fa-robot"></i> Create your virtual influencer using LLM
+        </button>
+    </div>
+
+    <!-- Modal for LLM Virtual Influencer -->
+    <div class="modal fade" id="llmInfluencerModal" tabindex="-1" aria-labelledby="llmInfluencerModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form id="llmInfluencerForm">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="llmInfluencerModalLabel">Create Virtual Influencer (LLM)</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <label for="llmPrompt" class="form-label">Describe your virtual influencer</label>
+                        <textarea class="form-control" id="llmPrompt" name="llmPrompt" rows="3" placeholder="Enter a prompt for your virtual influencer..." required></textarea>
+                        <div id="llmImageResult" style="margin-top: 20px; text-align: center;"></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary">Generate Image</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="createInfluencerModal" tabindex="-1" aria-labelledby="createInfluencerModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="createInfluencerModalLabel">Create Your Virtual Influencer</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>     
+            </div>
+        </div>
+    </div>
     <div class="section-header">
         <h1 class="mb-4">Rent a Virtual Influencer</h1>
         <p class="lead">Virtual influencers are computer-generated characters that can represent your brand across social media. They offer unique benefits over traditional influencers, including creative flexibility and 24/7 availability.</p>
@@ -38,7 +127,7 @@
                 <div class="card-img-wrapper">
                     <img src="{{ influencer.image_url | default('/static/img/default-avatar.png') }}" class="card-img-top" alt="{{ influencer.name }}">
                     <div class="overlay">
-                        <span class="followers"><i class="fas fa-users"></i> {{ '{:,}'.format(influencer.followers) }}</span>
+                        <span class="followers"><i class="fas fa-users"></i> {% if influencer.followers is defined %}{{ '{:,}'.format(influencer.followers) }}{% else %}N/A{% endif %}</span>
                         <span class="engagement"><i class="fas fa-heart"></i> {{ influencer.engagement_rate }}%</span>
                     </div>
                 </div>
@@ -270,6 +359,37 @@
     }
 </style>
 
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+$(document).ready(function() {
+  $('#imageGenForm').on('submit', function(event) {
+    event.preventDefault();
+    var formData = new FormData(this);
+    $.ajax({
+      url: '/generate_image',
+      type: 'POST',
+      data: formData,
+      processData: false,
+      contentType: false,
+      success: function(response) {
+        if (response.image_url) {
+          $('#resultImage').attr('src', response.image_url).show();
+        } else if (response.image_base64) {
+          $('#resultImage').attr('src', 'data:image/png;base64,' + response.image_base64).show();
+        } else if (response.error) {
+          alert('Error: ' + response.error);
+        } else {
+          alert('Unexpected response from server.');
+        }
+      },
+      error: function(xhr) {
+        alert('Error generating image.');
+      }
+    });
+  });
+});
+</script>
+
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Rent button event handlers
@@ -320,5 +440,49 @@
             }
         });
     });
+
+     // LLM: Create Virtual Influencer Modal Logic
+     document.getElementById('createVirtualInfluencerLLMBtn').addEventListener('click', function() {
+        var llmModal = new bootstrap.Modal(document.getElementById('llmInfluencerModal'));
+        document.getElementById('llmPrompt').value = '';
+        document.getElementById('llmImageResult').innerHTML = '';
+        llmModal.show();
+    });
+
+    document.getElementById('llmInfluencerForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+        var prompt = document.getElementById('llmPrompt').value;
+        var resultDiv = document.getElementById('llmImageResult');
+        resultDiv.innerHTML = '<div>Generating image...</div>';
+        fetch('/generate_llm_influencer', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ prompt: prompt })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.image_url) {
+                resultDiv.innerHTML = '<img src="' + data.image_url + '" style="max-width:100%;">';
+            } else if (data.image_base64) {
+                resultDiv.innerHTML = '<img src="data:image/png;base64,' + data.image_base64 + '" style="max-width:100%;">';
+            } else if (data.error) {
+                resultDiv.innerHTML = '<div class="text-danger">Error: ' + data.error + '</div>';
+            } else {
+                resultDiv.innerHTML = '<div class="text-danger">Unexpected response from server.</div>';
+            }
+        })
+        .catch(() => {
+            resultDiv.innerHTML = '<div class="text-danger">Error generating image.</div>';
+        });
+    });
+
+
+    // Fooocus: Create Virtual Influencer Modal Logic
+    document.getElementById('createVirtualInfluencerBtn').addEventListener('click', function() {
+        window.open('http://localhost:7860/', '_blank'); // Opens Fooocus UI in a new tab
+    });
+
+   
+   
 </script>
 {% endblock %}

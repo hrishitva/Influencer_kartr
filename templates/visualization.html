@@ -133,6 +133,17 @@
             <div id="graph2"></div>
         </div>
         <div id="graph-tooltip"></div>
+        <div id="rag-chat" style="margin-top: 2rem; max-width: 600px; width: 100%;">
+            <div style="background: #fff; border-radius: 12px; box-shadow: 0 2px 12px #0001; padding: 24px;">
+                <h4 style="margin-bottom: 1rem; color: #4e73df;">Ask the Data Assistant</h4>
+                <form id="question-form" style="display: flex; gap: 12px; align-items: center;">
+                    <input type="text" name="question" id="question" placeholder="Ask a question about the data..." required
+                           style="flex: 1; padding: 10px 14px; border-radius: 6px; border: 1px solid #cfd8dc; font-size: 1rem;">
+                    <button type="submit" style="padding: 10px 22px; border-radius: 6px; background: #4e73df; color: #fff; border: none; font-weight: 600; font-size: 1rem;">Ask</button>
+                </form>
+                <div id="answer-box" style="margin-top: 1.2rem; min-height: 32px; font-size: 1.08rem; color: #222;"></div>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}
@@ -255,5 +266,22 @@ render3DGraph(
     { creator_industry: '#00008B', sponsor_industry: '#dc143c' },
     'sponsor_industry'
 );
+
+
+
+
+  document.getElementById('question-form').onsubmit = async function(e) {
+    e.preventDefault();
+    const question = document.getElementById('question').value;
+    document.getElementById('answer-box').innerText = 'Loading...';
+    const response = await fetch('/ask_question', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ question })
+    });
+    const data = await response.json();
+    document.getElementById('answer-box').innerText = data.answer;
+  };
 </script>
+
 {% endblock %}
