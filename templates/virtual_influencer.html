@@ -26,19 +26,19 @@
                     <h5 class="card-title"><i class="fas fa-video"></i> Image Generation</h5>
                         <form id="imageGenForm" enctype="multipart/form-data">
                             <div class="mb-3">
-                                <label for="virtualImage" class="form-label">Virtual Influencer Image</label>
+                                <label for="virtualImage" class="form-label" style="color: var(--text-color);">Virtual Influencer Image</label>
                                 <input type="file" class="form-control" id="virtualImage" name="face_image" accept="image/*" required>
                             </div>
                             <div class="mb-3">
-                                <label for="brandImage" class="form-label">Brand Image</label>
+                                <label for="brandImage" class="form-label" style="color: var(--text-color);">Brand Image</label>
                                 <input type="file" class="form-control" id="brandImage" name="brand_image" accept="image/*" required>
                             </div>
                             <div class="mb-3">
-                                <label for="brandName" class="form-label">Brand Name</label>
+                                <label for="brandName" class="form-label" style="color: var(--text-color);">Brand Name</label>
                                 <input type="text" class="form-control" id="brandName" name="brand_name" placeholder="Enter the brand name..." required>
                             </div>
                             <div class="mb-3">
-                                <label for="imagePrompt" class="form-label">Image Prompt</label>
+                                <label for="imagePrompt" class="form-label" style="color: var(--text-color);">Image Prompt</label>
                                 <textarea class="form-control" id="imagePrompt" name="prompt" rows="3" placeholder="Describe your image..." required></textarea>
                             </div>
                             <button type="submit" class="btn btn-primary"><i class="fas fa-bolt"></i> Generate Image</button>
@@ -66,11 +66,11 @@
             <div class="modal-content">
                 <form id="llmInfluencerForm">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="llmInfluencerModalLabel">Create Virtual Influencer (LLM)</h5>
+                        <h5 class="modal-title" id="llmInfluencerModalLabel" style="color: var(--text-color);">Create Virtual Influencer (LLM)</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        <label for="llmPrompt" class="form-label">Describe your virtual influencer</label>
+                        <label for="llmPrompt" class="form-label" style="color: var(--text-color);">Describe your virtual influencer</label>
                         <textarea class="form-control" id="llmPrompt" name="llmPrompt" rows="3" placeholder="Enter a prompt for your virtual influencer..." required></textarea>
                         <div id="llmImageResult" style="margin-top: 20px; text-align: center;"></div>
                     </div>
@@ -85,7 +85,7 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="createInfluencerModalLabel">Create Your Virtual Influencer</h5>
+                    <h5 class="modal-title" id="createInfluencerModalLabel" style="color: var(--text-color);">Create Your Virtual Influencer</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>     
             </div>
@@ -188,7 +188,7 @@
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="bookingModalLabel">Rent a Virtual Influencer</h5>
+                    <h5 class="modal-title" id="bookingModalLabel" style="color: var(--text-color);">Rent a Virtual Influencer</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
@@ -196,20 +196,20 @@
                         <input type="hidden" id="influencerId" name="influencerId">
                         <div class="row mb-3">
                             <div class="col-md-6">
-                                <label for="startDate" class="form-label">Start Date</label>
+                                <label for="startDate" class="form-label" style="color: var(--text-color);">Start Date</label>
                                 <input type="date" class="form-control" id="startDate" name="startDate" required>
                             </div>
                             <div class="col-md-6">
-                                <label for="duration" class="form-label">Duration (Days)</label>
+                                <label for="duration" class="form-label" style="color: var(--text-color);">Duration (Days)</label>
                                 <input type="number" class="form-control" id="duration" name="duration" min="1" max="90" value="7" required>
                             </div>
                         </div>
                         <div class="mb-3">
-                            <label for="campaignName" class="form-label">Campaign Name</label>
+                            <label for="campaignName" class="form-label" style="color: var(--text-color);">Campaign Name</label>
                             <input type="text" class="form-control" id="campaignName" name="campaignName" required>
                         </div>
                         <div class="mb-3">
-                            <label for="campaignObjectives" class="form-label">Campaign Objectives</label>
+                            <label for="campaignObjectives" class="form-label" style="color: var(--text-color);">Campaign Objectives</label>
                             <select class="form-select" id="campaignObjectives" name="campaignObjectives" required>
                                 <option value="">Select an objective...</option>
                                 <option value="brand_awareness">Brand Awareness</option>
@@ -220,11 +220,11 @@
                             </select>
                         </div>
                         <div class="mb-3">
-                            <label for="campaignDetails" class="form-label">Campaign Details</label>
+                            <label for="campaignDetails" class="form-label" style="color: var(--text-color);">Campaign Details</label>
                             <textarea class="form-control" id="campaignDetails" name="campaignDetails" rows="3" required></textarea>
                         </div>
                         <div class="mb-3">
-                            <label for="platforms" class="form-label">Platforms</label>
+                            <label for="platforms" class="form-label" style="color: var(--text-color);">Platforms</label>
                             <div class="d-flex flex-wrap">
                                 <div class="form-check me-3">
                                     <input class="form-check-input" type="checkbox" value="instagram" id="instagram" name="platforms">
