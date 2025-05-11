@@ -249,6 +249,7 @@ a:hover {
 .form-label {
   font-weight: 500;
   margin-bottom: 0.5rem;
+  color: var(--text-color);
 }
 
 .btn {
@@ -538,6 +539,27 @@ footer .tagline {
 
 .auth-body {
   padding: 2rem;
+}
+
+/* Modal Styles */
+.modal-content {
+  background-color: var(--card-bg);
+  color: var(--text-color);
+  border-color: var(--border-color);
+}
+
+.modal-header {
+  border-bottom-color: var(--border-color);
+  background-color: var(--card-header-bg);
+}
+
+.modal-footer {
+  border-top-color: var(--border-color);
+  background-color: var(--card-bg);
+}
+
+.modal-title {
+  color: var(--text-color);
 }
 
 /* Responsive Adjustments */

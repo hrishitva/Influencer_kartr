@@ -23,11 +23,14 @@ document.addEventListener('DOMContentLoaded', function() {
   if (youtubeInputs.length > 0) {
     Array.from(youtubeInputs).forEach(input => {
       input.addEventListener('blur', validateYouTubeUrl);
-      input.form.addEventListener('submit', function(e) {
-        if (!validateYouTubeUrl({ target: input })) {
-          e.preventDefault();
-        }
-      });
+      // Check if the input is inside a form before adding the submit event listener
+      if (input.form) {
+        input.form.addEventListener('submit', function(e) {
+          if (!validateYouTubeUrl({ target: input })) {
+            e.preventDefault();
+          }
+        });
+      }
     });
   }
 
