@@ -77,30 +77,46 @@ def load_user(user_id):
 def toggle_email_visibility():
     """API endpoint to toggle email visibility setting"""
     try:
+        logger.debug("Toggle email visibility endpoint called")
+
+        # Log user information
+        logger.debug(f"Current user: {current_user.username}, {current_user.email}")
+
+        # Get and validate request data
         data = request.get_json()
+        logger.debug(f"Request data: {data}")
+
         if not data or "email_visible" not in data:
+            logger.error("Invalid data in request")
             return jsonify({"error": "Invalid data"}), 400
 
         is_visible = data["email_visible"]
-        
+        logger.debug(f"Setting email visibility to: {is_visible}")
+
         # Update the database model
         current_user.email_visible = is_visible
         db.session.commit()
-        
+        logger.debug("Database updated successfully")
+
         # Update the CSV file
         from youtube_utils import update_email_visibility
+        logger.debug("Calling update_email_visibility function")
         success = update_email_visibility(current_user.email, is_visible)
-        
+
         if success:
-            logger.debug(f"Email visibility set to: {is_visible}")
+            logger.debug(f"Email visibility successfully set to: {is_visible}")
             return jsonify({"success": True, "email_visible": is_visible}), 200
         else:
+            logger.error("Failed to update email visibility in CSV file")
             # Rollback the database change if CSV update failed
             current_user.email_visible = not is_visible
             db.session.commit()
+            logger.debug("Database change rolled back")
             return jsonify({"success": False, "message": "Failed to update email visibility in CSV file"}), 500
     except Exception as e:
         logger.error(f"Error in toggle-email-visibility: {e}")
+        import traceback
+        logger.error(traceback.format_exc())
         return jsonify({"error": f"Something went wrong: {str(e)}"}), 500
 
 
