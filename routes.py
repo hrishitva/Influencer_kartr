@@ -101,23 +101,9 @@ def register():
     form = RegistrationForm()
     if form.validate_on_submit():
         try:
-            # Import Auth0 helper functions
-            from auth0_helpers import create_auth0_user
-
-            # Create user in Auth0
-            success, auth0_user = create_auth0_user(
-                email=form.email.data,
-                password=form.password.data,
-                username=form.username.data
-            )
-            
-            if not success:
-                flash('Email already exists or service is unavailable. Please try again.', 'danger')
-                return render_template('register.html', title='Register', form=form)
-            
-            # Create user in local database
+            # First create user in local database
             user = User(username=form.username.data, email=form.email.data, user_type=form.user_type.data)
-            user.set_password(form.password.data)  # Still hash password for local auth
+            user.set_password(form.password.data)  # Hash password for local auth
 
             # Save to database
             db.session.add(user)
@@ -130,6 +116,40 @@ def register():
                 password=form.password.data,
                 user_type=form.user_type.data
             )
+            
+            # Try to create user in Auth0 (but don't block registration if it fails)
+            try:
+                # Import Auth0 helper functions
+                from auth0_helpers import create_auth0_user
+                from auth0_config import config as auth0_config
+
+                # Create user in Auth0
+                success, auth0_user = create_auth0_user(
+                    email=form.email.data,
+                    password=form.password.data,
+                    username=form.username.data
+                )
+                
+                if not success:
+                    # If Auth0 registration fails, log the error but continue with local registration
+                    if hasattr(auth0_config, 'last_auth_error') and auth0_config.last_auth_error:
+                        if 'already exists' in auth0_config.last_auth_error.lower():
+                            logger.info(f"User {form.email.data} already exists in Auth0")
+                        elif 'connection' in auth0_config.last_auth_error.lower():
+                            logger.error(f"Auth0 connection error: {auth0_config.last_auth_error}")
+                            flash('Account created locally. Auth0 integration is currently unavailable.', 'warning')
+                        else:
+                            logger.error(f"Auth0 registration error: {auth0_config.last_auth_error}")
+                    else:
+                        logger.warning("Auth0 registration failed without specific error")
+                else:
+                    logger.info(f"User {form.email.data} successfully registered in Auth0")
+            except ImportError:
+                logger.warning("Auth0 helpers module could not be imported")
+                flash('Account created locally. Auth0 integration is currently unavailable.', 'warning')
+            except Exception as auth0_err:
+                logger.error(f"Error during Auth0 registration: {str(auth0_err)}")
+                flash('Account created locally. Auth0 integration encountered an error.', 'warning')
 
             flash(f'Account created for {form.username.data}! You can now log in.', 'success')
             return redirect(url_for('login'))
@@ -193,6 +213,7 @@ def login():
         try:
             # Import Auth0 helper functions
             from auth0_helpers import user_exists_in_auth0
+            from auth0_config import config as auth0_config
             
             # Try to authenticate with Auth0
             exists, auth0_user = user_exists_in_auth0(
@@ -207,7 +228,7 @@ def login():
                 if user:
                     # User exists in our database, log them in
                     login_user(user)
-                    flash('Login successful!', 'success')
+                    flash('Login successful via Auth0!', 'success')
                     return redirect(url_for('stats'))
                 else:
                     # User exists in Auth0 but not in our database
@@ -234,18 +255,29 @@ def login():
                         
                         # Log in the user
                         login_user(user)
-                        flash('Login successful!', 'success')
+                        flash('Login successful via Auth0!', 'success')
                         return redirect(url_for('stats'))
                     except Exception as e:
                         logger.error(f"Error creating user from Auth0: {str(e)}")
                         flash('Error during login. Please try again.', 'danger')
                         return render_template('login.html', title='Login', form=form)
             else:
-                flash('Invalid email or password.', 'danger')
+                # Check if this is a connection configuration error
+                if hasattr(auth0_config, 'last_auth_error') and auth0_config.last_auth_error and 'connection' in auth0_config.last_auth_error.lower():
+                    logger.error(f"Auth0 connection error: {auth0_config.last_auth_error}")
+                    flash('Authentication service configuration error. Please contact support.', 'danger')
+                else:
+                    flash('Invalid email or password.', 'danger')
                     
+        except ImportError:
+            logger.error("Auth0 helpers module could not be imported")
+            flash('Authentication service unavailable. Using local authentication only.', 'warning')
         except Exception as e:
             logger.error(f"Login error: {str(e)}")
-            flash('Invalid email or password.', 'danger')
+            if "connection" in str(e).lower() or "auth0" in str(e).lower():
+                flash('Authentication service temporarily unavailable. Please try again later.', 'warning')
+            else:
+                flash('Invalid email or password.', 'danger')
 
     return render_template('login.html', title='Login', form=form)
 
