@@ -34,7 +34,7 @@
             {% endif %}
         </div>
     </div>
-    
+
     <div class="col-md-3 mb-4">
         <div class="dashboard-stats">
             {% if user_type == 'influencer' %}
@@ -56,7 +56,7 @@
             {% endif %}
         </div>
     </div>
-    
+
     <div class="col-md-3 mb-4">
         <div class="dashboard-stats">
             {% if user_type == 'influencer' %}
@@ -78,7 +78,7 @@
             {% endif %}
         </div>
     </div>
-    
+
     <div class="col-md-3 mb-4">
         <div class="dashboard-stats">
             {% if user_type == 'influencer' %}
@@ -131,7 +131,7 @@
                 <!-- Recent Activity View -->
                 <div id="recentActivity" class="toggle-view">
                     <h5 class="mb-3">Your Recent Activity</h5>
-                    
+
                     {% if searches %}
                     <div class="table-responsive">
                         <table class="table table-hover">
@@ -171,12 +171,12 @@
                     </div>
                     {% endif %}
                 </div>
-                
+
                 <!-- My Channels View (for Influencers) -->
                 {% if user_type == 'influencer' %}
                 <div id="myChannels" class="toggle-view d-none">
                     <h5 class="mb-3">My YouTube Channels</h5>
-                    
+
                     {% if youtube_channels %}
                     <div class="table-responsive">
                         <table class="table table-hover">
@@ -200,9 +200,9 @@
                                         <a href="https://www.youtube.com/channel/{{ channel.channel_id }}" target="_blank" class="btn btn-sm btn-outline-primary">
                                             <i class="fab fa-youtube"></i>
                                         </a>
-                                        <button class="btn btn-sm btn-outline-primary" 
-                                                onclick="copyToClipboard('{{ channel.channel_id }}', this)" 
-                                                data-bs-toggle="tooltip" 
+                                        <button class="btn btn-sm btn-outline-primary"
+                                                onclick="copyToClipboard('{{ channel.channel_id }}', this)"
+                                                data-bs-toggle="tooltip"
                                                 title="Copy ID">
                                             <i class="fas fa-copy"></i>
                                         </button>
@@ -219,16 +219,16 @@
                     {% endif %}
                 </div>
                 {% endif %}
-                
+
                 <!-- Saved Influencers View (for Sponsors) -->
                 {% if user_type == 'sponsor' %}
                 <div id="savedInfluencers" class="toggle-view d-none">
                     <h5 class="mb-3">Saved Influencers</h5>
-                    
+
                     <div class="alert alert-info">
                         You haven't saved any influencers yet. Use the Stats or Demo tools to analyze influencers, then save them for future reference.
                     </div>
-                    
+
                     <div class="text-center mt-4">
                         <a href="{{ url_for('stats') }}" class="btn btn-primary">
                             <i class="fas fa-search me-1"></i> Find Influencers
@@ -236,11 +236,11 @@
                     </div>
                 </div>
                 {% endif %}
-                
+
                 <!-- Analytics View -->
                 <div id="analytics" class="toggle-view d-none">
                     <h5 class="mb-3">Performance Analytics</h5>
-                    
+
                     <div class="row">
                         <div class="col-md-6 mb-4">
                             <div class="chart-container">
@@ -253,7 +253,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="alert alert-info">
                         <i class="fas fa-info-circle me-2"></i> Analytics data will update as you continue to use the platform and analyze more videos.
                     </div>
@@ -261,7 +261,7 @@
             </div>
         </div>
     </div>
-    
+
     <!-- Sidebar Area -->
     <div class="col-lg-4 mb-4">
         <!-- Profile Card -->
@@ -286,16 +286,16 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="mb-3">
                     <div class="text-muted">Account created:</div>
                     <div>{{ current_user.date_registered.strftime('%Y-%m-%d') }}</div>
                 </div>
-                
+
                 <!-- Email Visibility Toggle -->
                 <div class="mb-3">
                     <div class="form-check form-switch">
-                        <input class="form-check-input" type="checkbox" id="emailVisibilityToggle" 
+                        <input class="form-check-input" type="checkbox" id="emailVisibilityToggle"
                                {% if current_user.email_visible %}checked{% endif %}>
                         <label class="form-check-label" for="emailVisibilityToggle">
                             Make my email publicly searchable
@@ -303,7 +303,7 @@
                     </div>
                     <small class="text-muted">When enabled, other users can find your email in search results.</small>
                 </div>
-                
+
                 <div class="d-grid gap-2">
                     <button class="btn btn-outline-primary">
                         <i class="fas fa-cog me-1"></i> Account Settings
@@ -311,7 +311,7 @@
                 </div>
             </div>
         </div>
-        
+
         <!-- Quick Tips Card -->
         <div class="card mb-4">
             <div class="card-header">
@@ -361,9 +361,9 @@
                 rates: [4.2, 3.8, 5.1, 2.7, 6.3]
             }
         };
-        
+
         initDashboardCharts(dashboardData);
-        
+
         // Email Visibility Toggle functionality
         const emailToggle = document.getElementById('emailVisibilityToggle');
         if (emailToggle) {
@@ -372,7 +372,7 @@
                 this.disabled = true;
                 const originalLabel = this.nextElementSibling.textContent;
                 this.nextElementSibling.textContent = 'Updating...';
-                
+
                 // Call API to update email visibility
                 fetch('/api/toggle-email-visibility', {
                     method: 'POST',
@@ -408,24 +408,29 @@
                 });
             });
         }
-        
+
         // Function to show toast notifications
         function showToast(message, type = 'info') {
             // Create toast container if it doesn't exist
             let toastContainer = document.querySelector('.toast-container');
             if (!toastContainer) {
                 toastContainer = document.createElement('div');
-                toastContainer.className = 'toast-container position-fixed bottom-0 end-0 p-3';
+                toastContainer.className = 'toast-container position-fixed p-3';
+                toastContainer.style.top = '80px'; // Position below the navbar
+                toastContainer.style.right = '20px';
+                toastContainer.style.zIndex = '1050'; // Higher z-index to appear above other elements
                 document.body.appendChild(toastContainer);
             }
-            
+
             // Create the toast element
             const toastElement = document.createElement('div');
             toastElement.className = `toast align-items-center text-white bg-${type} border-0`;
             toastElement.setAttribute('role', 'alert');
             toastElement.setAttribute('aria-live', 'assertive');
             toastElement.setAttribute('aria-atomic', 'true');
-            
+            toastElement.style.maxWidth = '350px';
+            toastElement.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
+
             toastElement.innerHTML = `
                 <div class="d-flex">
                     <div class="toast-body">
@@ -434,14 +439,14 @@
                     <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
                 </div>
             `;
-            
+
             // Add to container
             toastContainer.appendChild(toastElement);
-            
+
             // Initialize and show the toast
             const toast = new bootstrap.Toast(toastElement, { delay: 3000 });
             toast.show();
-            
+
             // Remove toast after it's hidden
             toastElement.addEventListener('hidden.bs.toast', function() {
                 toastElement.remove();

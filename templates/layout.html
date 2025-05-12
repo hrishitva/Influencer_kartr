@@ -4,27 +4,27 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Kartr - YouTube Influencer Analytics{% endblock %}</title>
-    
+
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-    
+
     <!-- Font Awesome Icons -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    
+
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    
+
     <!-- Animate.css -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
-    
+
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
+
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    
+
     {% block extra_head %}{% endblock %}
-    
+
     <!-- Enhanced Navbar and UI Styles -->
     <style>
         /* Logo and Brand Styling */
@@ -39,12 +39,12 @@
             top: 0;
             z-index: 1000;
         }
-        
+
         [data-theme="dark"] .navbar {
             background-color: rgba(44, 48, 52, 0.85);
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
         }
-        
+
         .navbar-logo {
             display: block;
             margin-right: 1rem;
@@ -52,7 +52,7 @@
             position: relative;
             padding: 0.3rem 0;
         }
-        
+
         .logo-brand-container {
             display: flex;
             flex-direction: column;
@@ -61,26 +61,26 @@
             transition: all 0.3s ease;
             transform: scale(0.95);
         }
-        
+
         .logo-img {
             height: 24px;
             transition: all 0.3s ease;
             margin-bottom: 0;
             filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
         }
-        
+
         .navbar-logo:hover .logo-img {
             transform: scale(1.05) translateY(-1px);
             filter: drop-shadow(0 2px 4px rgba(108, 99, 255, 0.3));
         }
-        
+
         .brand-text {
             display: flex;
             flex-direction: column;
             line-height: 1;
             align-items: center;
         }
-        
+
         .brand-name {
             font-size: 1.5rem;
             font-weight: 800;
@@ -97,13 +97,13 @@
             animation: shimmer 3s infinite;
             line-height: 1.1;
         }
-        
+
         @keyframes shimmer {
             0% { background-position: 0% 50%; }
             50% { background-position: 100% 50%; }
             100% { background-position: 0% 50%; }
         }
-        
+
         .brand-name::after {
             content: '';
             position: absolute;
@@ -115,11 +115,11 @@
             transition: width 0.3s ease;
             border-radius: 2px;
         }
-        
+
         .navbar-logo:hover .brand-name::after {
             width: 100%;
         }
-        
+
         .tagline {
             font-size: 0.85rem;
             color: var(--tagline-color);
@@ -129,17 +129,17 @@
             margin-top: 0;
             white-space: nowrap;
         }
-        
+
         /* Navigation Menu */
         .navbar-nav {
             gap: 0.25rem;
         }
-        
+
         .navbar-nav .nav-item {
             position: relative;
             margin: 0 0.15rem;
         }
-        
+
         .navbar-nav .nav-link {
             color: var(--text-color);
             padding: 0.5rem 0.75rem;
@@ -149,21 +149,21 @@
             display: flex;
             align-items: center;
         }
-        
+
         .navbar-nav .nav-link i {
             transition: all 0.3s ease;
         }
-        
+
         .navbar-nav .nav-link:hover,
         .navbar-nav .nav-link:focus {
             color: var(--primary-color);
         }
-        
+
         .navbar-nav .nav-link.active {
             color: var(--primary-color);
             font-weight: 600;
         }
-        
+
         /* Navbar Toggler */
         .navbar-toggler {
             border: 1px solid rgba(0,0,0,.1);
@@ -171,11 +171,11 @@
             border-radius: 0.25rem;
             transition: all 0.3s ease;
         }
-        
+
         .navbar-toggler:focus {
             box-shadow: 0 0 0 0.25rem rgba(0,123,255,.25);
         }
-        
+
         /* Search Bar */
         .search-container {
             position: relative;
@@ -184,7 +184,7 @@
             margin: 0 0.5rem;
             flex-shrink: 1;
         }
-        
+
         /* Card-like search container similar to stats page */
         .search-container .input-group {
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
@@ -192,18 +192,18 @@
             overflow: hidden;
             flex-wrap: nowrap;
         }
-        
+
         .search-input {
             border-radius: 20px 0 0 20px;
             transition: all 0.3s ease;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
         }
-        
+
         .search-input:focus {
             border-color: var(--primary-color);
             box-shadow: 0 0 0 3px rgba(var(--primary-color-rgb, 108, 99, 255), 0.2);
         }
-        
+
         .search-btn {
             border-top-right-radius: 20px;
             border-bottom-right-radius: 20px;
@@ -216,7 +216,7 @@
             border-color: var(--primary-color);
             font-weight: 500;
         }
-        
+
         /* YouTube URL Input Styling */
         .youtube-url-input {
             font-size: 0.95rem;
@@ -226,16 +226,16 @@
             background-color: var(--card-bg);
             padding-left: 1rem;
         }
-        
+
         .youtube-url-input:focus {
             border-color: var(--primary-color);
             box-shadow: 0 0 0 3px rgba(var(--primary-color-rgb, 108, 99, 255), 0.2);
         }
-        
+
         .search-btn:hover {
             background-color: var(--secondary-color);
         }
-        
+
         .search-results {
             border-radius: 8px;
             margin-top: 0.5rem;
@@ -246,30 +246,30 @@
             overflow-y: auto;
             background-color: var(--card-bg);
         }
-        
+
         /* Email Visibility Toggle */
         .email-visibility-toggle {
             margin-right: 0.5rem;
             transition: all 0.3s ease;
         }
-        
+
         .form-check-input {
             background-color: var(--toggle-bg);
             border-color: var(--toggle-border);
             margin-top: 0;
         }
-        
+
         .form-check-input:checked {
             background-color: var(--toggle-checked-bg);
             border-color: var(--toggle-checked-bg);
         }
-        
+
         .form-check-label {
             color: var(--toggle-label);
             font-size: 0.9rem;
             font-weight: 500;
         }
-        
+
         /* Theme Toggle Button */
         #theme-toggle {
             background: none;
@@ -279,18 +279,18 @@
             padding: 0;
             margin-left: 0.5rem;
         }
-        
+
         #theme-toggle:hover {
             color: var(--primary-color);
             transform: rotate(15deg);
         }
-        
+
         #theme-toggle i {
             font-size: 1.1rem;
         }
-        
+
         /* Theme toggle icons are controlled via JavaScript */
-        
+
         /* Dropdown Menu Styling */
         .dropdown-menu {
             border-radius: 4px;
@@ -300,25 +300,25 @@
             margin-top: 0.5rem;
             background-color: var(--card-bg);
         }
-        
+
         .dropdown-item {
             padding: 0.5rem 1rem;
             color: var(--text-color);
             font-weight: 500;
             transition: all 0.2s ease;
         }
-        
+
         .dropdown-item:hover {
             background-color: rgba(var(--primary-color-rgb, 108, 99, 255), 0.1);
             color: var(--primary-color);
         }
-        
+
         .dropdown-item.active {
             background-color: rgba(var(--primary-color-rgb, 108, 99, 255), 0.1);
             color: var(--primary-color);
             font-weight: 600;
         }
-        
+
         /* Navbar Toggler */
         .navbar-toggler {
             border: 1px solid rgba(0,0,0,.1);
@@ -326,37 +326,37 @@
             border-radius: 0.25rem;
             transition: all 0.3s ease;
         }
-        
+
         .navbar-toggler:focus {
             box-shadow: 0 0 0 0.25rem rgba(0,123,255,.25);
         }
-        
+
         /* Responsive adjustments */
         @media (max-width: 991px) {
             .navbar {
                 padding: 0.5rem 0;
             }
-            
+
             .logo-brand-container {
                 flex-direction: row;
                 align-items: center;
             }
-            
+
             .logo-img {
                 margin-bottom: 0;
                 margin-right: 8px;
                 height: 22px;
             }
-            
+
             .brand-text {
                 align-items: flex-start;
             }
-            
+
             .search-container {
                 margin: 0.5rem 0;
                 max-width: 180px;
             }
-            
+
             .navbar-collapse {
                 padding: 0.5rem;
                 margin-top: 0.5rem;
@@ -364,40 +364,40 @@
                 border-radius: 0 0 8px 8px;
                 box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
             }
-            
+
             .navbar-nav {
                 gap: 0.15rem;
             }
-            
+
             .navbar-nav .nav-link {
                 padding: 0.5rem 0.4rem;
             }
-            
+
             .navbar-nav .nav-link i {
                 font-size: 1rem;
             }
-            
+
             /* Compact email visibility toggle */
             .email-visibility-toggle {
                 margin-right: 0.25rem;
                 white-space: nowrap;
             }
-            
+
             .form-check-label {
                 font-size: 0.8rem;
             }
         }
-        
+
         @media (max-width: 576px) {
             .navbar {
                 padding: 0.4rem 0;
             }
-            
+
             .container {
                 padding-left: 0.5rem;
                 padding-right: 0.5rem;
             }
-            
+
             /* Single line navbar for mobile */
             .navbar > .container {
                 display: flex;
@@ -406,73 +406,73 @@
                 justify-content: space-between;
                 flex-wrap: nowrap;
             }
-            
+
             /* Ensure all navbar elements stay in one line */
             .navbar .d-flex {
                 flex: 1;
                 justify-content: flex-start;
             }
-            
+
             /* Compact logo */
             .logo-brand-container {
                 transform: scale(0.8);
                 margin-right: 0;
             }
-            
+
             .logo-img {
                 height: 18px;
                 margin-right: 4px;
             }
-            
+
             .brand-name {
                 font-size: 1.2rem;
             }
-            
+
             .tagline {
                 font-size: 0.7rem;
             }
-            
+
             /* Compact search bar */
             .search-container {
                 max-width: 120px;
                 margin: 0 0.25rem;
             }
-            
+
             .d-md-none.search-container {
                 max-width: 120px;
                 margin: 0 0.25rem;
                 flex-shrink: 1;
             }
-            
+
             .search-input {
                 padding: 0.25rem 0.5rem;
                 font-size: 0.8rem;
                 height: 32px;
             }
-            
+
             .youtube-url-input {
                 height: 32px;
                 font-size: 0.8rem;
             }
-            
+
             .search-btn {
                 padding: 0.25rem 0.35rem;
                 height: 32px;
                 font-size: 0.8rem;
             }
-            
+
             /* Navbar toggler */
             .navbar-toggler {
                 padding: 0.2rem 0.4rem;
                 margin-left: 0.25rem;
                 font-size: 0.8rem;
             }
-            
+
             .navbar-toggler-icon {
                 width: 1em;
                 height: 1em;
             }
-            
+
             /* Collapsed navbar */
             .navbar-collapse {
                 position: absolute;
@@ -485,36 +485,36 @@
                 z-index: 1000;
                 padding: 0.5rem;
             }
-            
+
             /* Compact nav links */
             .navbar-nav .nav-link {
                 padding: 0.4rem 0.5rem;
                 font-size: 0.9rem;
                 white-space: nowrap;
             }
-            
+
             .navbar-nav .nav-link i {
                 margin-right: 0.5rem;
                 font-size: 0.9rem;
             }
-            
+
             /* Dropdown menu styling */
             .dropdown-menu {
                 min-width: 200px;
                 right: 0;
                 left: auto;
             }
-            
+
             /* Theme toggle button */
             #theme-toggle {
                 padding: 0.4rem 0.35rem;
                 font-size: 0.9rem;
             }
-            
+
             #theme-toggle i {
                 font-size: 1rem;
             }
-            
+
             /* Form elements */
             .form-check-input {
                 width: 1.5em;
@@ -539,7 +539,7 @@
                         </div>
                     </div>
                 </a>
-                
+
                 <!-- Search Bar (Only shown when logged in) -->
                 {% if current_user.is_authenticated %}
                 <div class="search-container d-none d-md-block">
@@ -555,7 +555,7 @@
                 </div>
                 {% endif %}
             </div>
-            
+
             <div class="d-flex align-items-center">
                 <!-- Mobile Search (Only shown when logged in) -->
                 {% if current_user.is_authenticated %}
@@ -568,13 +568,13 @@
                     </div>
                 </div>
                 {% endif %}
-                
+
                 <!-- Navbar Toggler -->
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
             </div>
-            
+
             <!-- Navigation Menu -->
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto d-flex flex-row flex-wrap align-items-center">
@@ -584,7 +584,7 @@
                             <div class="d-flex align-items-center">
                                 <i class="fas fa-envelope me-1 d-none d-sm-inline"></i>
                                 <div class="form-check form-switch">
-                                    <input class="form-check-input" type="checkbox" id="emailVisibilityToggle" 
+                                    <input class="form-check-input" type="checkbox" id="emailVisibilityToggle"
                                            {% if current_user.email_visible %}checked{% endif %}>
                                     <label class="form-check-label d-none d-sm-inline" for="emailVisibilityToggle">
                                         Public Email
@@ -595,42 +595,42 @@
                                 </div>
                             </div>
                         </li>
-                        
+
                         <li class="nav-item">
-                            <a class="nav-link {% if request.endpoint == 'stats' %}active{% endif %}" 
+                            <a class="nav-link {% if request.endpoint == 'stats' %}active{% endif %}"
                                href="{{ url_for('stats') }}">
                                 <i class="fas fa-chart-bar me-1"></i> Stats
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link {% if request.endpoint == 'demo' %}active{% endif %}" 
+                            <a class="nav-link {% if request.endpoint == 'demo' %}active{% endif %}"
                                href="{{ url_for('demo') }}">
                                 <i class="fas fa-search me-1"></i> Demo
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link {% if request.endpoint == 'visualization' %}active{% endif %}" 
+                            <a class="nav-link {% if request.endpoint == 'visualization' %}active{% endif %}"
                                href="{{ url_for('visualization') }}">
                                 <i class="fas fa-chart-line me-1"></i> Visualizations
                             </a>
                         </li>
-                        
+
                         <!-- Virtual Influencer Dropdown -->
                         <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle {% if request.endpoint in ['virtual_influencer', 'social_media_agents'] %}active{% endif %}" 
-                               href="#" id="virtualInfluencerDropdown" role="button" 
+                            <a class="nav-link dropdown-toggle {% if request.endpoint in ['virtual_influencer', 'social_media_agents'] %}active{% endif %}"
+                               href="#" id="virtualInfluencerDropdown" role="button"
                                data-bs-toggle="dropdown" aria-expanded="false">
                                 <i class="fas fa-robot me-1"></i> Virtual Influencer
                             </a>
                             <ul class="dropdown-menu" aria-labelledby="virtualInfluencerDropdown">
                                 <li>
-                                    <a class="dropdown-item {% if request.endpoint == 'virtual_influencer' %}active{% endif %}" 
+                                    <a class="dropdown-item {% if request.endpoint == 'virtual_influencer' %}active{% endif %}"
                                        href="{{ url_for('virtual_influencer') }}">
                                         <i class="fas fa-user-tie me-1"></i> Rent a Virtual Influencer
                                     </a>
                                 </li>
                                 <li>
-                                    <a class="dropdown-item {% if request.endpoint == 'social_media_agents' %}active{% endif %}" 
+                                    <a class="dropdown-item {% if request.endpoint == 'social_media_agents' %}active{% endif %}"
                                        href="{{ url_for('social_media_agents') }}">
                                         <i class="fas fa-cogs me-1"></i> Social Media Agents
                                     </a>
@@ -644,19 +644,19 @@
                         </li>
                     {% else %}
                         <li class="nav-item">
-                            <a class="nav-link {% if request.endpoint == 'home' or request.endpoint == 'landing' %}active{% endif %}" 
+                            <a class="nav-link {% if request.endpoint == 'home' or request.endpoint == 'landing' %}active{% endif %}"
                                href="{{ url_for('home') }}">
                                 <i class="fas fa-home me-1"></i> Home
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link {% if request.endpoint == 'login' %}active{% endif %}" 
+                            <a class="nav-link {% if request.endpoint == 'login' %}active{% endif %}"
                                href="{{ url_for('login') }}">
                                 <i class="fas fa-sign-in-alt me-1"></i> Login
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link {% if request.endpoint == 'register' %}active{% endif %}" 
+                            <a class="nav-link {% if request.endpoint == 'register' %}active{% endif %}"
                                href="{{ url_for('register') }}">
                                 <i class="fas fa-user-plus me-1"></i> Register
                             </a>
@@ -672,7 +672,7 @@
             </div>
         </div>
     </nav>
-    
+
     <!-- Flash Messages -->
     <div class="container mt-3">
         {% with messages = get_flashed_messages(with_categories=true) %}
@@ -686,12 +686,12 @@
             {% endif %}
         {% endwith %}
     </div>
-    
+
     <!-- Main Content -->
     <div class="container main-container">
         {% block content %}{% endblock %}
     </div>
-    
+
     <!-- Footer -->
     <footer>
         <div class="container">
@@ -701,7 +701,7 @@
                         <img src="{{ url_for('static', filename='img/katr_logos/no_background_katr_logo.png') }}" alt="Kartr Logo" class="footer-logo">
                         <div class="tagline">Shine and Connect</div>
                     </div>
-                    
+
                     <div class="footer-links">
                         <div class="footer-links-container">
                             <a href="#">Privacy Policy</a>
@@ -709,18 +709,18 @@
                             <a href="{{ url_for('contact') }}">Contact Us</a>
                         </div>
                     </div>
-                    
+
                     <span class="copyright-text mt-3">&copy; 2023 Kartr. All rights reserved.</span>
                 </div>
             </div>
         </div>
     </footer>
-    
+
     <!-- Bootstrap JS Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-    
+
     {% block extra_scripts %}{% endblock %}
-    
+
     <!-- Theme Toggle Script moved to the end of the body -->
 
     <!-- Search Functionality Script -->
@@ -741,12 +741,12 @@
                     }
                 });
             }
-            
+
             // Handle search input for autocomplete
             searchInput.addEventListener('input', (e) => {
                 clearTimeout(searchTimeout);
                 const query = e.target.value.trim();
-                
+
                 if (query.length < 2) {
                     searchResults.style.display = 'none';
                     return;
@@ -764,7 +764,7 @@
                         });
                 }, 300);
             });
-            
+
             // Handle Enter key press in search input
             searchInput.addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') {
@@ -779,9 +779,9 @@
 
         function displaySearchResults(results) {
             if (!searchResults) return;
-            
+
             searchResults.innerHTML = '';
-            
+
             if (results.length === 0) {
                 searchResults.innerHTML = `
                     <div class="search-result-item">
@@ -794,7 +794,7 @@
                 results.forEach(result => {
                     const resultItem = document.createElement('div');
                     resultItem.className = 'search-result-item';
-                    
+
                     // Different display based on result type
                     if (result.type === 'channel') {
                         // YouTube channel result
@@ -818,7 +818,7 @@
                         } else if (result.type === 'sponsor') {
                             iconClass = 'fas fa-briefcase';
                         }
-                        
+
                         resultItem.innerHTML = `
                             <div class="search-result-icon">
                                 <i class="${iconClass}"></i>
@@ -826,10 +826,10 @@
                             <div class="search-result-info">
                                 <div class="search-result-name">${result.text}</div>
                                 <div class="search-result-type">${result.type.charAt(0).toUpperCase() + result.type.slice(1)}</div>
-                                ${result.email ? 
+                                ${result.email ?
                                     `<div class="search-result-email">
                                         <i class="fas fa-envelope me-1"></i>${result.email}
-                                    </div>` : 
+                                    </div>` :
                                     '<div class="search-result-email">Email: Private</div>'
                                 }
                             </div>
@@ -838,11 +838,11 @@
                             window.location.href = `/search?q=${encodeURIComponent(result.text)}`;
                         });
                     }
-                    
+
                     searchResults.appendChild(resultItem);
                 });
             }
-            
+
             searchResults.style.display = 'block';
         }
 
@@ -855,11 +855,11 @@
             });
         }
     </script>
-    
+
     <!-- Email Visibility Toggle Script -->
     <script>
         const emailVisibilityToggle = document.getElementById('emailVisibilityToggle');
-        
+
         if (emailVisibilityToggle) {
             emailVisibilityToggle.addEventListener('change', function() {
                 fetch('/api/toggle-email-visibility', {
@@ -876,14 +876,19 @@
                     if (data.success) {
                         // Show success message
                         const alert = document.createElement('div');
-                        alert.className = 'alert alert-success alert-dismissible fade show position-fixed top-0 end-0 m-3';
+                        alert.className = 'alert alert-success alert-dismissible fade show position-fixed m-3';
+                        alert.style.top = '80px'; // Position below the navbar
+                        alert.style.right = '20px';
+                        alert.style.zIndex = '1050'; // Higher z-index to appear above other elements
+                        alert.style.maxWidth = '350px';
+                        alert.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
                         alert.innerHTML = `
                             <i class="fas fa-check-circle me-2"></i>
                             Email visibility updated successfully
                             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                         `;
                         document.body.appendChild(alert);
-                        
+
                         // Auto-dismiss after 3 seconds
                         setTimeout(() => {
                             alert.remove();
@@ -894,14 +899,19 @@
                     console.error('Error:', error);
                     // Show error message
                     const alert = document.createElement('div');
-                    alert.className = 'alert alert-danger alert-dismissible fade show position-fixed top-0 end-0 m-3';
+                    alert.className = 'alert alert-danger alert-dismissible fade show position-fixed m-3';
+                    alert.style.top = '80px'; // Position below the navbar
+                    alert.style.right = '20px';
+                    alert.style.zIndex = '1050'; // Higher z-index to appear above other elements
+                    alert.style.maxWidth = '350px';
+                    alert.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
                     alert.innerHTML = `
                         <i class="fas fa-exclamation-circle me-2"></i>
                         Failed to update email visibility
                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     `;
                     document.body.appendChild(alert);
-                    
+
                     // Auto-dismiss after 3 seconds
                     setTimeout(() => {
                         alert.remove();
@@ -910,7 +920,7 @@
             });
         }
     </script>
-    
+
     <!-- Theme Toggle Script -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -918,40 +928,40 @@
             const moonIcon = document.getElementById('moon-icon');
             const sunIcon = document.getElementById('sun-icon');
             const htmlElement = document.documentElement;
-            
+
             // Check for saved theme preference or default to light
             const currentTheme = localStorage.getItem('theme') || 'light';
-            
+
             // Set initial theme
             htmlElement.setAttribute('data-theme', currentTheme);
-            
+
             // Update icon based on current theme
             updateThemeIcon(currentTheme);
-            
+
             // Add click event listener
             themeToggle.addEventListener('click', function() {
                 // Toggle theme
                 const newTheme = htmlElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
-                
+
                 // Apply animation
                 themeToggle.classList.add('animate__animated', 'animate__rubberBand');
-                
+
                 // Remove animation classes after animation completes
                 setTimeout(() => {
                     themeToggle.classList.remove('animate__animated', 'animate__rubberBand');
                 }, 1000);
-                
+
                 // Update theme
                 htmlElement.setAttribute('data-theme', newTheme);
                 localStorage.setItem('theme', newTheme);
-                
+
                 // Update icon
                 updateThemeIcon(newTheme);
-                
+
                 // Show toast notification
                 showThemeChangeToast(newTheme);
             });
-            
+
             function updateThemeIcon(theme) {
                 if (theme === 'dark') {
                     moonIcon.style.display = 'none';
@@ -961,7 +971,7 @@
                     sunIcon.style.display = 'none';
                 }
             }
-            
+
             function showThemeChangeToast(theme) {
                 const toast = document.createElement('div');
                 toast.className = 'toast position-fixed bottom-0 end-0 m-3';
@@ -974,24 +984,24 @@
                 toast.style.minWidth = '200px';
                 toast.style.opacity = '0';
                 toast.style.transition = 'opacity 0.3s ease';
-                
+
                 const icon = theme === 'dark' ? 'fa-moon' : 'fa-sun';
                 const message = theme === 'dark' ? 'Dark Mode Activated' : 'Light Mode Activated';
-                
+
                 toast.innerHTML = `
                     <div class="d-flex align-items-center">
                         <i class="fas ${icon} me-2" style="color: var(--primary-color);"></i>
                         <span>${message}</span>
                     </div>
                 `;
-                
+
                 document.body.appendChild(toast);
-                
+
                 // Fade in
                 setTimeout(() => {
                     toast.style.opacity = '1';
                 }, 10);
-                
+
                 // Auto-dismiss after 2 seconds
                 setTimeout(() => {
                     toast.style.opacity = '0';
@@ -1002,13 +1012,13 @@
             }
         });
     </script>
-    
+
     <!-- Main JS -->
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
-    
+
     <!-- Charts JS -->
     <script src="{{ url_for('static', filename='js/charts.js') }}"></script>
-    
+
     {% block scripts %}{% endblock %}
 </body>
 </html>
