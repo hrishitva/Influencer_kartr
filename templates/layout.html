@@ -251,12 +251,21 @@
         .email-visibility-toggle {
             margin-right: 0.5rem;
             transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            height: 38px;
+        }
+
+        .email-visibility-toggle .d-flex {
+            height: 100%;
         }
 
         .form-check-input {
             background-color: var(--toggle-bg);
             border-color: var(--toggle-border);
             margin-top: 0;
+            position: relative;
+            vertical-align: middle;
         }
 
         .form-check-input:checked {
@@ -268,6 +277,16 @@
             color: var(--toggle-label);
             font-size: 0.9rem;
             font-weight: 500;
+            display: inline-block;
+            vertical-align: middle;
+            white-space: nowrap;
+        }
+
+        .form-check.form-switch {
+            display: flex;
+            align-items: center;
+            padding-left: 0;
+            margin-bottom: 0;
         }
 
         /* Theme Toggle Button */
@@ -380,11 +399,20 @@
             /* Compact email visibility toggle */
             .email-visibility-toggle {
                 margin-right: 0.25rem;
-                white-space: nowrap;
+                height: 38px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
             }
 
             .form-check-label {
                 font-size: 0.8rem;
+            }
+
+            .form-check.form-switch {
+                height: 100%;
+                display: flex;
+                align-items: center;
             }
         }
 
@@ -519,7 +547,13 @@
             .form-check-input {
                 width: 1.5em;
                 height: 0.8em;
-                margin-top: 0.1em;
+                margin: 0 0.25em 0 0;
+                vertical-align: middle;
+                position: relative;
+            }
+
+            .email-visibility-toggle .form-check-label {
+                font-size: 0.75rem;
             }
         }
         }
@@ -580,17 +614,13 @@
                 <ul class="navbar-nav ms-auto d-flex flex-row flex-wrap align-items-center">
                     {% if current_user.is_authenticated %}
                         <!-- Email Visibility Toggle -->
-                        <li class="nav-item email-visibility-toggle">
-                            <div class="d-flex align-items-center">
-                                <i class="fas fa-envelope me-1 d-none d-sm-inline"></i>
+                        <li class="nav-item">
+                            <div class="nav-link email-toggle-container">
                                 <div class="form-check form-switch">
                                     <input class="form-check-input" type="checkbox" id="emailVisibilityToggle"
                                            {% if current_user.email_visible %}checked{% endif %}>
-                                    <label class="form-check-label d-none d-sm-inline" for="emailVisibilityToggle">
+                                    <label class="toggle-label" for="emailVisibilityToggle">
                                         Public Email
-                                    </label>
-                                    <label class="form-check-label d-inline d-sm-none" for="emailVisibilityToggle">
-                                        Email
                                     </label>
                                 </div>
                             </div>

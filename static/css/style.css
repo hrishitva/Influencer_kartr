@@ -252,6 +252,11 @@ a:hover {
   color: var(--text-color);
 }
 
+.form-text {
+  color: var(--text-color);
+  opacity: 0.8;
+}
+
 .btn {
   border-radius: 5px;
   padding: 0.6rem 1.5rem;
@@ -737,7 +742,7 @@ footer .tagline {
         max-width: 100%;
         margin: 1rem 0;
     }
-    
+
     .search-input,
     .search-btn {
         font-size: 0.875rem;
@@ -779,7 +784,7 @@ footer .tagline {
 }
 
 .youtube-input-container .form-text {
-    color: var(--text-muted);
+    color: var(--helper-text);
     font-size: 0.9rem;
 }
 
@@ -787,11 +792,11 @@ footer .tagline {
     .youtube-input-container {
         margin: 1.5rem auto;
     }
-    
+
     .youtube-input-container .card-body {
         padding: 1.5rem;
     }
-    
+
     .youtube-url-input,
     .youtube-input-container .btn-primary {
         font-size: 0.875rem;
@@ -800,48 +805,77 @@ footer .tagline {
 }
 
 /* Email Visibility Toggle Styles */
-.email-visibility-toggle {
-    margin-right: 1rem;
+.email-toggle-container {
+    display: flex;
+    align-items: center;
     padding: 0.5rem 1rem;
     border-radius: 4px;
     transition: all 0.3s ease;
-}
-
-.email-visibility-toggle:hover {
-    background-color: var(--menu-hover-bg);
-}
-
-.email-visibility-toggle i {
-    color: var(--menu-text);
-    transition: color 0.3s ease;
-}
-
-.email-visibility-toggle:hover i {
-    color: var(--menu-hover-text);
-}
-
-.form-check-input {
-    background-color: var(--toggle-bg);
-    border-color: var(--toggle-border);
     cursor: pointer;
 }
 
-.form-check-input:checked {
+.email-toggle-container:hover {
+    background-color: var(--menu-hover-bg);
+}
+
+.email-toggle-container .form-check.form-switch {
+    display: flex;
+    align-items: center;
+    padding-left: 0;
+    margin-bottom: 0;
+}
+
+.email-toggle-container .form-check-input {
+    height: 1rem;
+    width: 2rem;
+    min-width: 2rem;
+    background-color: var(--toggle-bg);
+    border-color: var(--toggle-border);
+    cursor: pointer;
+    margin: 0 8px 0 0;
+    position: relative;
+}
+
+.email-toggle-container .form-check-input:checked {
     background-color: var(--toggle-checked-bg);
     border-color: var(--toggle-checked-bg);
 }
 
-.form-check-label {
+.toggle-label {
     color: var(--toggle-label);
     cursor: pointer;
     user-select: none;
+    margin: 0;
+    font-size: 0.9rem;
+    font-weight: 500;
+    white-space: nowrap;
 }
 
 /* Responsive adjustments */
 @media (max-width: 991.98px) {
-    .email-visibility-toggle {
-        margin: 0.5rem 0;
-        padding: 0.75rem 1rem;
+    .email-toggle-container {
+        padding: 0.5rem 0.75rem;
+    }
+
+    .toggle-label {
+        font-size: 0.85rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .email-toggle-container {
+        padding: 0.4rem 0.6rem;
+    }
+
+    .email-toggle-container .form-check-input {
+        height: 0.9rem;
+        width: 1.8rem;
+        min-width: 1.8rem;
+        margin-right: 6px;
+    }
+
+    .toggle-label {
+        font-size: 0.8rem;
     }
 }
 
@@ -873,12 +907,12 @@ footer .tagline {
     .logo-container {
         padding: 0.25rem 0;
     }
-    
+
     .logo-img {
         height: 40px;
         margin-bottom: 0.25rem;
     }
-    
+
     .tagline {
         font-size: 0.8rem;
     }
