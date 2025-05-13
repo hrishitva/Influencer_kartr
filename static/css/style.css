@@ -2,6 +2,7 @@
 :root {
   /* Light theme variables */
   --primary-color: #6c63ff;
+  --primary-color-rgb: 108, 99, 255;
   --secondary-color: #4a42f3;
   --accent-color: #ff6b6b;
   --dark-color: #343a40;
@@ -43,10 +44,12 @@
   --toggle-checked-bg: #6c63ff;
   --toggle-label: #343a40;
   --tagline-color: #6c757d;
+  --text-muted: #6c757d;
 }
 
 [data-theme="dark"] {
   --primary-color: #7c73ff;
+  --primary-color-rgb: 124, 115, 255;
   --secondary-color: #5a52f3;
   --accent-color: #ff7b7b;
   --dark-color: #f8f9fa;
@@ -63,7 +66,7 @@
   --border-color: #495057;
   --navbar-bg: #2c3034;
   --footer-bg: #2c3034;
-  --footer-text: #adb5bd;
+  --footer-text: #e2e8f0;
   --menu-text: #f8f9fa;
   --menu-hover-bg: rgba(124, 115, 255, 0.2);
   --secondary-text: #adb5bd;
@@ -88,6 +91,7 @@
   --toggle-checked-bg: #7c73ff;
   --toggle-label: #f8f9fa;
   --tagline-color: #adb5bd;
+  --text-muted: #adb5bd;
 }
 
 /* Base Styles */
@@ -441,15 +445,16 @@ a:hover {
 
 /* Footer Styles */
 footer {
-  background: linear-gradient(to top, #1a1e23, #2d3748); /* Gradient from darker to lighter gray (similar to from-gray-900 to-gray-800) */
-  color: #e2e8f0; /* Lighter text color for better contrast */
+  background-color: var(--footer-bg);
+  color: var(--footer-text);
   padding: 2rem 0;
-  margin-top: 2rem; /* Reduced from auto to 2rem (equivalent to mt-8) */
-  box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.15);
+  margin-top: 2rem;
+  box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 footer .text-muted {
-  color: #a0aec0 !important; /* Lighter muted text for dark background */
+  color: var(--secondary-text) !important;
 }
 
 .footer-content {
@@ -469,21 +474,27 @@ footer .text-muted {
 .footer-logo {
   height: 40px;
   width: auto;
-  /* Add a subtle glow effect to the logo */
-  filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.3));
+  filter: drop-shadow(0 0 3px rgba(var(--primary-color-rgb, 108, 99, 255), 0.2));
+  transition: filter 0.3s ease;
+}
+
+[data-theme="dark"] .footer-logo {
+  filter: brightness(1.2) drop-shadow(0 0 3px rgba(255, 255, 255, 0.2));
 }
 
 .footer-brand .tagline {
   font-size: 1rem;
-  color: #a0aec0; /* Lighter gray for dark background */
+  color: var(--tagline-color);
   font-weight: 500;
+  transition: color 0.3s ease;
 }
 
 footer .tagline {
-  color: #a0aec0; /* Lighter gray for dark background */
+  color: var(--tagline-color);
   font-size: 0.9rem;
   font-weight: 500;
   letter-spacing: 0.5px;
+  transition: color 0.3s ease;
 }
 
 .footer-links {
@@ -500,7 +511,7 @@ footer .tagline {
 }
 
 .footer-links a {
-  color: #e2e8f0; /* Lighter text for better contrast */
+  color: var(--text-color);
   text-decoration: none;
   transition: all 0.3s ease;
   padding: 0.5rem 1rem;
@@ -509,13 +520,14 @@ footer .tagline {
 }
 
 .footer-links a:hover {
-  color: white;
-  background-color: rgba(255, 255, 255, 0.1);
+  color: var(--primary-color);
+  background-color: rgba(var(--primary-color-rgb, 108, 99, 255), 0.1);
 }
 
 .copyright-text {
-  color: #a0aec0; /* Lighter gray for dark background */
+  color: var(--secondary-text);
   font-size: 0.9rem;
+  transition: color 0.3s ease;
 }
 
 /* Auth pages */

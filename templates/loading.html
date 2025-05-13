@@ -1,0 +1,24 @@
+{% macro render_loading(message="Loading...", size="medium") %}
+<div class="loading-container {% if size == 'small' %}loading-small{% elif size == 'large' %}loading-large{% endif %}">
+    <div class="loading-spinner">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+    <div class="loading-message">{{ message }}</div>
+</div>
+{% endmacro %}
+
+{% macro render_skeleton_card(count=1) %}
+{% for i in range(count) %}
+<div class="card skeleton-card mb-4">
+    <div class="card-body">
+        <div class="skeleton-header"></div>
+        <div class="skeleton-line"></div>
+        <div class="skeleton-line"></div>
+        <div class="skeleton-line skeleton-line-short"></div>
+        <div class="skeleton-button"></div>
+    </div>
+</div>
+{% endfor %}
+{% endmacro %}
