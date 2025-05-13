@@ -1,0 +1,969 @@
+/* Virtual Influencer Page Styles */
+.virtual-influencer-page {
+    padding: 1rem 0;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+}
+
+/* Section Headers */
+.section-header {
+    margin-bottom: 2rem;
+    position: relative;
+    padding-bottom: 1rem;
+    text-align: center;
+}
+
+.section-header h1, 
+.section-header h2 {
+    color: var(--primary-color);
+    font-weight: 700;
+    position: relative;
+    display: inline-block;
+    margin-bottom: 1rem;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.section-header h1::after,
+.section-header h2::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80px;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+    border-radius: 2px;
+}
+
+.section-header p.lead {
+    color: var(--secondary-text);
+    font-size: 1.1rem;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.section-header p.text-muted {
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+/* Benefits Section */
+.benefits-section .card {
+    border-radius: 15px;
+    overflow: hidden;
+    border: none;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+}
+
+.benefits-item {
+    text-align: center;
+    padding: 2rem 1.5rem;
+    transition: all 0.3s ease;
+    border-radius: 8px;
+    position: relative;
+}
+
+.benefits-item:hover {
+    transform: translateY(-8px);
+    background-color: rgba(var(--primary-color-rgb, 108, 99, 255), 0.05);
+    z-index: 2;
+}
+
+.benefit-icon-container {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+    box-shadow: 0 5px 15px rgba(var(--primary-color-rgb, 108, 99, 255), 0.3);
+    transition: all 0.3s ease;
+}
+
+.benefits-item:hover .benefit-icon-container {
+    transform: scale(1.1) rotate(5deg);
+}
+
+.feature-icon {
+    font-size: 2rem;
+    color: white;
+}
+
+.benefits-item h6 {
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    color: var(--text-color);
+}
+
+.benefits-item p {
+    color: var(--secondary-text);
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+/* Feature Icons for smaller elements */
+.feature-icon-sm {
+    font-size: 1.5rem;
+    color: var(--primary-color);
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+/* Influencer Cards */
+.influencers-section .row {
+    margin-top: 2rem;
+}
+
+.influencer-card {
+    border: none;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    background-color: var(--card-bg);
+    position: relative;
+    z-index: 1;
+}
+
+.influencer-card:hover {
+    transform: translateY(-15px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+    z-index: 2;
+}
+
+.card-img-wrapper {
+    position: relative;
+    overflow: hidden;
+    height: 280px;
+}
+
+.card-img-top {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.7s ease;
+}
+
+.influencer-card:hover .card-img-top {
+    transform: scale(1.08);
+}
+
+.overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.9), rgba(0,0,0,0.2), transparent);
+    padding: 1.5rem 1rem 1rem;
+    display: flex;
+    justify-content: space-between;
+    color: white;
+    opacity: 0.9;
+    transition: all 0.3s ease;
+}
+
+.influencer-card:hover .overlay {
+    opacity: 1;
+    padding-bottom: 1.5rem;
+}
+
+.followers, .engagement {
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+}
+
+.followers i, .engagement i {
+    margin-right: 0.25rem;
+    color: var(--primary-color);
+}
+
+.card-body {
+    padding: 1.8rem;
+    position: relative;
+}
+
+.influencer-badge {
+    position: absolute;
+    top: -15px;
+    right: 20px;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: white;
+    padding: 0.4rem 1rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    box-shadow: 0 4px 10px rgba(var(--primary-color-rgb, 108, 99, 255), 0.3);
+    z-index: 2;
+}
+
+.card-title {
+    font-size: 1.6rem;
+    font-weight: 700;
+    margin-bottom: 0.8rem;
+    color: var(--text-color);
+    position: relative;
+    display: inline-block;
+}
+
+.card-title::after {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    left: 0;
+    width: 40px;
+    height: 3px;
+    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+    border-radius: 2px;
+    transition: width 0.3s ease;
+}
+
+.influencer-card:hover .card-title::after {
+    width: 100%;
+}
+
+.card-text {
+    color: var(--secondary-text);
+    margin-bottom: 1.5rem;
+    font-size: 0.95rem;
+    line-height: 1.7;
+}
+
+.influencer-stats {
+    display: flex;
+    flex-wrap: wrap;
+    margin-bottom: 1.5rem;
+    gap: 1rem;
+}
+
+.stat-item {
+    display: flex;
+    align-items: center;
+    font-size: 0.9rem;
+    color: var(--secondary-text);
+}
+
+.stat-item i {
+    color: var(--primary-color);
+    margin-right: 0.5rem;
+    font-size: 1rem;
+}
+
+.pricing {
+    display: flex;
+    align-items: baseline;
+    margin-bottom: 1.5rem;
+    background-color: rgba(var(--primary-color-rgb, 108, 99, 255), 0.05);
+    padding: 0.8rem 1rem;
+    border-radius: 8px;
+    border-left: 4px solid var(--primary-color);
+}
+
+.price {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: var(--primary-color);
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.period {
+    font-size: 0.9rem;
+    color: var(--secondary-text);
+    margin-left: 0.5rem;
+    font-weight: 500;
+}
+
+.card-footer {
+    background-color: transparent;
+    border-top: 1px solid rgba(var(--border-color-rgb, 222, 226, 230), 0.3);
+    padding: 1.2rem 1.8rem;
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.rent-btn, .details-btn {
+    flex: 1;
+    font-weight: 600;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    padding: 0.6rem 0;
+}
+
+.rent-btn {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    border: none;
+    box-shadow: 0 4px 10px rgba(var(--primary-color-rgb, 108, 99, 255), 0.3);
+}
+
+.rent-btn:hover {
+    background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
+    transform: translateY(-3px);
+    box-shadow: 0 8px 15px rgba(var(--primary-color-rgb, 108, 99, 255), 0.4);
+}
+
+.details-btn {
+    color: var(--primary-color);
+    border: 1px solid var(--primary-color);
+    background-color: transparent;
+}
+
+.details-btn:hover {
+    background-color: rgba(var(--primary-color-rgb, 108, 99, 255), 0.1);
+    color: var(--primary-color);
+    transform: translateY(-3px);
+}
+
+/* How It Works Section */
+.how-it-works-section {
+    position: relative;
+}
+
+.process-timeline {
+    position: relative;
+    padding: 2rem 0;
+}
+
+.process-timeline::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80%;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--primary-color), transparent);
+    opacity: 0.3;
+}
+
+.process-timeline::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80%;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--primary-color), transparent);
+    opacity: 0.3;
+}
+
+.step-card {
+    background-color: var(--card-bg);
+    border-radius: 16px;
+    padding: 2.5rem 1.5rem;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    height: 100%;
+    position: relative;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    border: none;
+    overflow: hidden;
+    z-index: 1;
+}
+
+.step-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 5px;
+    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+}
+
+.step-card:hover {
+    transform: translateY(-10px) scale(1.03);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
+    z-index: 2;
+}
+
+.step-number {
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1.4rem;
+    margin: 0 auto 1rem;
+    box-shadow: 0 5px 15px rgba(var(--primary-color-rgb, 108, 99, 255), 0.3);
+    position: relative;
+    z-index: 2;
+}
+
+.step-icon {
+    width: 70px;
+    height: 70px;
+    background-color: rgba(var(--primary-color-rgb, 108, 99, 255), 0.1);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+    transition: all 0.3s ease;
+}
+
+.step-icon i {
+    font-size: 1.8rem;
+    color: var(--primary-color);
+    transition: all 0.3s ease;
+}
+
+.step-card:hover .step-icon {
+    background-color: rgba(var(--primary-color-rgb, 108, 99, 255), 0.2);
+    transform: scale(1.1) rotate(10deg);
+}
+
+.step-card:hover .step-icon i {
+    transform: scale(1.1);
+}
+
+.step-card h5 {
+    font-weight: 700;
+    margin-bottom: 1rem;
+    color: var(--text-color);
+    font-size: 1.3rem;
+}
+
+.step-card p {
+    color: var(--secondary-text);
+    font-size: 0.95rem;
+    line-height: 1.7;
+}
+
+.how-it-works-section .btn-lg {
+    padding: 0.8rem 2rem;
+    font-weight: 600;
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(var(--primary-color-rgb, 108, 99, 255), 0.3);
+    transition: all 0.3s ease;
+}
+
+.how-it-works-section .btn-lg:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(var(--primary-color-rgb, 108, 99, 255), 0.4);
+}
+
+/* Tabs Styling */
+.nav-tabs {
+    border-bottom: 2px solid rgba(var(--border-color-rgb, 222, 226, 230), 0.5);
+    margin-bottom: 2rem;
+}
+
+.nav-tabs .nav-link {
+    border: none;
+    color: var(--secondary-text);
+    font-weight: 600;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0;
+    margin-right: 0.5rem;
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.nav-tabs .nav-link i {
+    margin-right: 0.5rem;
+}
+
+.nav-tabs .nav-link::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+    transition: width 0.3s ease;
+}
+
+.nav-tabs .nav-link:hover {
+    color: var(--primary-color);
+    background-color: transparent;
+    border-color: transparent;
+}
+
+.nav-tabs .nav-link:hover::after {
+    width: 100%;
+}
+
+.nav-tabs .nav-link.active {
+    color: var(--primary-color);
+    background-color: transparent;
+    border-color: transparent;
+}
+
+.nav-tabs .nav-link.active::after {
+    width: 100%;
+}
+
+/* Creation Options Section */
+.creation-options {
+    margin-top: 3rem;
+}
+
+.creation-options .card {
+    border: none;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+}
+
+.creation-options .card-body {
+    padding: 2.5rem;
+}
+
+.creation-options .card-title {
+    text-align: center;
+    margin-bottom: 2rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    font-size: 1.5rem;
+}
+
+.creation-options .card-title i {
+    margin-right: 0.5rem;
+    color: var(--primary-color);
+}
+
+.creation-option-card {
+    background-color: var(--card-bg);
+    border-radius: 12px;
+    padding: 2rem;
+    height: 100%;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(var(--border-color-rgb, 222, 226, 230), 0.3);
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.creation-option-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+    opacity: 0.7;
+}
+
+.creation-option-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+}
+
+.icon-container {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+    background-color: rgba(var(--primary-color-rgb, 108, 99, 255), 0.1);
+    transition: all 0.3s ease;
+}
+
+.creation-option-card:nth-child(1) .icon-container {
+    background-color: rgba(var(--success-color-rgb, 40, 167, 69), 0.1);
+}
+
+.creation-option-card:nth-child(2) .icon-container {
+    background-color: rgba(var(--info-color-rgb, 23, 162, 184), 0.1);
+}
+
+.icon-container i {
+    font-size: 2.5rem;
+    color: var(--primary-color);
+    transition: all 0.3s ease;
+}
+
+.creation-option-card:nth-child(1) .icon-container i {
+    color: var(--success-color);
+}
+
+.creation-option-card:nth-child(2) .icon-container i {
+    color: var(--info-color);
+}
+
+.creation-option-card:hover .icon-container {
+    transform: scale(1.1) rotate(10deg);
+}
+
+.creation-option-card h6 {
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    color: var(--text-color);
+}
+
+.creation-option-card p {
+    color: var(--secondary-text);
+    font-size: 0.95rem;
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+}
+
+.creation-option-card .btn-lg {
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    width: 100%;
+}
+
+.creation-option-card .btn-lg:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* Modal Styling */
+.modal-content {
+    border-radius: 16px;
+    overflow: hidden;
+    border: none;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+}
+
+.modal-header {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: white;
+    border-bottom: none;
+    padding: 1.8rem 2rem;
+}
+
+.modal-header .modal-title {
+    color: white !important;
+    font-weight: 700;
+    font-size: 1.4rem;
+    letter-spacing: -0.5px;
+}
+
+.modal-header .btn-close {
+    color: white;
+    opacity: 0.8;
+    filter: brightness(5);
+    transition: all 0.3s ease;
+}
+
+.modal-header .btn-close:hover {
+    opacity: 1;
+    transform: rotate(90deg);
+}
+
+.modal-body {
+    padding: 2.5rem;
+}
+
+.modal-body h6 {
+    font-weight: 700;
+    color: var(--text-color);
+    font-size: 1.1rem;
+}
+
+.modal-body .text-muted {
+    color: var(--secondary-text) !important;
+}
+
+.form-floating {
+    margin-bottom: 1.5rem;
+}
+
+.form-floating label {
+    color: var(--secondary-text);
+}
+
+.prompt-examples {
+    background-color: rgba(var(--primary-color-rgb, 108, 99, 255), 0.05);
+    border-left: 3px solid var(--primary-color);
+    padding: 1rem;
+    border-radius: 0 8px 8px 0;
+}
+
+.generation-options {
+    background-color: var(--card-bg);
+    border-radius: 8px;
+    padding: 1.5rem;
+    border: 1px solid rgba(var(--border-color-rgb, 222, 226, 230), 0.3);
+}
+
+.preview-container {
+    background-color: rgba(var(--border-color-rgb, 222, 226, 230), 0.1);
+    border-radius: 8px;
+    min-height: 300px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-footer {
+    border-top: 1px solid rgba(var(--border-color-rgb, 222, 226, 230), 0.3);
+    padding: 1.5rem 2rem;
+    gap: 1rem;
+}
+
+.modal-footer .btn {
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.modal-footer .btn:hover {
+    transform: translateY(-3px);
+}
+
+.btn-success {
+    background: linear-gradient(135deg, var(--success-color), #1f9d3a);
+    border: none;
+    box-shadow: 0 4px 10px rgba(var(--success-color-rgb, 40, 167, 69), 0.3);
+}
+
+.btn-success:hover {
+    background: linear-gradient(135deg, #1f9d3a, var(--success-color));
+    box-shadow: 0 8px 15px rgba(var(--success-color-rgb, 40, 167, 69), 0.4);
+}
+
+.btn-info {
+    background: linear-gradient(135deg, var(--info-color), #138a9e);
+    border: none;
+    box-shadow: 0 4px 10px rgba(var(--info-color-rgb, 23, 162, 184), 0.3);
+}
+
+.btn-info:hover {
+    background: linear-gradient(135deg, #138a9e, var(--info-color));
+    box-shadow: 0 8px 15px rgba(var(--info-color-rgb, 23, 162, 184), 0.4);
+}
+
+/* Responsive Adjustments */
+@media (max-width: 1199px) {
+    .card-img-wrapper {
+        height: 240px;
+    }
+    
+    .price {
+        font-size: 1.5rem;
+    }
+    
+    .card-title {
+        font-size: 1.4rem;
+    }
+    
+    .step-card {
+        padding: 2rem 1rem;
+    }
+    
+    .creation-option-card {
+        padding: 1.5rem;
+    }
+}
+
+@media (max-width: 991px) {
+    .card-img-wrapper {
+        height: 200px;
+    }
+    
+    .benefits-item {
+        margin-bottom: 1.5rem;
+    }
+    
+    .step-card {
+        margin-bottom: 1.5rem;
+    }
+    
+    .creation-options .row > div {
+        margin-bottom: 1.5rem;
+    }
+    
+    .creation-options .row > div:last-child {
+        margin-bottom: 0;
+    }
+    
+    .modal-dialog {
+        max-width: 90%;
+        margin: 1rem auto;
+    }
+    
+    .influencer-card {
+        max-width: 400px;
+        margin: 0 auto 2rem;
+    }
+}
+
+@media (max-width: 767px) {
+    .virtual-influencer-page {
+        padding: 0;
+    }
+    
+    .text-end {
+        text-align: center !important;
+        margin-bottom: 2rem;
+    }
+    
+    .text-end .btn {
+        display: block;
+        width: 100%;
+        margin: 0.5rem 0 !important;
+    }
+    
+    .nav-tabs {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+        -ms-overflow-style: -ms-autohiding-scrollbar;
+        margin-bottom: 1.5rem;
+    }
+    
+    .nav-tabs .nav-link {
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+        white-space: nowrap;
+    }
+    
+    .section-header h1 {
+        font-size: 1.8rem;
+    }
+    
+    .section-header h2 {
+        font-size: 1.5rem;
+    }
+    
+    .section-header p.lead {
+        font-size: 1rem;
+    }
+    
+    .modal-body {
+        padding: 1.5rem;
+    }
+    
+    .modal-header {
+        padding: 1.2rem 1.5rem;
+    }
+    
+    .modal-footer {
+        padding: 1.2rem 1.5rem;
+        flex-direction: column;
+    }
+    
+    .modal-footer .btn {
+        width: 100%;
+        margin: 0.25rem 0;
+    }
+    
+    .card-footer {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .rent-btn, .details-btn {
+        width: 100%;
+    }
+    
+    .how-it-works-section .btn-lg {
+        width: 100%;
+    }
+}
+
+@media (max-width: 575px) {
+    .card-img-wrapper {
+        height: 180px;
+    }
+    
+    .benefits-section .card-body {
+        padding: 1.5rem 1rem;
+    }
+    
+    .benefit-icon-container {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .feature-icon {
+        font-size: 1.5rem;
+    }
+    
+    .benefits-item h6 {
+        font-size: 1.1rem;
+    }
+    
+    .benefits-item p {
+        font-size: 0.9rem;
+    }
+    
+    .step-number {
+        width: 40px;
+        height: 40px;
+        font-size: 1.2rem;
+    }
+    
+    .step-icon {
+        width: 50px;
+        height: 50px;
+    }
+    
+    .step-icon i {
+        font-size: 1.4rem;
+    }
+    
+    .step-card h5 {
+        font-size: 1.1rem;
+    }
+    
+    .step-card p {
+        font-size: 0.9rem;
+    }
+    
+    .section-header h1 {
+        font-size: 1.6rem;
+    }
+    
+    .section-header h2 {
+        font-size: 1.3rem;
+    }
+    
+    .section-header p.lead {
+        font-size: 0.95rem;
+    }
+    
+    .creation-options .card-body {
+        padding: 1.5rem 1rem;
+    }
+    
+    .creation-option-card {
+        padding: 1.2rem;
+    }
+    
+    .icon-container {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .icon-container i {
+        font-size: 1.8rem;
+    }
+    
+    .creation-option-card h6 {
+        font-size: 1.1rem;
+    }
+    
+    .creation-option-card p {
+        font-size: 0.9rem;
+    }
+}

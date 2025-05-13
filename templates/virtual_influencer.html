@@ -1,5 +1,14 @@
 {% extends "layout.html" %}
 
+{% block extra_head %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/virtual-influencer.css') }}">
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/virtual-influencer.js') }}"></script>
+{% endblock %}
+
 {% block content %}
 <div class="virtual-influencer-page">
     <!-- Tab Navigation -->
@@ -18,168 +27,444 @@
     </ul>
     <div class="tab-content" id="influencerTabsContent">
         <div class="tab-pane fade show active" id="create-influencer-pane" role="tabpanel" aria-labelledby="create-influencer-tab">
-            <!-- ... your existing virtual influencer content ... -->
-        </div>
-        <div class="tab-pane fade" id="create-video-pane" role="tabpanel" aria-labelledby="create-video-tab">
-            <div class="card mb-4">
+            <div class="card mb-4 animate__animated animate__fadeIn">
                 <div class="card-body">
-                    <h5 class="card-title"><i class="fas fa-video"></i> Image Generation</h5>
-                        <form id="imageGenForm" enctype="multipart/form-data">
-                            <div class="mb-3">
-                                <label for="virtualImage" class="form-label" style="color: var(--text-color);">Virtual Influencer Image</label>
-                                <input type="file" class="form-control" id="virtualImage" name="face_image" accept="image/*" required>
+                    <h5 class="card-title"><i class="fas fa-magic"></i> Create Your Virtual Influencer</h5>
+                    <p class="card-text">Design a custom virtual influencer that perfectly represents your brand's identity and values. Our AI-powered tools make it easy to create a unique digital personality.</p>
+                    
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <div class="feature-box mb-4">
+                                <i class="fas fa-palette feature-icon-sm"></i>
+                                <h6>Customizable Appearance</h6>
+                                <p>Design every aspect of your influencer's look, from facial features to style preferences.</p>
                             </div>
-                            <div class="mb-3">
-                                <label for="brandImage" class="form-label" style="color: var(--text-color);">Brand Image</label>
-                                <input type="file" class="form-control" id="brandImage" name="brand_image" accept="image/*" required>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="feature-box mb-4">
+                                <i class="fas fa-fingerprint feature-icon-sm"></i>
+                                <h6>Unique Personality</h6>
+                                <p>Create a distinctive character with traits that resonate with your target audience.</p>
                             </div>
-                            <div class="mb-3">
-                                <label for="brandName" class="form-label" style="color: var(--text-color);">Brand Name</label>
-                                <input type="text" class="form-control" id="brandName" name="brand_name" placeholder="Enter the brand name..." required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="imagePrompt" class="form-label" style="color: var(--text-color);">Image Prompt</label>
-                                <textarea class="form-control" id="imagePrompt" name="prompt" rows="3" placeholder="Describe your image..." required></textarea>
-                            </div>
-                            <button type="submit" class="btn btn-primary"><i class="fas fa-bolt"></i> Generate Image</button>
-                        </form>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center mt-3">
+                        <button class="btn btn-primary btn-lg" data-bs-toggle="modal" data-bs-target="#createInfluencerModal">
+                            <i class="fas fa-plus-circle"></i> Start Creating
+                        </button>
                     </div>
                 </div>
             </div>
-            <img id="resultImage" style="display:none; max-width:100%; margin-top:20px;" />
+        </div>
+        
+        <div class="tab-pane fade" id="create-video-pane" role="tabpanel" aria-labelledby="create-video-tab">
+            <div class="card mb-4 animate__animated animate__fadeIn">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="fas fa-video"></i> Image Generation</h5>
+                    <p class="card-text">Create stunning promotional images featuring your virtual influencer and brand. Our AI technology combines your inputs to generate professional marketing visuals.</p>
+                    
+                    <form id="imageGenForm" enctype="multipart/form-data" class="mt-4">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="virtualImage" class="form-label">Virtual Influencer Image</label>
+                                    <div class="custom-file-container">
+                                        <input type="file" class="form-control" id="virtualImage" name="face_image" accept="image/*" required>
+                                        <small class="form-text text-muted">Upload a clear portrait image of your virtual influencer</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="brandImage" class="form-label">Brand Image</label>
+                                    <div class="custom-file-container">
+                                        <input type="file" class="form-control" id="brandImage" name="brand_image" accept="image/*" required>
+                                        <small class="form-text text-muted">Upload your brand logo or product image</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="brandName" class="form-label">Brand Name</label>
+                            <input type="text" class="form-control" id="brandName" name="brand_name" placeholder="Enter your brand name..." required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="imagePrompt" class="form-label">Image Prompt</label>
+                            <textarea class="form-control" id="imagePrompt" name="prompt" rows="3" placeholder="Describe the scene, mood, and context for your promotional image..." required></textarea>
+                            <small class="form-text text-muted">Be specific about the setting, clothing, pose, and how the product should be featured</small>
+                        </div>
+                        
+                        <div class="text-center mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-bolt"></i> Generate Image
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <div class="result-container mt-4 text-center">
+                        <img id="resultImage" style="display:none; max-width:100%; border-radius:8px; box-shadow: 0 5px 15px rgba(0,0,0,0.1);" />
+                        <div id="loadingIndicator" style="display:none;">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <p class="mt-2">Generating your image... This may take a moment.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- Modal for Fooocus and LLM Image Generation -->
-    <div class="mb-4 text-end">
-        <button class="btn btn-success" id="createVirtualInfluencerBtn">
-            <i class="fas fa-magic"></i> Create your virtual influencer using Fooocus
-        </button>
-        <button class="btn btn-info" id="createVirtualInfluencerLLMBtn" style="margin-left: 10px;">
-            <i class="fas fa-robot"></i> Create your virtual influencer using LLM
-        </button>
+    <!-- Creation Options -->
+    <div class="creation-options mb-5 text-center">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-md-10">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title mb-4"><i class="fas fa-wand-magic-sparkles"></i> Choose Your Creation Method</h5>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="creation-option-card">
+                                        <div class="icon-container">
+                                            <i class="fas fa-magic"></i>
+                                        </div>
+                                        <h6>Fooocus AI</h6>
+                                        <p>Advanced image generation with fine-tuned control over style and appearance</p>
+                                        <button class="btn btn-success btn-lg mt-3" id="createVirtualInfluencerBtn">
+                                            <i class="fas fa-magic"></i> Create with Fooocus
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="creation-option-card">
+                                        <div class="icon-container">
+                                            <i class="fas fa-robot"></i>
+                                        </div>
+                                        <h6>LLM AI</h6>
+                                        <p>Text-based generation that creates influencers from your detailed descriptions</p>
+                                        <button class="btn btn-info btn-lg mt-3" id="createVirtualInfluencerLLMBtn">
+                                            <i class="fas fa-robot"></i> Create with LLM
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Modal for LLM Virtual Influencer -->
     <div class="modal fade" id="llmInfluencerModal" tabindex="-1" aria-labelledby="llmInfluencerModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <form id="llmInfluencerForm">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="llmInfluencerModalLabel" style="color: var(--text-color);">Create Virtual Influencer (LLM)</h5>
+                        <h5 class="modal-title" id="llmInfluencerModalLabel">Create Virtual Influencer with LLM</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        <label for="llmPrompt" class="form-label" style="color: var(--text-color);">Describe your virtual influencer</label>
-                        <textarea class="form-control" id="llmPrompt" name="llmPrompt" rows="3" placeholder="Enter a prompt for your virtual influencer..." required></textarea>
-                        <div id="llmImageResult" style="margin-top: 20px; text-align: center;"></div>
+                        <div class="mb-4">
+                            <h6 class="mb-3">Describe Your Ideal Virtual Influencer</h6>
+                            <p class="text-muted mb-3">Be specific about appearance, personality, style, and target audience. The more details you provide, the better the result.</p>
+                            
+                            <div class="form-floating mb-3">
+                                <textarea class="form-control" id="llmPrompt" name="llmPrompt" style="height: 150px" placeholder="Enter a prompt for your virtual influencer..." required></textarea>
+                                <label for="llmPrompt">Detailed Description</label>
+                            </div>
+                            
+                            <div class="prompt-examples">
+                                <p class="text-muted small">Example: "A 25-year-old female fitness influencer with athletic build, shoulder-length blonde hair with blue highlights, bright blue eyes, and a confident smile. She has a vibrant, motivational personality and specializes in home workouts and nutrition tips for busy professionals."</p>
+                            </div>
+                        </div>
+                        
+                        <div class="generation-options mb-4">
+                            <h6 class="mb-3">Generation Options</h6>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="highQuality" name="highQuality" checked>
+                                        <label class="form-check-label" for="highQuality">High Quality Generation</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="enhanceDetails" name="enhanceDetails" checked>
+                                        <label class="form-check-label" for="enhanceDetails">Enhance Details</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div id="llmImageResult" class="text-center mt-4">
+                            <!-- Generated image will appear here -->
+                            <div class="placeholder-container" style="display: none;">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                                <p class="mt-2">Generating your virtual influencer...</p>
+                            </div>
+                        </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="submit" class="btn btn-primary">Generate Image</button>
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-wand-magic-sparkles me-2"></i> Generate Influencer
+                        </button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
+    
+    <!-- Modal for Fooocus Virtual Influencer -->
     <div class="modal fade" id="createInfluencerModal" tabindex="-1" aria-labelledby="createInfluencerModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="createInfluencerModalLabel" style="color: var(--text-color);">Create Your Virtual Influencer</h5>
+                    <h5 class="modal-title" id="createInfluencerModalLabel">Create Your Virtual Influencer with Fooocus</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>     
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <form id="foocusInfluencerForm">
+                                <div class="mb-3">
+                                    <label for="influencerName" class="form-label">Influencer Name</label>
+                                    <input type="text" class="form-control" id="influencerName" name="influencerName" placeholder="Enter a name..." required>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="influencerPrompt" class="form-label">Appearance Description</label>
+                                    <textarea class="form-control" id="influencerPrompt" name="influencerPrompt" rows="4" placeholder="Describe appearance details..." required></textarea>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">Gender</label>
+                                    <div class="d-flex">
+                                        <div class="form-check me-3">
+                                            <input class="form-check-input" type="radio" name="gender" id="genderFemale" value="female" checked>
+                                            <label class="form-check-label" for="genderFemale">Female</label>
+                                        </div>
+                                        <div class="form-check me-3">
+                                            <input class="form-check-input" type="radio" name="gender" id="genderMale" value="male">
+                                            <label class="form-check-label" for="genderMale">Male</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="gender" id="genderNeutral" value="neutral">
+                                            <label class="form-check-label" for="genderNeutral">Neutral</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="stylePreset" class="form-label">Style Preset</label>
+                                    <select class="form-select" id="stylePreset" name="stylePreset">
+                                        <option value="photorealistic">Photorealistic</option>
+                                        <option value="anime">Anime</option>
+                                        <option value="cartoon">Cartoon</option>
+                                        <option value="digital-art">Digital Art</option>
+                                        <option value="fantasy">Fantasy</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="specialty" class="form-label">Specialty</label>
+                                    <select class="form-select" id="specialty" name="specialty">
+                                        <option value="Fashion & Lifestyle">Fashion & Lifestyle</option>
+                                        <option value="Tech & Gadgets">Tech & Gadgets</option>
+                                        <option value="Beauty & Cosmetics">Beauty & Cosmetics</option>
+                                        <option value="Fitness & Health">Fitness & Health</option>
+                                        <option value="Travel & Adventure">Travel & Adventure</option>
+                                        <option value="Food & Cooking">Food & Cooking</option>
+                                        <option value="Gaming">Gaming</option>
+                                        <option value="Art & Design">Art & Design</option>
+                                    </select>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="generation-preview">
+                                <h6 class="mb-3">Preview</h6>
+                                <div class="preview-container text-center p-3 border rounded">
+                                    <div id="previewPlaceholder">
+                                        <i class="fas fa-user-circle fa-5x text-muted mb-3"></i>
+                                        <p class="text-muted">Your virtual influencer preview will appear here</p>
+                                    </div>
+                                    <img id="previewImage" class="img-fluid rounded" style="display: none; max-height: 300px;">
+                                </div>
+                                
+                                <div class="generation-options mt-4">
+                                    <h6 class="mb-3">Advanced Options</h6>
+                                    <div class="mb-3">
+                                        <label for="qualityLevel" class="form-label">Quality Level</label>
+                                        <input type="range" class="form-range" min="1" max="5" value="3" id="qualityLevel">
+                                        <div class="d-flex justify-content-between">
+                                            <small>Draft</small>
+                                            <small>Standard</small>
+                                            <small>High</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="generateInfluencerBtn">
+                        <i class="fas fa-magic me-2"></i> Generate Influencer
+                    </button>
+                </div>
             </div>
         </div>
     </div>
-    <div class="section-header">
+    <div class="section-header animate__animated animate__fadeIn">
         <h1 class="mb-4">Rent a Virtual Influencer</h1>
         <p class="lead">Virtual influencers are computer-generated characters that can represent your brand across social media. They offer unique benefits over traditional influencers, including creative flexibility and 24/7 availability.</p>
     </div>
 
-    <div class="card mb-4">
-        <div class="card-body">
-            <h5 class="card-title">Why Choose a Virtual Influencer?</h5>
-            <div class="row mb-4">
-                <div class="col-md-4 benefits-item">
-                    <i class="fas fa-clock feature-icon"></i>
-                    <h6>Always Available</h6>
-                    <p>Virtual influencers don't need breaks and can engage with your audience around the clock.</p>
-                </div>
-                <div class="col-md-4 benefits-item">
-                    <i class="fas fa-paint-brush feature-icon"></i>
-                    <h6>Full Creative Control</h6>
-                    <p>Shape every aspect of your influencer's personality, appearance, and messaging.</p>
-                </div>
-                <div class="col-md-4 benefits-item">
-                    <i class="fas fa-chart-line feature-icon"></i>
-                    <h6>Measurable Results</h6>
-                    <p>Detailed analytics on engagement, reach, and conversion metrics for your campaigns.</p>
+    <div class="benefits-section mb-5 animate__animated animate__fadeIn">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title mb-4">Why Choose a Virtual Influencer?</h5>
+                <div class="row">
+                    <div class="col-md-4 benefits-item">
+                        <div class="benefit-icon-container">
+                            <i class="fas fa-clock feature-icon"></i>
+                        </div>
+                        <h6>Always Available</h6>
+                        <p>Virtual influencers don't need breaks and can engage with your audience around the clock.</p>
+                    </div>
+                    <div class="col-md-4 benefits-item">
+                        <div class="benefit-icon-container">
+                            <i class="fas fa-paint-brush feature-icon"></i>
+                        </div>
+                        <h6>Full Creative Control</h6>
+                        <p>Shape every aspect of your influencer's personality, appearance, and messaging.</p>
+                    </div>
+                    <div class="col-md-4 benefits-item">
+                        <div class="benefit-icon-container">
+                            <i class="fas fa-chart-line feature-icon"></i>
+                        </div>
+                        <h6>Measurable Results</h6>
+                        <p>Detailed analytics on engagement, reach, and conversion metrics for your campaigns.</p>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <h2 class="mb-4">Available Virtual Influencers</h2>
-    <div class="row">
-        {% for influencer in influencers %}
-        <div class="col-lg-4 col-md-6 mb-4">
-            <div class="card h-100 influencer-card">
-                <div class="card-img-wrapper">
-                    <img src="{{ influencer.image_url | default('/static/img/default-avatar.png') }}" class="card-img-top" alt="{{ influencer.name }}">
-                    <div class="overlay">
-                        <span class="followers"><i class="fas fa-users"></i> {% if influencer.followers is defined %}{{ '{:,}'.format(influencer.followers) }}{% else %}N/A{% endif %}</span>
-                        <span class="engagement"><i class="fas fa-heart"></i> {{ influencer.engagement_rate }}%</span>
+    <div class="influencers-section mb-5 animate__animated animate__fadeIn">
+        <div class="section-header">
+            <h2 class="mb-4">Available Virtual Influencers</h2>
+            <p class="text-muted mb-4">Browse our catalog of pre-designed virtual influencers ready to represent your brand</p>
+        </div>
+        
+        <div class="row">
+            {% for influencer in influencers %}
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="card h-100 influencer-card">
+                    <div class="card-img-wrapper">
+                        <img src="{{ influencer.image_url | default('/static/img/default-avatar.png') }}" class="card-img-top" alt="{{ influencer.name }}">
+                        <div class="overlay">
+                            <span class="followers"><i class="fas fa-users"></i> {% if influencer.followers is defined %}{{ '{:,}'.format(influencer.followers) }}{% else %}N/A{% endif %}</span>
+                            <span class="engagement"><i class="fas fa-heart"></i> {{ influencer.engagement_rate }}%</span>
+                        </div>
                     </div>
-                </div>
-                <div class="card-body">
-                    <h5 class="card-title">{{ influencer.name }}</h5>
-                    <h6 class="card-subtitle mb-2 text-muted">{{ influencer.specialty }}</h6>
-                    <p class="card-text">{{ influencer.description }}</p>
-                    <div class="pricing">
-                        <span class="price">${{ '{:,}'.format(influencer.daily_rate) }}</span>
-                        <span class="period">per day</span>
+                    <div class="card-body">
+                        <div class="influencer-badge">{{ influencer.specialty }}</div>
+                        <h5 class="card-title">{{ influencer.name }}</h5>
+                        <p class="card-text">{{ influencer.description }}</p>
+                        <div class="influencer-stats">
+                            <div class="stat-item">
+                                <i class="fas fa-users"></i>
+                                <span>{% if influencer.followers is defined %}{{ '{:,}'.format(influencer.followers) }}{% else %}N/A{% endif %} followers</span>
+                            </div>
+                            <div class="stat-item">
+                                <i class="fas fa-heart"></i>
+                                <span>{{ influencer.engagement_rate }}% engagement</span>
+                            </div>
+                        </div>
+                        <div class="pricing">
+                            <span class="price">${{ '{:,}'.format(influencer.daily_rate) }}</span>
+                            <span class="period">per day</span>
+                        </div>
                     </div>
-                </div>
-                <div class="card-footer">
-                    <button class="btn btn-primary rent-btn" data-influencer-id="{{ influencer.id }}">Rent Now</button>
-                    <button class="btn btn-outline-secondary details-btn" data-influencer-id="{{ influencer.id }}">Details</button>
+                    <div class="card-footer">
+                        <button class="btn btn-primary rent-btn" data-influencer-id="{{ influencer.id }}">
+                            <i class="fas fa-shopping-cart me-2"></i> Rent Now
+                        </button>
+                        <button class="btn btn-outline-secondary details-btn" data-influencer-id="{{ influencer.id }}">
+                            <i class="fas fa-info-circle me-2"></i> Details
+                        </button>
+                    </div>
                 </div>
             </div>
+            {% endfor %}
         </div>
-        {% endfor %}
     </div>
 
-    <div class="section-header mt-5">
-        <h2 class="mb-4">How It Works</h2>
-    </div>
-    <div class="row mb-5">
-        <div class="col-md-3">
-            <div class="step-card">
-                <div class="step-number">1</div>
-                <h5>Choose Your Influencer</h5>
-                <p>Browse our catalog and select the virtual influencer that best aligns with your brand.</p>
+    <div class="how-it-works-section mb-5 animate__animated animate__fadeIn">
+        <div class="section-header">
+            <h2 class="mb-4">How It Works</h2>
+            <p class="text-muted mb-4">Our streamlined process makes it easy to launch your virtual influencer campaign</p>
+        </div>
+        
+        <div class="process-timeline">
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="step-card">
+                        <div class="step-number">1</div>
+                        <div class="step-icon">
+                            <i class="fas fa-search"></i>
+                        </div>
+                        <h5>Choose Your Influencer</h5>
+                        <p>Browse our catalog and select the virtual influencer that best aligns with your brand identity and target audience.</p>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="step-card">
+                        <div class="step-number">2</div>
+                        <div class="step-icon">
+                            <i class="fas fa-pencil-alt"></i>
+                        </div>
+                        <h5>Customize Your Campaign</h5>
+                        <p>Define your campaign goals, messaging strategy, and creative direction with our expert team.</p>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="step-card">
+                        <div class="step-number">3</div>
+                        <div class="step-icon">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <h5>Review & Approve</h5>
+                        <p>Our team creates content for your approval before publishing, ensuring perfect alignment with your vision.</p>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="step-card">
+                        <div class="step-number">4</div>
+                        <div class="step-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <h5>Track Performance</h5>
+                        <p>Access real-time analytics through our dashboard to measure your campaign's success and ROI.</p>
+                    </div>
+                </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="step-card">
-                <div class="step-number">2</div>
-                <h5>Customize Your Campaign</h5>
-                <p>Define your campaign goals, messaging, and creative direction.</p>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="step-card">
-                <div class="step-number">3</div>
-                <h5>Review & Approve</h5>
-                <p>Our team creates content for your approval before going live.</p>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="step-card">
-                <div class="step-number">4</div>
-                <h5>Track Performance</h5>
-                <p>Access real-time analytics to measure your campaign's success.</p>
-            </div>
+        
+        <div class="text-center mt-5">
+            <a href="#" class="btn btn-lg btn-primary">
+                <i class="fas fa-rocket me-2"></i> Start Your Campaign
+            </a>
         </div>
     </div>
 
