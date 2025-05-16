@@ -62,5 +62,78 @@
             </div>
         </div>
     </div>
+
+    <!-- Add this form below the setup steps -->
+    <div class="row mt-5">
+        <div class="col-lg-8 offset-lg-2">
+            <h2>Post to Bluesky</h2>
+            <form id="bluesky-post-form">
+                <div class="mb-3">
+                    <label for="image-select" class="form-label">Select Image</label>
+                    <select class="form-select" id="image-select" name="filename" required></select>
+                    <div id="image-preview" class="mt-2"></div>
+                </div>
+                <div class="mb-3">
+                    <label for="caption" class="form-label">Caption</label>
+                    <input type="text" class="form-control" id="caption" name="caption" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Post to Bluesky</button>
+            </form>
+            <div id="post-result" class="mt-3"></div>
+        </div>
+    </div>
 </div>
+<script>
+async function fetchImages() {
+    const response = await fetch('/api/list-images');
+    const data = await response.json();
+    const select = document.getElementById('image-select');
+    select.innerHTML = '';
+    if (data.images && data.images.length > 0) {
+        data.images.forEach(img => {
+            const option = document.createElement('option');
+            option.value = img;
+            option.textContent = img;
+            select.appendChild(option);
+        });
+        showPreview(select.value);
+    } else {
+        const option = document.createElement('option');
+        option.value = '';
+        option.textContent = 'No images found';
+        select.appendChild(option);
+    }
+}
+function showPreview(filename) {
+    const previewDiv = document.getElementById('image-preview');
+    if (filename) {
+        previewDiv.innerHTML = `<img src="/data/${filename}" alt="${filename}" style="max-width:200px;max-height:200px;" />`;
+    } else {
+        previewDiv.innerHTML = '';
+    }
+}
+document.addEventListener('DOMContentLoaded', () => {
+    fetchImages();
+    document.getElementById('image-select').addEventListener('change', function() {
+        showPreview(this.value);
+    });
+});
+document.getElementById('bluesky-post-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const filename = document.getElementById('image-select').value;
+    const caption = document.getElementById('caption').value;
+    const response = await fetch('/api/post-to-bluesky', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ filename, caption })
+    });
+    const result = await response.json();
+    const resultDiv = document.getElementById('post-result');
+    if (result.success) {
+        resultDiv.innerHTML = `<span class='text-success'>Posted! URI: ${result.post_uri}</span>`;
+    } else {
+        resultDiv.innerHTML = `<span class='text-danger'>Error: ${result.error || 'Failed to post.'}</span>`;
+    }
+});
+</script>
 {% endblock %}
