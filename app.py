@@ -1,5 +1,3 @@
-
-
 import os
 import logging
 from flask import Flask, request, jsonify
@@ -7,6 +5,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, login_required, current_user
 from sqlalchemy.orm import DeclarativeBase
 from dotenv import load_dotenv
+from post import post_to_bluesky, list_images
 
 # Load environment variables from .env file
 load_dotenv()
@@ -127,3 +126,14 @@ def toggle_email_visibility():
 @app.errorhandler(404)
 def not_found(e):
     return jsonify(error="Not found"), 404
+
+
+
+
+@app.route('/api/post-to-bluesky', methods=['POST'])
+def post_to_bluesky_route():
+    return post_to_bluesky()
+
+@app.route('/api/list-images', methods=['GET'])
+def list_images_route():
+    return list_images()
