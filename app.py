@@ -4,12 +4,17 @@ from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, login_required, current_user
 from sqlalchemy.orm import DeclarativeBase
+from os import environ as env
+from dotenv import find_dotenv, load_dotenv
 from dotenv import load_dotenv
 from post import post_to_bluesky, list_images
 
 # Load environment variables from .env file
 load_dotenv()
 
+# ENV_FILE = find_dotenv()
+# if ENV_FILE:
+#     load_dotenv(ENV_FILE)
 # Set up logging
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)

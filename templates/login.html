@@ -31,7 +31,7 @@
                             {% endif %}
                         </div>
                     </div>
-                    
+
                     <div class="auth-form-col">
                         <div class="mb-3">
                             <label for="password" class="form-label">Password</label>
@@ -53,7 +53,9 @@
                 <div class="d-grid gap-2">
                     {{ form.submit(class="btn btn-primary") }}
                 </div>
-                
+                <div class="mt-3 text-center">
+                    <p><a href="{{ url_for('googleLogin') }}">Login with Google</a></p>
+                </div>
                 <div class="mt-3 text-center">
                     <p>Don't have an account? <a href="{{ url_for('register') }}">Sign up</a></p>
                 </div>

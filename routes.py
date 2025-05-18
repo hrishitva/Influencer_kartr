@@ -11,12 +11,31 @@ from models import User, YouTubeChannel, Search
 from youtube_api import get_video_stats, get_channel_stats, extract_video_info
 from youtube_utils import save_user_to_csv, validate_user_login, save_analysis_to_csv
 from googleapiclient.discovery import build
+from os import environ as env
+from authlib.integrations.flask_client import OAuth
+from dotenv import find_dotenv, load_dotenv
+from urllib.parse import quote_plus, urlencode
+
 from email_utils import generate_otp, store_otp, verify_otp, send_otp_email
 
 # Set up logging
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
+ENV_FILE = find_dotenv()
+if ENV_FILE:
+    load_dotenv(ENV_FILE)
+oauth = OAuth(app)
+
+oauth.register(
+    "auth0",
+    client_id=env.get("AUTH0_CLIENT_ID"),
+    client_secret=env.get("AUTH0_CLIENT_SECRET"),
+    client_kwargs={
+        "scope": "openid profile email",
+    },
+    server_metadata_url=f'https://{env.get("AUTH0_DOMAIN")}/.well-known/openid-configuration',
+)
 @app.route('/contact')
 def contact():
     """Route for the contact us page"""
@@ -28,7 +47,7 @@ def home():
     """Route for the landing page"""
     if current_user.is_authenticated:
         return redirect(url_for('stats'))
-    
+
     # Get real-time stats from database.csv
     stats = get_platform_stats()
     return render_template('landing.html', title='Kartr - Connect Influencers and Sponsors', stats=stats)
@@ -38,7 +57,7 @@ def landing():
     """Explicit route for the landing page"""
     if current_user.is_authenticated:
         return redirect(url_for('stats'))
-    
+
     # Get real-time stats from database.csv
     stats = get_platform_stats()
     return render_template('landing.html', title='Kartr - Connect Influencers and Sponsors', stats=stats)
@@ -48,7 +67,7 @@ def get_platform_stats():
     try:
         import pandas as pd
         import os
-        
+
         # Check if database.csv exists
         db_path = os.path.join('data', 'database.csv')
         if not os.path.exists(db_path):
@@ -58,15 +77,15 @@ def get_platform_stats():
                 'sponsors': 0,
                 'total_users': 0
             }
-        
+
         # Read the CSV file
         df = pd.read_csv(db_path)
-        
+
         # Count users by type
         influencers = len(df[df['user_type'] == 'influencer'])
         sponsors = len(df[df['user_type'] == 'sponsor'])
         total_users = len(df)
-        
+
         # Get stats from analysis.csv if it exists
         analysis_path = os.path.join('data', 'ANALYSIS.CSV')
         partnerships = 0
@@ -77,7 +96,7 @@ def get_platform_stats():
                 partnerships = len(analysis_df)
             except Exception as e:
                 logger.error(f"Error reading analysis.csv: {str(e)}")
-        
+
         return {
             'influencers': influencers,
             'sponsors': sponsors,
@@ -116,7 +135,7 @@ def register():
                 password=form.password.data,
                 user_type=form.user_type.data
             )
-            
+
             # Try to create user in Auth0 (but don't block registration if it fails)
             try:
                 # Import Auth0 helper functions
@@ -129,7 +148,7 @@ def register():
                     password=form.password.data,
                     username=form.username.data
                 )
-                
+
                 if not success:
                     # If Auth0 registration fails, log the error but continue with local registration
                     if hasattr(auth0_config, 'last_auth_error') and auth0_config.last_auth_error:
@@ -159,6 +178,27 @@ def register():
 
     return render_template('register.html', title='Register', form=form)
 
+@app.route("/callback", methods=["GET", "POST"])
+def callback():
+    token = oauth.auth0.authorize_access_token()
+    user_info = oauth.auth0.userinfo()
+
+    session["user"] = user_info
+    user = User.query.filter_by(email=user_info["email"]).first()
+    if not user:
+        user = User(username=user_info["nickname"], email=user_info["email"],password_hash=user_info["nickname"],user_type=user_info["nickname"])
+        db.session.add(user)
+        db.session.commit()
+
+    # Log in the user using Flask-Login
+    login_user(user)
+    return redirect(url_for('stats'))
+
+@app.route('/googleLogin',methods=['GET','POST'])
+def googleLogin():
+    return oauth.auth0.authorize_redirect(
+        redirect_uri=url_for("callback",_external=True)
+    )
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
@@ -168,12 +208,12 @@ def login():
     if form.validate_on_submit():
         # First try local authentication directly
         user = User.query.filter_by(email=form.email.data).first()
-        
+
         if user and user.check_password(form.password.data):
             login_user(user)
             flash('Login successful!', 'success')
             return redirect(url_for('stats'))
-        
+
         # If local authentication fails, try CSV validation
         is_valid, user_type = validate_user_login(form.email.data, form.password.data)
         if is_valid:
@@ -182,7 +222,7 @@ def login():
                 try:
                     # Try to get username from CSV if available
                     username = form.email.data.split('@')[0] if '@' in form.email.data else form.email.data
-                    
+
                     try:
                         df = pd.read_csv('data/database.csv')
                         user_data = df[df['email'] == form.email.data]
@@ -199,7 +239,7 @@ def login():
                     
                     # Get the user again
                     user = User.query.filter_by(email=form.email.data).first()
-                    
+
                     if user:
                         login_user(user)
                         flash('Login successful via CSV validation!', 'success')
@@ -208,19 +248,19 @@ def login():
                     logger.error(f"Error creating user from CSV: {str(e)}")
                     flash('Error during login. Please try again.', 'danger')
                     return render_template('login.html', title='Login', form=form)
-        
+
         # If local and CSV authentication fails, try Auth0
         try:
             # Import Auth0 helper functions
             from auth0_helpers import user_exists_in_auth0
             from auth0_config import config as auth0_config
-            
+
             # Try to authenticate with Auth0
             exists, auth0_user = user_exists_in_auth0(
-                email=form.email.data, 
+                email=form.email.data,
                 password=form.password.data
             )
-            
+
             if exists and auth0_user:
                 # If Auth0 authentication is successful, check if user exists in our database
                 user = User.query.filter_by(email=form.email.data).first()
@@ -237,7 +277,7 @@ def login():
                         # Try to get username and user_type from CSV if available
                         username = form.email.data.split('@')[0] if '@' in form.email.data else form.email.data
                         user_type = 'influencer'  # Default
-                        
+
                         try:
                             df = pd.read_csv('data/database.csv')
                             user_data = df[df['email'] == form.email.data]
@@ -246,13 +286,13 @@ def login():
                                 user_type = user_data.iloc[0]['user_type']
                         except Exception as csv_error:
                             logger.warning(f"Could not read from CSV: {str(csv_error)}")
-                        
+
                         # Create user in database
                         user = User(username=username, email=form.email.data, user_type=user_type)
                         user.set_password(form.password.data)  # Still hash password for local auth
                         db.session.add(user)
                         db.session.commit()
-                        
+
                         # Log in the user
                         login_user(user)
                         flash('Login successful via Auth0!', 'success')
@@ -268,7 +308,7 @@ def login():
                     flash('Authentication service configuration error. Please contact support.', 'danger')
                 else:
                     flash('Invalid email or password.', 'danger')
-                    
+
         except ImportError:
             logger.error("Auth0 helpers module could not be imported")
             flash('Authentication service unavailable. Using local authentication only.', 'warning')
@@ -285,7 +325,14 @@ def login():
 def logout():
     logout_user()
     flash('You have been logged out.', 'info')
-    return redirect(url_for('home'))
+    session.clear()
+    return redirect(
+        f'https://{env.get("AUTH0_DOMAIN")}/v2/logout?'
+        + urlencode({
+            'returnTo': url_for('register', _external=True),
+            'client_id': env.get("AUTH0_CLIENT_ID"),
+        })
+    )
 
 @app.route('/forgot-password', methods=['GET', 'POST'])
 def forgot_password():
@@ -304,22 +351,22 @@ def forgot_password():
                 
                 # Send password reset email via Auth0
                 success, error_message = send_password_reset_email(email)
-                
+
                 if success:
                     flash('Password reset link has been sent. Please check your inbox and follow the instructions.', 'success')
                     return redirect(url_for('login'))
                 else:
                     logger.error(f"Auth0 password reset error: {error_message}")
-                    
+
                     # Fall back to OTP method if Auth0 fails
                     # Generate OTP
                     otp = generate_otp()
-                    
+
                     # Store OTP with expiration time
                     if store_otp(email, otp):
                         # Send OTP to user's email
                         success, message = send_otp_email(email, otp)
-                        
+
                         if success:
                             flash('OTP has been sent to your email. Please check your inbox.', 'success')
                             # Create OTP verification form with email pre-filled
@@ -332,7 +379,7 @@ def forgot_password():
                         flash('Failed to generate OTP. Please try again.', 'danger')
             except Exception as e:
                 logger.error(f"Password reset error: {str(e)}")
-                
+
                 # Fall back to OTP method
                 otp = generate_otp()
                 
@@ -902,14 +949,14 @@ from graph import load_creator_sponsor_graph, load_industry_graph
 def visualization():
     # Create data directory if it doesn't exist
     os.makedirs('data', exist_ok=True)
-    
+
     # CSV file path
     csv_file = 'data/analysis_results.csv'
     file_exists = os.path.isfile(csv_file)
 
     with open(csv_file, 'a', newline='', encoding='utf-8') as f:
             writer = csv.writer(f)
-            
+
             # Write header if file doesn't exist
             if not file_exists:
                 writer.writerow([

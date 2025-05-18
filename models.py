@@ -10,8 +10,8 @@ class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(64), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
-    password_hash = db.Column(db.String(256), nullable=False)
-    user_type = db.Column(db.String(20), nullable=False)  # 'sponsor' or 'influencer'
+    password_hash = db.Column(db.String(256), nullable=True)
+    user_type = db.Column(db.String(20), nullable=True)  # 'sponsor' or 'influencer'
     date_registered = db.Column(db.DateTime, default=datetime.utcnow)
     email_visible = db.Column(db.Boolean, default=False)  # Flag to control email visibility in search results
     
@@ -22,7 +22,7 @@ class User(UserMixin, db.Model):
     
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
-        
+
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
     
