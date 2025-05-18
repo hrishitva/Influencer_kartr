@@ -329,7 +329,7 @@ def logout():
     return redirect(
         f'https://{env.get("AUTH0_DOMAIN")}/v2/logout?'
         + urlencode({
-            'returnTo': url_for('register', _external=True),
+            'returnTo': url_for('home', _external=True),
             'client_id': env.get("AUTH0_CLIENT_ID"),
         })
     )
